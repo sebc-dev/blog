@@ -1,97 +1,193 @@
-# Story 1.1: Configuration Sécurisée du VPS OVH (Debian)
+# Story 1.1 — Sécurisation initiale du VPS OVH (Debian 12, iptables)
 
-**Status:** Draft
+**Status :** Draft  
+**Epic :** 1 — Mise en place de l’infrastructure
 
-## Goal & Context
+### Goal & Context
 
-**User Story:** En tant qu'Administrateur Système (Admin), je veux configurer le serveur VPS OVH (Debian) avec les bases de sécurité (SSH par clé, `ufw`, `fail2ban`) afin de disposer d'un environnement serveur sécurisé pour héberger l'application.
+> En tant qu'Administrateur Système, je veux sécuriser un VPS OVH sous Debian 12 en durcissant SSH, en activant un pare-feu **iptables-nft**, en installant fail2ban et unattended-upgrades, afin de disposer d'une base fiable pour mes applications.
 
-**Context:** Cette story est la première étape de l'Epic 1 et est fondamentale pour établir un environnement serveur sécurisé avant toute installation d'application. Elle pose les bases de la sécurité de l'infrastructure.
+### Acceptance Criteria
 
-## Detailed Requirements
+| ID                    | Critère                                                                                                                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AC1**               | SSH par clé, `PasswordAuthentication no`, `PermitRootLogin no`, `ChallengeResponseAuthentication no`.                                                                                  |
+| **AC2**               | Pare-feu iptables actif ; politiques : `INPUT DROP`, `FORWARD DROP`, `OUTPUT ACCEPT` ; exceptions : SSH (22 ou personnalisé), HTTP 80, HTTPS 443, ICMP, loopback, connexions établies. |
+| **AC3**               | fail2ban installé 1 h de bannissement après 5 tentatives sur `sshd`.                                                                                                                   |
+| **AC4**               | Système à jour (`apt full-upgrade`) ; unattended-upgrades activé.                                                                                                                      |
+| **AC5** *(optionnel)* | 2FA TOTP pour les comptes admins.                                                                                                                                                      |
 
-Mettre en place les configurations de sécurité de base sur le serveur VPS OVH (Debian) existant.
+### Fichiers concernés
 
-## Acceptance Criteria (ACs)
+* `/etc/ssh/sshd_config.d/90-security.conf`
+* `/etc/ssh/sshd_config.d/95-custom-port.conf` *(si port ≠ 22)*
+* `/etc/fail2ban/jail.local`
+* `/etc/iptables/rules.v4` et `rules.v6` (créés par **iptables-persistent**) ([Ask Ubuntu][4])
+* `/etc/apt/apt.conf.d/20auto-upgrades` / `50unattended-upgrades`
 
-- AC1: L'accès SSH au VPS se fait uniquement par clé ; l'authentification par mot de passe est désactivée (`PasswordAuthentication no`).
-- AC2: Le pare-feu `ufw` est configuré et actif, autorisant uniquement les connexions entrantes sur les ports SSH (par défaut 22/TCP ou port SSH personnalisé), HTTP (80/TCP), et HTTPS (443/TCP).
-- AC3: `fail2ban` est installé, configuré (avec les jails par défaut, notamment pour SSH) et actif pour prévenir les attaques par force brute.
-- AC4: Le système Debian GNU/Linux sur le VPS est à jour (tous les paquets système).
+### Tasks / Sub-tasks détaillés
 
-## Technical Implementation Context
+<details>
+<summary>Étapes et commandes</summary>
 
-**Guidance:** Utiliser les détails suivants pour l'implémentation. Se référer aux documents liés pour un contexte plus large si nécessaire.
+#### 0. Vérifier le backend iptables
 
-- **Relevant Files:**
-  - Files to Create: Potentiellement des scripts de configuration ou des fichiers de notes pour ces étapes manuelles. La configuration de `sshd_config`, `ufw`, et `fail2ban` sera modifiée sur le serveur.
-  - Files to Modify: `/etc/ssh/sshd_config`, règles `ufw`, configuration `fail2ban` (ex: `/etc/fail2ban/jail.local`).
-  - _(Hint: Les actions se déroulent directement sur le VPS. Consulter `docs/operations/runbook.md` pour les procédures d'opérations, bien que ce document soit à créer/compléter.)_
+```bash
+sudo iptables -V
+# → "iptables v1.8.x (nf_tables)" = backend nftables
+# sinon basculer :
+sudo update-alternatives --config iptables     # choisir iptables-nft
+```
 
-- **Key Technologies:**
-  - Debian GNU/Linux (version 12.10 "Bookworm" comme spécifié dans `docs/teck-stack.md`)
-  - OpenSSH Server
-  - `ufw` (Uncomplicated Firewall)
-  - `fail2ban`
-  - _(Hint: Voir `docs/teck-stack.md` pour la liste complète)_
+Debian 12 utilise iptables-nft par défaut ; iptables-legacy est à éviter pour ne pas dupliquer la table de filtres ([Server World][5], [Debian Wiki][1]).
 
-- **API Interactions / SDK Usage:**
-  - Non applicable pour cette story.
+#### 1. Mise à jour système
 
-- **UI/UX Notes:**
-  - Non applicable pour cette story.
+```bash
+sudo apt update && sudo apt full-upgrade -y     # préfère full-upgrade 
+```
 
-- **Data Structures:**
-  - Non applicable pour cette story.
+#### 2. Durcissement SSH
 
-- **Environment Variables:**
-  - Non applicable directement pour cette story, mais le port SSH, s'il est personnalisé, deviendra une variable d'environnement ou une configuration connue pour les étapes suivantes (ex: `VPS_SSH_PORT` pour CI/CD).
-  - _(Hint: Voir `docs/environnement-vars.md` pour toutes les variables)_
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@<IP>
 
-- **Coding Standards Notes:**
-  - S'assurer que les configurations serveur suivent les meilleures pratiques de sécurité.
-  - Documenter toute personnalisation importante apportée aux configurations par défaut.
-  - _(Hint: Voir `docs/normes-codage.md` pour les standards généraux, bien que moins applicable ici)_
+sudo tee /etc/ssh/sshd_config.d/90-security.conf <<'EOF'
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+PermitRootLogin no
+PubkeyAuthentication yes
+EOF
 
-## Tasks / Subtasks
+# (option) port personnalisé
+sudo tee /etc/ssh/sshd_config.d/95-custom-port.conf <<'EOF'
+Port 2222
+EOF
 
-- [ ] Mettre à jour tous les paquets système sur le VPS Debian (`apt update && apt upgrade -y`).
-- [ ] Configurer l'accès SSH :
-    - [ ] S'assurer qu'une clé SSH publique est ajoutée au fichier `~/.ssh/authorized_keys` de l'utilisateur de déploiement/administration.
-    - [ ] Modifier `/etc/ssh/sshd_config` pour désactiver l'authentification par mot de passe (`PasswordAuthentication no`).
-    - [ ] (Optionnel mais recommandé) Changer le port SSH par défaut si souhaité et autorisé par les règles de sécurité.
-    - [ ] Redémarrer le service SSH (`sudo systemctl restart sshd`).
-    - [ ] Tester la connexion SSH par clé et vérifier que la connexion par mot de passe est refusée.
-- [ ] Configurer le pare-feu `ufw` :
-    - [ ] Installer `ufw` si ce n'est pas déjà fait (`sudo apt install ufw`).
-    - [ ] Configurer les règles par défaut (refuser entrant, autoriser sortant) : `sudo ufw default deny incoming`, `sudo ufw default allow outgoing`.
-    - [ ] Autoriser les connexions SSH (sur le port par défaut ou personnalisé) : `sudo ufw allow OpenSSH` ou `sudo ufw allow <port_ssh>/tcp`.
-    - [ ] Autoriser les connexions HTTP : `sudo ufw allow http` (ou `80/tcp`).
-    - [ ] Autoriser les connexions HTTPS : `sudo ufw allow https` (ou `443/tcp`).
-    - [ ] Activer `ufw` : `sudo ufw enable`.
-    - [ ] Vérifier le statut : `sudo ufw status verbose`.
-- [ ] Installer et configurer `fail2ban` :
-    - [ ] Installer `fail2ban` (`sudo apt install fail2ban`).
-    - [ ] Créer un fichier de configuration local pour les jails (ex: `sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local`).
-    - [ ] Vérifier que la section `[sshd]` (ou `[ssh]` selon la version) est activée dans `jail.local`.
-    - [ ] Ajuster les paramètres de `fail2ban` (bantime, findtime, maxretry) si nécessaire.
-    - [ ] Démarrer et activer le service `fail2ban` (`sudo systemctl start fail2ban`, `sudo systemctl enable fail2ban`).
-    - [ ] Vérifier le statut (`sudo systemctl status fail2ban`, `sudo fail2ban-client status sshd`).
+sudo systemctl restart ssh
+```
 
-## Testing Requirements
+`sshd_config.d` est prioritaire sur le fichier principal depuis OpenSSH 8.9+ ([packages.debian.org][6]).
 
-**Guidance:** Vérifier l'implémentation par rapport aux ACs en utilisant les tests suivants.
-- **Manual/CLI Verification:**
-  - Tenter de se connecter via SSH avec un mot de passe (doit échouer).
-  - Se connecter via SSH avec la clé (doit réussir).
-  - Vérifier l'état de `ufw` (`sudo ufw status`) et s'assurer que seules les règles attendues sont actives.
-  - Vérifier l'état de `fail2ban` (`sudo fail2ban-client status sshd`) et potentiellement simuler des échecs de connexion pour voir une IP bannie.
-  - Vérifier que le système est à jour (`sudo apt list --upgradable`).
-- _(Hint: Voir `docs/strategie-tests.md` pour l'approche globale)_
+#### 3. Configuration du pare-feu iptables
 
-## Story Wrap Up (Agent Populates After Execution)
+```bash
+# 3.1 Sauvegarde
+sudo iptables-save > ~/iptables-backup-$(date +%F).rules
 
-- **Agent Model Used:** `<Agent Model Name/Version>`
-- **Completion Notes:** {Any notes about implementation choices, difficulties, or follow-up needed}
-- **Change Log:**
-  - Initial Draft
+# 3.2 Réinitialisation (facultatif)
+sudo iptables -F
+sudo iptables -X
+
+# 3.3 Politiques par défaut
+sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+sudo iptables -P OUTPUT ACCEPT
+
+# 3.4 Règles autorisées
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A INPUT -p icmp -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 22  -j ACCEPT   # ou 2222
+sudo iptables -A INPUT -p tcp --dport 80  -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# 3.5 Persistance
+sudo apt install iptables-persistent netfilter-persistent -y   # plugin iptables :contentReference[oaicite:6]{index=6}
+sudo netfilter-persistent save                                  # crée /etc/iptables/rules.v[4|6]
+sudo systemctl enable netfilter-persistent
+sudo iptables -L -v
+```
+
+`netfilter-persistent` recharge les règles au démarrage ; en cas d'échec, une console KVM OVH permet de rétablir la connectivité ([Reddit][7]).
+
+#### 4. Installation fail2ban
+
+```bash
+sudo apt install fail2ban -y
+sudo cp /etc/fail2ban/jail.{conf,local}
+sudo sed -i -e 's/^backend = .*/backend = systemd/' \
+            -e 's/^\[sshd\]/[sshd]\nenabled = true/' \
+            /etc/fail2ban/jail.local                   # backend systemd Debian12 :contentReference[oaicite:8]{index=8}
+sudo systemctl enable --now fail2ban
+sudo fail2ban-client status sshd
+```
+
+#### 5. Mises à jour automatiques
+
+```bash
+sudo apt install unattended-upgrades apt-listchanges -y    # non installé par défaut 
+sudo dpkg-reconfigure --priority=low unattended-upgrades
+systemctl list-timers | grep apt
+```
+
+#### 6. (Option) 2FA TOTP
+
+```bash
+sudo apt install libpam-google-authenticator -y
+google-authenticator -t -d -f -r 3 -R 30 -W
+echo "auth required pam_google_authenticator.so nullok" | sudo tee -a /etc/pam.d/sshd
+sudo sed -i 's/^#*\(KbdInteractiveAuthentication\).*/\1 yes/' \
+           /etc/ssh/sshd_config.d/90-security.conf
+sudo systemctl restart ssh
+```
+
+Voir la doc PAM pour Debian 12 et les bonnes pratiques OTP ([Unix & Linux Stack Exchange][3]).
+
+</details>
+
+### Tests
+
+1. **SSH** : connexion par clé = OK ; tentatives root/mot de passe = KO.
+2. **Pare-feu** : `iptables -L -v` n'affiche que les ports 22/80/443 + ICMP + connexions établies.
+3. **fail2ban** : après 5 échecs, l'IP apparaît bannie (`fail2ban-client status sshd`).
+4. **Mises à jour** : pas de paquets listés par `apt list --upgradable` ; logs dans `/var/log/unattended-upgrades/`.
+5. **2FA** : refus sans OTP, succès avec OTP.
+
+### Suivi des étapes
+
+- [x] 0. Vérifier le backend iptables
+  - [ ] Confirmer l'utilisation d'iptables-nft
+
+- [x] 1. Mise à jour système
+  - [ ] Exécuter `apt update && apt full-upgrade`
+
+- [x] 2. Durcissement SSH
+  - [ ] Copier la clé SSH
+  - [ ] Configurer les restrictions de sécurité
+  - [ ] (Optionnel) Configurer un port SSH personnalisé
+  - [ ] Redémarrer le service SSH
+
+- [x] 3. Configuration du pare-feu iptables
+  - [ ] Sauvegarder la configuration actuelle
+  - [ ] Définir les politiques par défaut
+  - [ ] Configurer les règles autorisées
+  - [ ] Installer et configurer la persistance
+  - [ ] Vérifier la configuration
+
+- [ ] 4. Installation fail2ban
+  - [ ] Installer le package
+  - [ ] Configurer jail.local
+  - [ ] Activer le service
+  - [ ] Vérifier le statut
+
+- [ ] 5. Mises à jour automatiques
+  - [ ] Installer unattended-upgrades
+  - [ ] Configurer unattended-upgrades
+  - [ ] Vérifier la programmation des mises à jour
+
+- [ ] 6. (Optionnel) 2FA TOTP
+  - [ ] Installer google-authenticator
+  - [ ] Configurer l'authentification à deux facteurs
+  - [ ] Activer dans la configuration SSH
+  - [ ] Tester la connexion avec 2FA
+
+### Risques & mitigations
+
+| Risque                                 | Mesures                                                                              |
+| -------------------------------------- | ------------------------------------------------------------------------------------ |
+| Conflit nftables/iptables              | Utiliser iptables-nft uniquement ; ne pas installer ufw ou règles nft indépendantes. |
+| Blocage réseau après `DROP` par défaut | Tester dans une session SSH parallèle ; conserver la console OVH.                    |
+| fail2ban ban local                     | Ajouter votre IP dans `ignoreip` ; surveiller via `systemctl status fail2ban`.       |
+
+---
