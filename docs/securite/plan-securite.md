@@ -86,13 +86,13 @@ Les politiques suivantes définissent les engagements et les règles de base en 
 ### 4.1. Politique de Gestion des Accès
 
 * **Principe du Moindre Privilège :** Les utilisateurs et les services n'auront que les permissions strictement nécessaires.
-* **Accès SSH au VPS :** Authentification par clé SSH uniquement, mots de passe désactivés. `fail2ban` configuré.
+* **Accès SSH au VPS :** Authentification par clé SSH uniquement (`PasswordAuthentication no`, `PermitRootLogin no`, `ChallengeResponseAuthentication no`). `fail2ban` configuré. (Option: 2FA TOTP possible pour comptes admin).
 * **Secrets GitHub Actions :** Stockés en tant que "Encrypted Secrets".
 * **Dashboard Traefik :** Protégé par authentification forte si activé en production.
 
 ### 4.2. Politique de Gestion des Vulnérabilités
 
-* **Mises à Jour Régulières :** OS VPS, services clés (Docker, Traefik, etc.) maintenus à jour.
+* **Mises à Jour Régulières :** OS VPS (`unattended-upgrades` activé), services clés (Docker, Traefik, etc.) maintenus à jour.
 * **Analyse des Dépendances :** Scans réguliers (PNPM Audit, OWASP Dependency-Check) dans CI/CD.
 * **Analyse des Images Docker :** Scans avec Trivy dans CI/CD.
 * **Veille de Sécurité :** Maintenue pour les technologies de la stack.
@@ -106,7 +106,7 @@ Les politiques suivantes définissent les engagements et les règles de base en 
 
 ### 4.4. Politique de Sécurité Réseau
 
-* **Pare-feu VPS (`ufw`) :** Autorise uniquement SSH (port configuré), HTTP (80), HTTPS (443).
+* **Pare-feu VPS (`iptables-nft`) :** Politiques par défaut `DROP`, autorise uniquement SSH (port configuré), HTTP (80), HTTPS (443), ICMP, loopback, connexions établies/reliées.
 * **Isolation des Réseaux Docker :** Réseaux dédiés. PostgreSQL et Backend non exposés directement.
 * **HTTPS Strict :** Traefik force HTTPS, utilise Let's Encrypt.
 * **Headers de Sécurité HTTP :** Configurés via Traefik (HSTS, CSP, X-Frame-Options, etc.).
@@ -131,8 +131,9 @@ Cette section détaille les mesures de sécurité techniques et procédurales ap
 
 ### 5.1. Infrastructure d'Hébergement (VPS OVH - Debian)
 
-* **Accès SSH :** Clé uniquement, `fail2ban`, port standard ou personnalisé.
-* **Système d'Exploitation :** Mises à jour régulières, minimisation des services, `ufw`.
+* **Accès SSH :** Clé uniquement (`PasswordAuthentication no`, `PermitRootLogin no`, `ChallengeResponseAuthentication no`), `fail2ban` (ban 1h après 5 échecs `sshd`), port standard ou personnalisé. (Option: 2FA TOTP via `pam_google_authenticator.so`).
+* **Système d'Exploitation :** Mises à jour régulières (`unattended-upgrades`), minimisation des services.
+* **Pare-feu :** `iptables-nft` avec règles restrictives persistantes.
 * **Utilisateurs et Permissions :** Utilisateur de déploiement non-root, permissions restrictives sur fichiers sensibles.
 
 ### 5.2. Conteneurisation (Docker & Docker Compose)
@@ -214,3 +215,4 @@ Ce Plan de Sécurité est un document vivant.
 | :--------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------- |
 | 2025-05-11 | 0.1     | Création initiale du Plan de Sécurité. Sections incluses : Introduction, Portée, Analyse des Menaces (MVP), Politiques de Sécurité, Contrôles par Composant. | 3 - Architecte (IA) & Utilisateur |
 | 2025-05-11 | 0.2     | Ajout des sections Gestion des Incidents de Sécurité (MVP), Révision et Mise à Jour du Plan, et Change Log.                                                  | 3 - Architecte (IA) & Utilisateur |
+| 2025-05-12 | 0.3     | Mise à jour pare-feu (`iptables-nft`), détails SSH, mention `unattended-upgrades` et option 2FA TOTP pour alignement avec `story1.md`.                   | Gemini & Utilisateur              |

@@ -204,14 +204,17 @@ La sécurité est une préoccupation majeure à toutes les étapes du cycle de v
     -   **Accès Base de Données:** L'utilisateur de la base de données configuré pour l'application Spring Boot doit avoir uniquement les permissions nécessaires sur le schéma et les tables qu'il gère.
 
 -   **Sécurité de l'Infrastructure (VPS):**
-    -   Maintenir le système d'exploitation Debian et les paquets (Docker, Traefik) à jour.
-    -   Configurer le pare-feu du VPS (ex: `ufw`) pour n'autoriser que les ports nécessaires (22, 80, 443 TCP), comme indiqué dans la `TODO.txt` pour `docs/operations/runbook.md`.
+    -   Maintenir le système d'exploitation Debian et les paquets (Docker, Traefik) à jour (`unattended-upgrades` recommandé).
+    -   Configurer le pare-feu du VPS (`iptables-nft`) de manière restrictive (politiques `DROP`, exceptions explicites pour SSH, HTTP, HTTPS) et utiliser `iptables-persistent` pour la sauvegarde des règles.
+    -   Sécuriser l'accès SSH (clé uniquement, `PasswordAuthentication no`, `PermitRootLogin no`, `fail2ban` actif sur `sshd`). L'option 2FA TOTP peut être envisagée.
+    -   Voir `docs/specs/epic1/story1.md` et `docs/operations/runbook.md` pour les détails de configuration.
 
 -   **Logging et Monitoring de Sécurité:**
-    -   Les logs d'accès et d'erreur (Traefik, Nginx, Spring Boot, PostgreSQL) doivent être collectés et potentiellement monitorés pour détecter des activités suspectes (voir `docs/observabilite/strategie-observabilite.md`).
+    -   Les logs d'accès et d'erreur (Traefik, Nginx, Spring Boot, PostgreSQL, `auth.log`, `fail2ban.log`) doivent être collectés et potentiellement monitorés pour détecter des activités suspectes (voir `docs/observabilite/strategie-observabilite.md`).
 
 ## Change Log
 
-| Change        | Date       | Version | Description   | Author         |
-| ------------- | ---------- | ------- | ------------- | -------------- |
-| Initial draft | 2025-05-11 | 0.1     | Initial draft des normes de codage et patterns. | 3 - Architecte (IA) & Utilisateur |
+| Change        | Date       | Version | Description                                                                                                    | Author                            |
+| ------------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Initial draft | 2025-05-11 | 0.1     | Initial draft des normes de codage et patterns.                                                                 | 3 - Architecte (IA) & Utilisateur |
+| Update        | 2025-05-12 | 0.2     | Mise à jour de la section Sécurité Infrastructure VPS pour refléter `story1.md` (iptables-nft, SSH, fail2ban). | Gemini & Utilisateur              |

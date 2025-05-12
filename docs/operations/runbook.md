@@ -22,43 +22,72 @@ Cette section détaille les étapes pour préparer le serveur privé virtuel (VP
 
 * **Accès SSH :**
     * L'accès au VPS se fait via SSH. Il est impératif d'utiliser des **clés SSH** pour l'authentification plutôt que des mots de passe.
-    * Désactivez l'authentification par mot de passe dans la configuration du serveur SSH (`/etc/ssh/sshd_config` -> `PasswordAuthentication no`).
+    * Le serveur SSH doit être configuré avec `PasswordAuthentication no`, `ChallengeResponseAuthentication no` et `PermitRootLogin no` (voir `docs/specs/epic1/story1.md` pour les fichiers de config).
+    * (Optionnel) La 2FA TOTP peut être activée pour les comptes administrateurs.
     * Assurez-vous que l'utilisateur qui sera utilisé pour les déploiements (via GitHub Actions ou manuellement) a les droits `sudo` nécessaires (ou est ajouté au groupe `docker` pour gérer Docker sans `sudo` à chaque commande).
-* **Mise à Jour Initiale du Système :**
+* **Mise à Jour Initiale du Système & Mises à Jour Automatiques :**
     Une fois connecté en SSH, mettez à jour la liste des paquets et le système :
     ```bash
-    sudo apt update && sudo apt upgrade -y
+    sudo apt update && sudo apt full-upgrade -y
     ```
-* **Configuration du Pare-feu (`ufw`) :**
-    Nous utiliserons `ufw` (Uncomplicated Firewall) pour gérer les règles de pare-feu.
-    1.  Autoriser les connexions SSH (généralement sur le port 22, mais si vous utilisez un port SSH personnalisé, adaptez la commande) :
+    Installez et configurez les mises à jour automatiques pour la sécurité :
+    ```bash
+    sudo apt install unattended-upgrades apt-listchanges -y
+    sudo dpkg-reconfigure --priority=low unattended-upgrades
+    ```
+* **Configuration du Pare-feu (`iptables-nft`) :**
+    Nous utilisons `iptables` avec le backend `nftables`.
+    1.  Assurez-vous que le backend `nftables` est utilisé :
         ```bash
-        sudo ufw allow OpenSSH
-        # ou sudo ufw allow 22/tcp
+        sudo iptables -V
+        # Devrait afficher "(nf_tables)". Sinon: sudo update-alternatives --config iptables
         ```
-    2.  Autoriser le trafic HTTP (port 80) et HTTPS (port 443), qui sera géré par Traefik :
+    2.  Définir les politiques par défaut :
         ```bash
-        sudo ufw allow http
-        sudo ufw allow https
-        # ou sudo ufw allow 80/tcp
-        # ou sudo ufw allow 443/tcp
+        sudo iptables -P INPUT DROP
+        sudo iptables -P FORWARD DROP
+        sudo iptables -P OUTPUT ACCEPT
         ```
-    3.  Activer `ufw` :
+    3.  Autoriser le trafic loopback et les connexions établies :
         ```bash
-        sudo ufw enable
+        sudo iptables -A INPUT -i lo -j ACCEPT
+        sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
         ```
-        Confirmez par `y` lorsque demandé.
-    4.  Vérifier le statut :
+    4.  Autoriser le trafic ICMP (ping) :
         ```bash
-        sudo ufw status verbose
+        sudo iptables -A INPUT -p icmp -j ACCEPT
         ```
-        Vous devriez voir les règles pour SSH, HTTP et HTTPS autorisées.
-    *(Source : `TODO.txt` - Configuration du pare-feu)*
+    5.  Autoriser les connexions SSH (port 22 par défaut, adaptez si port personnalisé) :
+        ```bash
+        sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+        ```
+    6.  Autoriser le trafic HTTP (port 80) et HTTPS (port 443), qui sera géré par Traefik :
+        ```bash
+        sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+        sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+        ```
+    7.  Installer `iptables-persistent` pour sauvegarder les règles :
+        ```bash
+        sudo apt install iptables-persistent netfilter-persistent -y
+        # Accepter de sauvegarder les règles actuelles lors de l'installation.
+        sudo netfilter-persistent save
+        sudo systemctl enable netfilter-persistent
+        ```
+    8.  Vérifier les règles chargées :
+        ```bash
+        sudo iptables -L -v
+        ```
+        Vous devriez voir les règles configurées.
 * **Installation d'Outils Essentiels (si non présents) :**
     ```bash
     sudo apt install -y curl wget git vim fail2ban
     ```
-    * `fail2ban` est un outil de prévention des intrusions qui surveille les logs et bloque les IPs suspectes (tentatives de brute-force SSH, etc.). Sa configuration par défaut est un bon point de départ.
+    * `fail2ban` est un outil de prévention des intrusions qui surveille les logs et bloque les IPs suspectes (tentatives de brute-force SSH, etc.). Sa configuration spécifique (jail `sshd`, `bantime`, `maxretry`) est définie dans `/etc/fail2ban/jail.local` (voir `docs/specs/epic1/story1.md`).
+    * Vérifiez son statut :
+      ```bash
+      sudo systemctl status fail2ban
+      sudo fail2ban-client status sshd
+      ```
 
 ### 1.2. Installation de Docker Engine et Docker Compose
 
@@ -356,7 +385,7 @@ Cette section décrit l'approche initiale pour la gestion des incidents et les �
 1.  Vérifier Traefik (logs, état conteneur).
 2.  Vérifier conteneur Frontend/Nginx (logs, état).
 3.  Vérifier DNS.
-4.  Vérifier Pare-feu (`ufw status verbose`).
+4.  Vérifier Pare-feu (`sudo iptables -L -v`).
 5.  Vérifier Ressources VPS (`htop`, `df -h`).
 
 #### 6.3.2. Fonctionnalités de Comptage en Panne
@@ -405,3 +434,4 @@ Cette section décrit l'approche initiale pour la gestion des incidents et les �
 | :--------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------- |
 | 2025-05-11 | 0.1     | Création initiale du Runbook Opérationnel. Sections incluses : Introduction, Prérequis et Configuration Initiale VPS, Procédures de Déploiement, Sauvegardes et Restauration, Politique de Mise à Jour. | 3 - Architecte (IA) & Utilisateur |
 | 2025-05-11 | 0.2     | Ajout des sections Surveillance et Gestion des Logs (MVP), Gestion des Incidents et Dépannage de Base (MVP), et Maintenance Préventive (MVP), en alignement avec `strategie-observabilite.txt`.      | 3 - Architecte (IA) & Utilisateur |
+| 2025-05-12 | 0.3     | Mise à jour section 1.1 pour utiliser `iptables-nft` au lieu de `ufw`, ajouter détails configuration SSH, 2FA, `unattended-upgrades` et vérification `fail2ban` conformément à `story1.md`. Mise à jour commande pare-feu section 6.3.1. | Gemini & Utilisateur              |
