@@ -60,30 +60,30 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
 
 ## Tasks / Subtasks
 
-- [ ] Vérifier l'installation existante de Docker et Docker Compose :
-    - [ ] Vérifier la version de Docker : `docker version` (doit être v28.1.1)
-    - [ ] Vérifier la version de Docker Compose : `docker compose version` (doit être v2.35.1)
-    - [ ] Vérifier que le service Docker est actif et démarré au boot : `sudo systemctl status docker`
+- [x] Vérifier l'installation existante de Docker et Docker Compose :
+    - [x] Vérifier la version de Docker : `docker version` (doit être v28.1.1)
+    - [x] Vérifier la version de Docker Compose : `docker compose version` (doit être v2.35.1)
+    - [x] Vérifier que le service Docker est actif et démarré au boot : `sudo systemctl status docker`
 
-- [ ] Configurer l'authentification Docker Hub :
-    - [ ] Créer un compte Docker Hub si ce n'est pas déjà fait (https://hub.docker.com/signup)
-    - [ ] Créer un token d'accès sur Docker Hub pour éviter d'utiliser le mot de passe principal :
+- [x] Configurer l'authentification Docker Hub :
+    - [x] Créer un compte Docker Hub si ce n'est pas déjà fait (https://hub.docker.com/signup)
+    - [x] Créer un token d'accès sur Docker Hub pour éviter d'utiliser le mot de passe principal :
       ```bash
       # Sur le site Web Docker Hub : Account Settings > Security > New Access Token
       # Puis utiliser ce token comme mot de passe lors du login
       docker login -u USERNAME
       # Entrer le token comme mot de passe
       ```
-    - [ ] Vérifier que l'authentification fonctionne en tirant une image avec succès :
+    - [x] Vérifier que l'authentification fonctionne en tirant une image avec succès :
       ```bash
       docker pull hello-world
       docker run hello-world
       ```
 
-- [ ] Configurer la sécurité du démon Docker :
-    - [ ] Vérifier si le fichier de configuration du démon Docker existe : `ls -la /etc/docker/daemon.json`
-    - [ ] Si non, créer le répertoire si nécessaire : `sudo mkdir -p /etc/docker`
-    - [ ] Configurer `/etc/docker/daemon.json` avec les paramètres de sécurité recommandés :
+- [x] Configurer la sécurité du démon Docker :
+    - [x] Vérifier si le fichier de configuration du démon Docker existe : `ls -la /etc/docker/daemon.json`
+    - [x] Si non, créer le répertoire si nécessaire : `sudo mkdir -p /etc/docker`
+    - [x] Configurer `/etc/docker/daemon.json` avec les paramètres de sécurité recommandés :
       ```json
       {
         "log-driver": "json-file",
@@ -104,22 +104,22 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
         "default-runtime": "runc"
       }
       ```
-    - [ ] Redémarrer le service Docker pour appliquer la configuration : `sudo systemctl restart docker`
-    - [ ] Vérifier que les paramètres sont appliqués : `docker info | grep -i "Default Runtime\|Live Restore\|Logging Driver"`
+    - [x] Redémarrer le service Docker pour appliquer la configuration : `sudo systemctl restart docker`
+    - [x] Vérifier que les paramètres sont appliqués : `docker info | grep -i "Default Runtime\|Live Restore\|Logging Driver"`
 
 - [ ] Vérifier l'interaction Docker-iptables :
-    - [ ] Examiner les règles iptables actuelles :
+    - [x] Examiner les règles iptables actuelles :
       ```bash
       sudo iptables -L -v -n
       sudo iptables -t nat -L -v -n
       ```
-    - [ ] Vérifier que les chaînes Docker sont présentes (DOCKER, DOCKER-USER, DOCKER-ISOLATION-STAGE-1, etc.) :
+    - [x] Vérifier que les chaînes Docker sont présentes (DOCKER, DOCKER-USER, DOCKER-ISOLATION-STAGE-1, etc.) :
       ```bash
       sudo iptables -t filter -L DOCKER -n
       sudo iptables -t nat -L DOCKER -n
       ```
-    - [ ] Vérifier les ports en écoute : `sudo ss -tulpn | grep LISTEN`
-    - [ ] Tester l'interaction avec un conteneur :
+    - [x] Vérifier les ports en écoute : `sudo ss -tulpn | grep LISTEN`
+    - [x] Tester l'interaction avec un conteneur :
       ```bash
       # Démarrer un conteneur de test
       docker run -d --name test-nginx -p 8080:80 nginx
@@ -132,8 +132,8 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
       ```
 
 - [ ] Créer un utilisateur de déploiement dédié :
-    - [ ] Créer un nouvel utilisateur dédié pour les déploiements : `sudo adduser deploy-user --disabled-password`
-    - [ ] Configurer l'accès SSH par clé pour cet utilisateur :
+    - [x] Créer un nouvel utilisateur dédié pour les déploiements : `sudo adduser deploy-user --disabled-password`
+    - [x] Configurer l'accès SSH par clé pour cet utilisateur :
       ```bash
       sudo mkdir -p /home/deploy-user/.ssh
       # Copier la clé publique autorisée
@@ -142,8 +142,8 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
       sudo chmod 700 /home/deploy-user/.ssh
       sudo chmod 600 /home/deploy-user/.ssh/authorized_keys
       ```
-    - [ ] Ajouter l'utilisateur au groupe `docker` : `sudo usermod -aG docker deploy-user`
-    - [ ] Créer un fichier de configuration sudo avec les permissions limitées :
+    - [x] Ajouter l'utilisateur au groupe `docker` : `sudo usermod -aG docker deploy-user`
+    - [x] Créer un fichier de configuration sudo avec les permissions limitées :
       ```bash
       sudo visudo -f /etc/sudoers.d/deploy-user
       ```
@@ -154,8 +154,8 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
       # Permissions pour vérifier la configuration système
       deploy-user ALL=(ALL) NOPASSWD: /usr/bin/ss -tulpn, /usr/bin/iptables -L -n, /usr/bin/iptables -t nat -L -n, /usr/bin/df -h, /usr/bin/du -sh /var/lib/docker*
       ```
-    - [ ] Configurer les permissions du fichier sudo : `sudo chmod 440 /etc/sudoers.d/deploy-user`
-    - [ ] Configurer l'authentification Docker Hub pour l'utilisateur deploy-user :
+    - [x] Configurer les permissions du fichier sudo : `sudo chmod 440 /etc/sudoers.d/deploy-user`
+    - [x] Configurer l'authentification Docker Hub pour l'utilisateur deploy-user :
       ```bash
       # Option 1: Copier la configuration de l'utilisateur actuel
       sudo mkdir -p /home/deploy-user/.docker
@@ -168,12 +168,12 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
       exit
       ```
 
-- [ ] Configurer les bonnes pratiques de sécurité supplémentaires :
-    - [ ] Vérifier que le socket Docker n'est pas exposé sur le réseau : 
+- [x] Configurer les bonnes pratiques de sécurité supplémentaires :
+    - [x] Vérifier que le socket Docker n'est pas exposé sur le réseau : 
       ```bash
       ss -tlnp | grep docker
       ```
-    - [ ] Configurer un nettoyage périodique des ressources Docker inutilisées :
+    - [x] Configurer un nettoyage périodique des ressources Docker inutilisées :
       ```bash
       # Créer un script de nettoyage
       sudo tee /usr/local/bin/docker-cleanup.sh > /dev/null << 'EOF'
@@ -195,8 +195,8 @@ Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (
       echo "0 2 * * 0 root /usr/local/bin/docker-cleanup.sh > /var/log/docker-cleanup.log 2>&1" | sudo tee /etc/cron.d/docker-cleanup
       ```
 
-- [ ] Documenter la configuration sécurisée :
-    - [ ] Créer ou mettre à jour le document `docs/operations/runbook.md` avec des sections pour :
+- [x] Documenter la configuration sécurisée :
+    - [x] Créer ou mettre à jour le document `docs/operations/runbook.md` avec des sections pour :
       - Docker Engine et Docker Compose: versions et configuration
       - Configuration de la sécurité du démon Docker (daemon.json)
       - Authentification Docker Hub et gestion des tokens
