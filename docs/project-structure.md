@@ -67,33 +67,31 @@ blog-technique-bilingue/
 │   ├── pom.xml                 # Fichier de configuration Maven
 │   └── Dockerfile              # Instructions pour builder l'image Docker du backend
 ├── docs/                       # Documentation du projet (PRD, Architecture, etc.)
-│   ├── README.md               # Ce fichier: docs/project-structure.md
-│   ├── architecture/
-│   │   ├── architecture-principale.md
-│   │   ├── tech-stack.md
-│   │   ├── data-models.md
-│   │   └── api-reference.md
-│   ├── bilinguisme/
-│   │   └── gestion-contenu.md
-│   ├── ci-cd/
-│   │   └── pipeline.md
-│   ├── contribution/
-│   │   └── normes-codage.md
-│   ├── observabilite/
-│   │   └── strategie-observabilite.md
-│   ├── operations/
-│   │   └── runbook.md
-│   ├── setup/
-│   │   ├── environnement-dev.md
-│   │   └── environnement-vars.md
-│   ├── tests/
-│   │   └── strategie-tests.md
-│   ├── ui-ux/
-│   │   └── ui-ux-spec.md
-│   ├── epic1.md
-│   ├── epic2.md
-│   ├── ... (autres fichiers epic et PRD)
-│   └── prd-blog-bilingue.txt
+│   ├── architecture/           # Documentation sur l'architecture du projet
+│   ├── bilinguisme/            # Documentation sur la gestion du contenu bilingue
+│   ├── ci-cd/                  # Documentation sur les pipelines d'intégration et déploiement continus
+│   ├── contribution/           # Guides et normes pour les contributeurs
+│   ├── cursor/                 # Documentation spécifique à l'utilisation de Cursor
+│   ├── observabilite/          # Stratégies d'observabilité et monitoring
+│   ├── operations/             # Guides opérationnels et runbooks
+│   ├── securite/               # Documentation sur la sécurité du projet
+│   ├── seo/                    # Stratégies et bonnes pratiques SEO
+│   ├── setup/                  # Guides d'installation et configuration
+│   ├── specs/                  # Spécifications fonctionnelles par épopée
+│   │   ├── epic1/              # Documents relatifs à l'épopée 1
+│   │   ├── epic2/              # Documents relatifs à l'épopée 2
+│   │   ├── epic3/              # Documents relatifs à l'épopée 3
+│   │   ├── epic4/              # Documents relatifs à l'épopée 4
+│   │   ├── epic5/              # Documents relatifs à l'épopée 5
+│   │   ├── epic6/              # Documents relatifs à l'épopée 6
+│   │   └── epic7/              # Documents relatifs à l'épopée 7
+│   ├── tests/                  # Stratégies et documentation de tests
+│   └── ui-ux/                  # Spécifications d'interface utilisateur et expérience utilisateur
+│       └── ui-ux-spec.md
+├── epic1.md
+├── epic2.md
+├── ... (autres fichiers epic et PRD)
+└── prd-blog-bilingue.txt
 ├── frontend/                   # Code source de l'application frontend Astro
 │   ├── public/                 # Fichiers statiques (favicon, robots.txt, images globales)
 │   │   └── assets/
@@ -155,7 +153,7 @@ blog-technique-bilingue/
 ├── docker-compose.yml          # Configuration Docker Compose pour la production et autres environnements
 ├── docker-compose.override.yml # Configuration Docker Compose pour le développement local (optionnel)
 └── README.md                   # README principal du projet
-````
+```
 
 ## Descriptions des Répertoires Clés
 
@@ -173,6 +171,19 @@ blog-technique-bilingue/
     - `pom.xml`: Descripteur de projet Maven, gère les dépendances et le build.
     - `Dockerfile`: Définit comment construire l'image Docker pour l'application backend.
 - **`docs/`**: Toute la documentation du projet (architecture, normes, guides, etc.).
+    - `architecture/`: Documentation sur l'architecture technique du projet.
+    - `bilinguisme/`: Guides et stratégies pour la gestion du contenu bilingue.
+    - `ci-cd/`: Configuration et documentation des pipelines CI/CD.
+    - `contribution/`: Normes et guides pour les contributeurs au projet.
+    - `cursor/`: Documentation sur l'utilisation de l'IDE Cursor pour ce projet.
+    - `observabilite/`: Stratégies pour le monitoring et l'observabilité.
+    - `operations/`: Runbooks et procédures opérationnelles.
+    - `securite/`: Documentation sur la sécurité du projet.
+    - `seo/`: Stratégies et bonnes pratiques d'optimisation pour les moteurs de recherche.
+    - `setup/`: Guides d'installation et de configuration des environnements.
+    - `specs/`: Spécifications fonctionnelles organisées par épopées (epics).
+    - `tests/`: Stratégies et documentation sur les approches de test.
+    - `ui-ux/`: Spécifications et guidelines pour l'interface et l'expérience utilisateur.
 - **`frontend/`**: Projet Astro (PNPM).
     - `public/`: Fichiers statiques copiés tels quels dans le build final (ex: `favicon.ico`, `robots.txt`).
     - `src/`: Code source principal du site Astro.
@@ -222,6 +233,6 @@ Cette structure vise à offrir une bonne séparation des préoccupations tout en
 
 |   |   |   |   |   |
 |---|---|---|---|---|
-|**Change**|**Date**|**Version**|**Description**|**Author**|
 |Initial draft|2025-05-11|0.1|Création initiale de la structure du projet.|3 - Architecte (IA)|
 |Update|2025-05-11|0.2|Modification du package racine backend pour `fr.kalifazzia.blogtechnique`.|3 - Architecte (IA) & Utilisateur|
+|Update|2023-11-04|0.3|Mise à jour de la structure du dossier docs pour refléter l'organisation actuelle.|Utilisateur|
