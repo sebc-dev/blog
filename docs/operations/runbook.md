@@ -195,6 +195,195 @@ Pour éviter de devoir utiliser `sudo` pour chaque commande `docker`, ajoutez vo
 
 (Source : `docs/specs/epic1/story2.md`, `architecture-principale.txt`, `teck-stack.txt`)
 
+### 1.2.1 Configuration et Sécurisation de Docker (Post-Installation)
+
+Cette section détaille la vérification, l'authentification et la sécurisation d'une installation Docker Engine (v28.1.1) et Docker Compose (v2.35.1) existante, comme décrit dans `docs/specs/epic1/story2.md`.
+
+**1. Vérification des Versions Installées :**
+
+Assurez-vous que les versions correctes sont installées et actives :
+```bash
+# Vérifier la version de Docker Engine
+docker version
+# S'attendre à voir Client et Server version ~28.1.1
+
+# Vérifier la version de Docker Compose
+docker compose version
+# S'attendre à voir version ~v2.35.1
+
+# Vérifier que le service Docker est actif
+sudo systemctl status docker
+```
+
+**2. Configuration de l'Authentification Docker Hub :**
+
+Pour éviter les limites de taux de Docker Hub, configurez l'authentification.
+
+*   Créez un token d'accès sur [Docker Hub](https://hub.docker.com/signup) (Account Settings > Security > New Access Token).
+*   Connectez-vous en utilisant votre nom d'utilisateur et le token d'accès comme mot de passe :
+    ```bash
+    docker login -u VOTRE_NOM_UTILISATEUR_DOCKER_HUB
+    # Entrez le token d'accès lorsque le mot de passe est demandé.
+    # Le fichier ~/.docker/config.json sera créé ou mis à jour.
+    ```
+*   Vérifiez l'authentification :
+    ```bash
+    docker pull hello-world
+    docker run hello-world
+    ```
+
+**3. Configuration Sécurisée du Démon Docker (`/etc/docker/daemon.json`) :**
+
+Créez ou modifiez le fichier `/etc/docker/daemon.json` pour renforcer la sécurité du démon Docker.
+
+*   Créez le répertoire si nécessaire :
+    ```bash
+    sudo mkdir -p /etc/docker
+    ```
+*   Configurez `/etc/docker/daemon.json` :
+    ```json
+    {
+      "log-driver": "json-file",
+      "log-opts": {
+        "max-size": "10m",
+        "max-file": "3"
+      },
+      "default-ulimits": {
+        "nofile": {
+          "Name": "nofile",
+          "Hard": 64000,
+          "Soft": 64000
+        }
+      },
+      "live-restore": true,
+      "userland-proxy": false,
+      "no-new-privileges": true,
+      "default-runtime": "runc"
+    }
+    ```
+*   Redémarrez Docker pour appliquer les changements :
+    ```bash
+    sudo systemctl restart docker
+    ```
+*   Vérifiez que les paramètres sont appliqués :
+    ```bash
+    docker info | grep -i "Default Runtime\\|Live Restore\\|Logging Driver"
+    ```
+
+**Explication des paramètres de `daemon.json` :**
+    -   `log-driver` et `log-opts`: Limite la taille des logs pour éviter de saturer le disque.
+    -   `default-ulimits`: Augmente la limite de fichiers ouverts.
+    -   `live-restore`: Permet aux conteneurs de continuer à fonctionner pendant un redémarrage du démon Docker.
+    -   `userland-proxy`: Désactivé pour utiliser directement iptables, améliorant les performances réseau.
+    -   `no-new-privileges`: Empêche les conteneurs d'acquérir de nouveaux privilèges.
+
+**4. Vérification de l'Interaction Docker-iptables :**
+
+Assurez-vous que Docker interagit correctement avec `iptables`.
+
+*   Examinez les règles `iptables` :
+    ```bash
+    sudo iptables -L -v -n
+    sudo iptables -t nat -L -v -n
+    ```
+*   Vérifiez la présence des chaînes Docker (DOCKER, DOCKER-USER, etc.) :
+    ```bash
+    sudo iptables -t filter -L DOCKER -n
+    sudo iptables -t nat -L DOCKER -n
+    ```
+*   Testez avec un conteneur :
+    ```bash
+    docker run -d --name test-nginx -p 8080:80 nginx
+    sudo iptables -t nat -L -n | grep 8080 # Vérifier la règle de redirection
+    curl http://localhost:8080            # Tester l'accès
+    docker stop test-nginx && docker rm test-nginx # Nettoyer
+    ```
+
+**5. Création d'un Utilisateur de Déploiement Dédié (`deploy-user`) :**
+
+Créez un utilisateur non-root pour les déploiements avec des permissions limitées.
+
+*   Créez l'utilisateur :
+    ```bash
+    sudo adduser deploy-user --disabled-password
+    ```
+*   Configurez l'accès SSH par clé pour `deploy-user` (remplacez `SSH_PUBLIC_KEY` par la clé publique réelle) :
+    ```bash
+    sudo mkdir -p /home/deploy-user/.ssh
+    sudo sh -c 'echo "SSH_PUBLIC_KEY" > /home/deploy-user/.ssh/authorized_keys'
+    sudo chown -R deploy-user:deploy-user /home/deploy-user/.ssh
+    sudo chmod 700 /home/deploy-user/.ssh
+    sudo chmod 600 /home/deploy-user/.ssh/authorized_keys
+    ```
+*   Ajoutez `deploy-user` au groupe `docker` :
+    ```bash
+    sudo usermod -aG docker deploy-user
+    ```
+    Cela permet à `deploy-user` d'exécuter les commandes `docker` sans `sudo`.
+*   Configurez des permissions `sudo` limitées via `/etc/sudoers.d/deploy-user` :
+    ```bash
+    sudo visudo -f /etc/sudoers.d/deploy-user
+    ```
+    Contenu du fichier :
+    ```
+    # Permissions Docker pour l'utilisateur de déploiement
+    deploy-user ALL=(ALL) NOPASSWD: /usr/bin/systemctl status docker, /usr/bin/systemctl restart docker, /usr/bin/docker info, /usr/bin/journalctl -u docker, /usr/bin/grep -r "" /etc/docker/, /usr/bin/cat /etc/docker/*, /usr/bin/apt-get update, /usr/bin/apt-get upgrade -y docker*
+    # Permissions pour vérifier la configuration système
+    deploy-user ALL=(ALL) NOPASSWD: /usr/bin/ss -tulpn, /usr/bin/iptables -L -n, /usr/bin/iptables -t nat -L -n, /usr/bin/df -h, /usr/bin/du -sh /var/lib/docker*
+    ```
+    Puis, sécurisez le fichier :
+    ```bash
+    sudo chmod 440 /etc/sudoers.d/deploy-user
+    ```
+*   Configurez l'authentification Docker Hub pour `deploy-user` :
+    ```bash
+    # Option 1: Copier la configuration de l'utilisateur actuel (si login fait avec cet user)
+    sudo mkdir -p /home/deploy-user/.docker
+    sudo cp ~/.docker/config.json /home/deploy-user/.docker/
+    sudo chown -R deploy-user:deploy-user /home/deploy-user/.docker
+
+    # Option 2: Se connecter en tant que deploy-user et s'authentifier
+    # sudo -u deploy-user -i
+    # docker login
+    # exit
+    ```
+
+**6. Nettoyage Automatisé des Ressources Docker :**
+
+Mettez en place un nettoyage périodique des conteneurs, images, volumes et réseaux inutilisés.
+
+*   Créez le script `/usr/local/bin/docker-cleanup.sh` :
+    ```bash
+    sudo tee /usr/local/bin/docker-cleanup.sh > /dev/null << 'EOF'
+    #!/bin/bash
+    # Nettoyer les conteneurs arrêtés
+    docker container prune -f
+    # Nettoyer les images sans tag et non utilisées
+    docker image prune -f
+    # Nettoyer les volumes inutilisés
+    docker volume prune -f
+    # Nettoyer les réseaux inutilisés
+    docker network prune -f
+    EOF
+    ```
+*   Rendez le script exécutable :
+    ```bash
+    sudo chmod +x /usr/local/bin/docker-cleanup.sh
+    ```
+*   Ajoutez une tâche cron hebdomadaire (ex: tous les dimanches à 2h du matin) :
+    ```bash
+    echo "0 2 * * 0 root /usr/local/bin/docker-cleanup.sh > /var/log/docker-cleanup.log 2>&1" | sudo tee /etc/cron.d/docker-cleanup
+    ```
+
+**7. Bonnes Pratiques de Sécurité Docker Supplémentaires :**
+
+*   **Socket Docker :** Le socket Docker (`/var/run/docker.sock`) ne doit jamais être exposé sur le réseau ou monté dans des conteneurs sans contrôle d'accès strict.
+*   **Authentification Docker Hub :** Préférez les tokens d'accès aux mots de passe et envisagez une rotation régulière des tokens.
+*   **Utilisateur de déploiement :** Les permissions `sudo` limitées pour `deploy-user` suivent le principe du moindre privilège.
+*   **Mises à jour régulières :** Planifiez des mises à jour régulières de Docker Engine et des images de base de vos conteneurs.
+
+(Source : `docs/specs/epic1/story2.md`)
+
 ### 1.3. Création de la Structure de Répertoires sur le VPS
 
 Nous aurons besoin d'une structure de base pour stocker les fichiers de configuration de l'application et les données persistantes des conteneurs.
@@ -290,217 +479,4 @@ Bien que le déploiement soit automatisé, il est utile de connaître la procéd
     (Assurez-vous que le `docker-compose.prod.yml` référence les bons tags d'image si vous ne tirez pas `latest`).
 4.  **Redémarrer les Services :**
     Appliquez les changements en redémarrant les services. Docker Compose ne recréera que les conteneurs dont l'image ou la configuration a changé.
-    ```bash
-    docker compose up -d
     ```
-5.  **Vérifier les Logs :**
-    Consultez les logs pour s'assurer que les services ont démarré correctement.
-    ```bash
-    docker compose logs -f nom_service_frontend
-    docker compose logs -f nom_service_backend
-    ```
-6.  **Migrations de Base de Données (si manuelles) :**
-    Si Liquibase n'est pas configuré pour s'exécuter automatiquement au démarrage du backend :
-    ```bash
-    docker compose exec backend ./mvnw liquibase:update -Pprod # Assurez-vous d'utiliser le profil de production si nécessaire
-    ```
-
-### 2.4. Procédure de Rollback
-
-En cas de problème suite à un déploiement :
-
-1.  **Identifier la Version Stable Précédente :** Consultez l'historique des tags d'images dans votre registre de conteneurs (GHCR) ou l'historique des déploiements GitHub Actions.
-2.  **Modifier les Tags d'Image (si nécessaire) :**
-    * Si votre `docker-compose.prod.yml` utilise des tags spécifiques (ex: `monimage:1.2.3`), modifiez le fichier sur le VPS pour pointer vers les tags de la version stable précédente.
-    * Si vous utilisez des tags flottants comme `latest` (non recommandé pour la production stable), vous devrez explicitement tirer une version précédente par son tag ou son digest.
-3.  **Exécuter la Procédure de Déploiement Manuel (adaptée) :**
-    ```bash
-    cd /opt/blog-technique-bilingue
-    # Si vous avez modifié docker-compose.prod.yml pour des tags spécifiques :
-    docker compose pull # Pour tirer les images spécifiées
-    docker compose up -d
-    # Si vous devez forcer une image spécifique sans modifier le compose (moins propre) :
-    # docker pull votreregistre/nom_service_backend:tag_stable_precedent
-    # docker tag votreregistre/nom_service_backend:tag_stable_precedent votreregistre/nom_service_backend:tag_actuel_dans_compose
-    # docker compose up -d --no-deps nom_service_backend # Redémarre seulement ce service
-    ```
-    La méthode la plus propre est de gérer les versions via des tags explicites dans le `docker-compose.prod.yml` et de versionner ce fichier ou ses mises à jour.
-4.  **Vérifier l'Application :** Assurez-vous que l'application est revenue à un état stable.
-*(Source : `architecture-principale.txt` - Mention du rollback)*
-
-### 2.5. Gestion des Fichiers Statiques du Frontend
-
-* Le frontend Astro génère des fichiers statiques. L'image Docker du frontend embarque ces fichiers ainsi qu'un serveur web léger (Nginx comme discuté, ou Caddy).
-* Lors d'un nouveau déploiement du frontend, l'ancienne image Docker est remplacée par la nouvelle, contenant la nouvelle version des fichiers statiques. Il n'y a généralement pas de "migration" de données pour le frontend lui-même, seulement un remplacement de l'ensemble des fichiers.
-
-## 3. Sauvegardes et Restauration
-
-Une stratégie de sauvegarde et de restauration est cruciale pour assurer la continuité de service et la récupération des données en cas d'incident.
-
-### 3.1. Sauvegardes au Niveau du VPS (OVH)
-
-* **Confirmation :** Le PRD (`prd-blog-bilingue.txt`, section NFRs Fiabilité) confirme que le VPS OVH inclut une **sauvegarde quotidienne automatique du système de fichiers et de la base de données PostgreSQL**.
-* **Portée OVH :** Ces sauvegardes gérées par OVH couvrent l'intégralité du VPS.
-* **Procédures de Restauration OVH :** Consultez la documentation d'OVH Cloud.
-
-### 3.2. Stratégie de Sauvegarde Spécifique à l'Application
-
-* **Contenu (Articles MDX) :** Le dépôt Git est la source de vérité. `push` réguliers.
-* **Base de Données PostgreSQL (Compteurs Anonymes) :** Couvertes par OVH. Sauvegardes `pg_dump` optionnelles pour plus de granularité (non prioritaire MVP).
-* **Configuration Traefik (`acme.json`) :** Inclus dans les sauvegardes OVH via volume mappé. Permissions `chmod 600`.
-
-### 3.3. Procédures de Restauration Applicative
-
-1.  **Évaluation de l'Incident.**
-2.  **Option 1 : Restauration à partir de Git** (redéploiement d'un commit stable).
-3.  **Option 2 : Restauration de la Base de Données PostgreSQL** (via sauvegarde OVH ou `pg_dump`).
-4.  **Option 3 : Restauration Complète du VPS via OVH.**
-
-### 3.4. Tests de Restauration (Post-MVP)
-
-Se familiariser avec la documentation OVH est un minimum pour le MVP.
-
-## 4. Politique de Mise à Jour des Composants sur le VPS
-
-Maintenir les logiciels du serveur à jour est crucial pour la sécurité et la stabilité.
-
-### 4.1. Système d'Exploitation (Debian GNU/Linux)
-
-* **Fréquence :** Sécurité (hebdomadaire), mineures (mensuelle).
-* **Procédure :** `sudo apt update && sudo apt upgrade -y`. Redémarrage si nécessaire (noyau, glibc).
-
-### 4.2. Docker Engine et Docker Compose Plugin
-
-* **Fréquence :** Mensuelle ou trimestrielle.
-* **Procédure :** Suivre documentation Docker, `sudo apt-get install --only-upgrade ...`, `sudo systemctl restart docker`.
-
-### 4.3. Images Docker des Applications (Frontend, Backend, PostgreSQL, Traefik)
-
-* **Images de Base :** Reconstruire les images applicatives avec les bases à jour mensuellement ou sur alerte de vulnérabilité.
-* **Image Docker de Traefik :** Mettre à jour le tag dans `docker-compose.prod.yml` mensuellement/trimestriellement.
-* **Images Applicatives :** Mises à jour à chaque déploiement CI/CD.
-
-### 4.4. Planification et Communication
-
-* Fenêtres de maintenance pour les mises à jour avec interruption.
-* Tests si possible avant production.
-* Stratégie de rollback.
-
-## 5. Surveillance (Monitoring) et Gestion des Logs
-
-Cette section décrit les procédures opérationnelles pour le MVP. Pour une stratégie d'observabilité complète et les évolutions post-MVP, référez-vous à `docs/observabilite/strategie-observabilite.md`.
-
-### 5.1. Principes Généraux de Logging (MVP)
-
-* **Collecte :** `stdout`/`stderr` des conteneurs capturés par Docker.
-* **Driver :** `json-file`.
-* **Rotation :** Gérée via `/etc/docker/daemon.json` (`max-size: "10m"`, `max-file: "3"`).
-* **Accès :** Manuel via SSH et `docker compose logs <nom_service>`.
-* **Pas d'Agrégation Centralisée MVP.**
-
-### 5.2. Stratégies de Logging par Composant (MVP)
-
-* **Backend Spring Boot :** JSON structuré. Niveaux : `INFO` (prod), `DEBUG` (dev). `docker compose logs -f nom_service_backend`.
-* **Frontend Astro (Nginx) :** Logs d'accès Nginx (format combiné/personnalisé), erreurs Nginx (`error`/`warn`). `docker compose logs -f nom_service_frontend`.
-* **Traefik :** Logs d'accès (JSON ou common), logs applicatifs (textuel ou JSON). Niveaux : `INFO`/`WARN`. `docker compose logs -f nom_service_traefik`.
-* **PostgreSQL :** `stdout`/`stderr`. Paramètres clés (`postgresql.conf` ou env var) : `log_min_messages = WARNING`, `log_connections = on`, `log_min_duration_statement = 1000`, `log_lock_waits = on`, `log_statement = ddl`. `docker compose logs -f nom_service_database`.
-
-### 5.3. Monitoring de Base (MVP)
-
-* **Philosophie MVP :** Couverture manuelle des composants critiques.
-* **Pas de Dashboards Centralisés ni d'Alerting Automatisé MVP.**
-
-#### 5.3.1. Surveillance Système du VPS
-    * **Outils :** `htop`, `vmstat`, `df -h`, `iostat`, `free -m`, `ss -tulnp` via SSH.
-    * **Métriques :** CPU, mémoire, disque, réseau.
-
-#### 5.3.2. Surveillance Applicative
-
-* **Backend Spring Boot (Actuator) :**
-    * **Accès :** `curl http://localhost:8080/actuator/health` (depuis VPS ou via tunnel SSH). Non exposé publiquement.
-    * **Métriques :** Santé, requêtes HTTP (count, duration), JVM, pool DB, logs.
-* **Frontend (Nginx/Traefik) :**
-    * **Outils :** Analyse manuelle logs Nginx/Traefik. Google Analytics.
-    * **Métriques :** Volume requêtes, taux erreurs 4xx/5xx, temps réponse.
-* **PostgreSQL :**
-    * **Outils :** Commandes `psql` (`\conninfo`, `pg_stat_activity`, etc.). Analyse logs.
-    * **Métriques :** Connexions, requêtes lentes, transactions, taille DB, verrous.
-* **Santé des Conteneurs Docker :**
-    * **Outils :** `docker ps -a`, `docker stats`, `docker inspect`.
-    * **Métriques :** Statut conteneurs, CPU/mémoire par conteneur.
-    * **`HEALTHCHECK` Docker :** Recommandé pour Spring Boot et Nginx dans `docker-compose.yml`.
-
-### 5.4. Analyse des Logs et Métriques pour le Diagnostic (MVP)
-* Procédure : Identifier service -> `docker compose logs` -> filtrer -> corréler avec métriques.
-
-## 6. Gestion des Incidents et Dépannage de Base (MVP)
-
-Cette section décrit l'approche initiale pour la gestion des incidents et les étapes de dépannage de base.
-
-### 6.1. Détection d'Incidents (MVP)
-* Surveillance Manuelle, Retours Utilisateurs, Échecs de Déploiement, Vérification proactive Logs/Métriques.
-
-### 6.2. Procédure Générale de Réponse aux Incidents (MVP)
-1.  Accuser Réception et Qualification.
-2.  Diagnostic Initial (logs, `docker ps`, `htop`, rollback si déploiement récent).
-3.  Communication (Interne).
-4.  Résolution (redémarrage conteneur, rollback, correction config, libération disque).
-5.  Vérification.
-6.  Post-Mortem (Simplifié MVP : journal d'opérations).
-
-### 6.3. Scénarios de Dépannage Courants (MVP)
-
-#### 6.3.1. Site Web Inaccessible
-1.  Vérifier Traefik (logs, état conteneur).
-2.  Vérifier conteneur Frontend/Nginx (logs, état).
-3.  Vérifier DNS.
-4.  Vérifier Pare-feu (`sudo iptables -L -v`).
-5.  Vérifier Ressources VPS (`htop`, `df -h`).
-
-#### 6.3.2. Fonctionnalités de Comptage en Panne
-1.  Vérifier Logs Frontend (Console Navigateur, onglet Réseau).
-2.  Vérifier Logs Backend (Spring Boot).
-3.  Vérifier État Conteneur Backend (`docker ps`, `/actuator/health`).
-4.  Vérifier Logs PostgreSQL.
-5.  Vérifier Configuration URL API dans Frontend.
-
-#### 6.3.3. Problèmes d'Affichage du Contenu (MDX)
-1.  Vérifier Fichiers MDX Sources (Git, syntaxe frontmatter/contenu).
-2.  Vérifier Logs de Build Frontend (GitHub Actions).
-3.  Vérifier Logs Conteneur Frontend (Nginx).
-4.  Inspecter Fichiers Générés (si possible via `docker exec`).
-
-#### 6.3.4. Problèmes Certificats SSL
-1.  Vérifier Logs Traefik (`grep -i acme`).
-2.  Vérifier Configuration ACME Traefik (email, volume `acme.json` permissions `600`).
-3.  Vérifier DNS et propagation.
-
-## 7. Maintenance Préventive (MVP)
-
-### 7.1. Revue Régulière des Logs
-* **Fréquence :** Hebdomadaire.
-* **Action :** Recherche d'erreurs récurrentes, avertissements.
-
-### 7.2. Surveillance de l'Espace Disque
-* **Fréquence :** Hebdomadaire.
-* **Action :** `df -h`.
-
-### 7.3. Vérification de l'Expiration des Certificats SSL
-* **Fréquence :** Mensuelle (Traefik gère auto-renouvellement).
-* **Action :** Vérifier logs Traefik, outils en ligne.
-
-### 7.4. Revue des Sauvegardes (Compréhension)
-* **Fréquence :** Ponctuelle.
-* **Action :** Se familiariser avec console OVH.
-
-### 7.5. Veille de Sécurité
-* **Fréquence :** Continue / Mensuelle.
-* **Action :** Se tenir informé des vulnérabilités des composants stack.
-
-## 8. Change Log
-
-| Date       | Version | Description                                                                                                                                                                                          | Auteur                            |
-| :--------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------- |
-| 2025-05-11 | 0.1     | Création initiale du Runbook Opérationnel. Sections incluses : Introduction, Prérequis et Configuration Initiale VPS, Procédures de Déploiement, Sauvegardes et Restauration, Politique de Mise à Jour. | 3 - Architecte (IA) & Utilisateur |
-| 2025-05-11 | 0.2     | Ajout des sections Surveillance et Gestion des Logs (MVP), Gestion des Incidents et Dépannage de Base (MVP), et Maintenance Préventive (MVP), en alignement avec `strategie-observabilite.txt`.      | 3 - Architecte (IA) & Utilisateur |
-| 2025-05-12 | 0.3     | Mise à jour section 1.1 pour utiliser `iptables-nft` au lieu de `ufw`, ajouter détails configuration SSH, 2FA, `unattended-upgrades` et vérification `fail2ban` conformément à `story1.md`. Mise à jour commande pare-feu section 6.3.1. | Gemini & Utilisateur              |
