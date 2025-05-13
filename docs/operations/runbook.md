@@ -91,40 +91,109 @@ Cette section détaille les étapes pour préparer le serveur privé virtuel (VP
 
 ### 1.2. Installation de Docker Engine et Docker Compose
 
-Docker sera utilisé pour conteneuriser tous les composants de notre application.
-(Source : `architecture-principale.txt`, `teck-stack.txt`)
+Cette section détaille l'installation de Docker Engine et du plugin Docker Compose v2 sur le serveur VPS Debian, conformément à la Story 1.2. Docker sera utilisé pour conteneuriser tous les composants de notre application.
+Les versions spécifiques (Docker Engine ~28.1.1, Docker Compose plugin v2 ~2.36.0) sont à vérifier dans `docs/architecture/tech-stack.md`.
 
-1.  **Désinstaller les anciennes versions (si applicable) :**
+Suivez les instructions officielles de Docker pour l'installation sur Debian.
+
+**1. Préparation du système :**
+
+*   Désinstallez les anciennes versions de Docker si présentes (optionnel, mais recommandé pour une installation propre) :
     ```bash
     sudo apt-get remove docker docker-engine docker.io containerd runc
     ```
-2.  **Configurer le dépôt Docker :**
+*   Mettez à jour l'index des paquets `apt` :
     ```bash
     sudo apt-get update
+    ```
+*   Installez les paquets prérequis :
+    ```bash
     sudo apt-get install -y ca-certificates curl gnupg lsb-release
+    ```
+
+**2. Ajout du dépôt GPG officiel de Docker :**
+
+*   Créez le répertoire pour les clés GPG si ce n'est pas déjà fait :
+    ```bash
     sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL [https://download.docker.com/linux/debian/gpg](https://download.docker.com/linux/debian/gpg) | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    ```
+*   Téléchargez la clé GPG de Docker :
+    ```bash
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    ```
+    Assurez-vous que le fichier `/etc/apt/keyrings/docker.gpg` a les bonnes permissions (ex: `sudo chmod a+r /etc/apt/keyrings/docker.gpg`).
+
+**3. Configuration du dépôt Docker :**
+
+*   Ajoutez le dépôt Docker aux sources APT :
+    ```bash
     echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] [https://download.docker.com/linux/debian](https://download.docker.com/linux/debian) \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
       $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     ```
-3.  **Installer Docker Engine :**
+
+**4. Installation de Docker Engine et Docker Compose :**
+
+*   Mettez à jour l'index des paquets `apt` (après ajout du nouveau dépôt) :
     ```bash
     sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     ```
-    `docker-compose-plugin` installe la dernière version de Docker Compose (`docker compose` CLI V2).
-4.  **Vérifier l'installation de Docker :**
+*   Installez Docker Engine, containerd, le plugin Docker Buildx et le plugin Docker Compose :
+    ```bash
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    ```
+
+**5. Vérification de l'installation de Docker Engine :**
+
+*   Démarrez le service Docker et activez-le au démarrage du système :
+    ```bash
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    ```
+*   Vérifiez que le service Docker est actif :
+    ```bash
+    sudo systemctl status docker
+    ```
+*   Vérifiez que Docker Engine est correctement installé en exécutant l'image `hello-world` :
     ```bash
     sudo docker run hello-world
     ```
-5.  **Gérer Docker en tant qu'utilisateur non-root (Recommandé) :**
-    Pour éviter de devoir utiliser `sudo` pour chaque commande `docker`, ajoutez votre utilisateur au groupe `docker`.
+*   Vérifiez la version de Docker Engine :
+    ```bash
+    docker version
+    ```
+    Cette commande devrait afficher les versions du client et du serveur Docker.
+
+**6. Gérer Docker en tant qu'utilisateur non-root (Post-installation) :**
+
+Pour éviter de devoir utiliser `sudo` pour chaque commande `docker`, ajoutez votre utilisateur de déploiement (par exemple, celui utilisé par la CI/CD ou votre utilisateur courant pour la gestion) au groupe `docker`.
+
+*   Le groupe `docker` est créé automatiquement lors de l'installation de Docker. Vous pouvez le vérifier avec `getent group docker`.
+*   Ajoutez l'utilisateur au groupe `docker` (remplacez `$USER` par le nom d'utilisateur spécifique si nécessaire) :
     ```bash
     sudo usermod -aG docker $USER
     ```
-    Vous devrez vous déconnecter et vous reconnecter (ou exécuter `newgrp docker`) pour que ce changement prenne effet.
-    **Attention :** L'ajout d'un utilisateur au groupe `docker` lui donne des privilèges équivalents à `root`. Assurez-vous de comprendre les implications de sécurité.
+*   Appliquez les nouveaux membres du groupe. Vous devrez vous déconnecter et vous reconnecter de votre session SSH pour que les changements de groupe prennent effet, ou exécuter la commande suivante (cela affecte uniquement le shell courant) :
+    ```bash
+    newgrp docker
+    ```
+*   Vérifiez que la commande `docker` peut être exécutée sans `sudo` :
+    ```bash
+    docker run hello-world
+    # ou
+    docker ps
+    ```
+    **Attention :** L'ajout d'un utilisateur au groupe `docker` lui donne des privilèges équivalents à `root` sur le système hôte car il peut interagir avec le daemon Docker. Assurez-vous de comprendre les implications de sécurité et n'ajoutez que des utilisateurs de confiance à ce groupe.
+
+**7. Vérification de l'installation de Docker Compose :**
+
+*   Vérifiez la version de Docker Compose (plugin V2) :
+    ```bash
+    docker compose version
+    ```
+    Cette commande devrait afficher la version du plugin Docker Compose.
+
+(Source : `docs/specs/epic1/story2.md`, `architecture-principale.txt`, `teck-stack.txt`)
 
 ### 1.3. Création de la Structure de Répertoires sur le VPS
 
