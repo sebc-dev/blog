@@ -6,7 +6,7 @@ Un blog technique bilingue (français/anglais) spécialisé dans l'IA, l'UX, l'i
 
 Ce projet vise à créer une plateforme de contenu technique de haute qualité disponible en français et en anglais. Le blog se concentre sur quatre piliers thématiques principaux :
 
-- Maîtriser Tauri
+- Maîtriser Tauri, Javascript, Typescript, Java, Spring
 - L'IA au service du développeur
 - Excellence en UX Desktop
 - Fondations en ingénierie logicielle
