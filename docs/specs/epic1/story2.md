@@ -1,6 +1,4 @@
-Voici une version révisée de la story, adaptée pour l'utilisation d'iptables au lieu de UFW:
-
-# Story 1.2: Vérification et Sécurisation de Docker et Docker Compose sur VPS
+# Story 1.2: Vérification, Authentification et Sécurisation de Docker et Docker Compose sur VPS
 
 **Status:** Draft
 
@@ -12,15 +10,16 @@ Voici une version révisée de la story, adaptée pour l'utilisation d'iptables 
 
 ## Detailed Requirements
 
-Vérifier les versions existantes de Docker Engine et Docker Compose sur le serveur VPS Debian. Configurer Docker selon les bonnes pratiques de sécurité. S'assurer qu'un utilisateur de déploiement dédié peut exécuter les commandes Docker de manière sécurisée.
+Vérifier les versions existantes de Docker Engine (v28.1.1) et Docker Compose (v2.35.1) sur le serveur VPS Debian. Configurer l'authentification Docker Hub pour contourner les limites de taux. Configurer Docker selon les bonnes pratiques de sécurité. S'assurer qu'un utilisateur de déploiement dédié peut exécuter les commandes Docker de manière sécurisée.
 
 ## Acceptance Criteria (ACs)
 
 - AC1: Vérifier que Docker Engine (v28.1.1) et Docker Compose (v2.35.1) sont bien installés, actifs et fonctionnels sur le VPS.
-- AC2: Un utilisateur non-root dédié aux déploiements est créé et peut exécuter les commandes `docker` sans `sudo` (ex: en l'ajoutant au groupe `docker`).
-- AC3: Le démon Docker est configuré avec des paramètres de sécurité renforcés (via daemon.json).
-- AC4: L'interaction entre Docker et iptables est correctement configurée pour éviter les contournements involontaires des règles de pare-feu.
-- AC5: Les configurations de sécurité sont documentées dans le runbook opérationnel.
+- AC2: Docker est configuré pour s'authentifier auprès de Docker Hub afin d'éviter les erreurs de limite de taux.
+- AC3: Un utilisateur non-root dédié aux déploiements est créé et peut exécuter les commandes `docker` sans `sudo` (ex: en l'ajoutant au groupe `docker`).
+- AC4: Le démon Docker est configuré avec des paramètres de sécurité renforcés (via daemon.json).
+- AC5: Vérifier que l'interaction entre Docker et iptables fonctionne correctement.
+- AC6: Les configurations de sécurité sont documentées dans le runbook opérationnel.
 
 ## Technical Implementation Context
 
@@ -29,7 +28,8 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
 - **Relevant Files:**
   - Files to Create: 
     - `/etc/docker/daemon.json` pour la configuration sécurisée du démon Docker
-    - `/etc/iptables/rules.v4` pour la persistance des règles iptables
+    - `~/.docker/config.json` pour l'authentification Docker Hub
+    - `/etc/sudoers.d/deploy-user` pour les permissions sudo limitées
     - Scripts de configuration et de vérification
     - Documentation des configurations dans `docs/operations/runbook.md`
   - Files to Modify: Non applicable directement pour les fichiers du projet, modifications système sur le VPS.
@@ -39,8 +39,7 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
   - Debian GNU/Linux (version 12.10 "Bookworm")
   - Docker Engine (version 28.1.1, déjà installée)
   - Docker Compose (plugin v2, version 2.35.1, déjà installée)
-  - iptables pour la gestion du pare-feu
-  - iptables-persistent pour la persistance des règles
+  - iptables pour la gestion du pare-feu (déjà configuré)
   - _(Hint: Voir `docs/teck-stack.md` pour la liste complète)_
 
 - **API Interactions / SDK Usage:**
@@ -65,7 +64,21 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
     - [ ] Vérifier la version de Docker : `docker version` (doit être v28.1.1)
     - [ ] Vérifier la version de Docker Compose : `docker compose version` (doit être v2.35.1)
     - [ ] Vérifier que le service Docker est actif et démarré au boot : `sudo systemctl status docker`
-    - [ ] Vérifier le bon fonctionnement avec une image de test : `docker run hello-world`
+
+- [ ] Configurer l'authentification Docker Hub :
+    - [ ] Créer un compte Docker Hub si ce n'est pas déjà fait (https://hub.docker.com/signup)
+    - [ ] Créer un token d'accès sur Docker Hub pour éviter d'utiliser le mot de passe principal :
+      ```bash
+      # Sur le site Web Docker Hub : Account Settings > Security > New Access Token
+      # Puis utiliser ce token comme mot de passe lors du login
+      docker login -u USERNAME
+      # Entrer le token comme mot de passe
+      ```
+    - [ ] Vérifier que l'authentification fonctionne en tirant une image avec succès :
+      ```bash
+      docker pull hello-world
+      docker run hello-world
+      ```
 
 - [ ] Configurer la sécurité du démon Docker :
     - [ ] Vérifier si le fichier de configuration du démon Docker existe : `ls -la /etc/docker/daemon.json`
@@ -92,53 +105,30 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
       }
       ```
     - [ ] Redémarrer le service Docker pour appliquer la configuration : `sudo systemctl restart docker`
+    - [ ] Vérifier que les paramètres sont appliqués : `docker info | grep -i "Default Runtime\|Live Restore\|Logging Driver"`
 
-- [ ] Configurer l'interaction Docker-iptables :
-    - [ ] Vérifier que iptables est installé : `sudo apt-get install iptables iptables-persistent -y`
-    - [ ] Examiner les règles iptables actuelles pour comprendre comment Docker les modifie :
+- [ ] Vérifier l'interaction Docker-iptables :
+    - [ ] Examiner les règles iptables actuelles :
       ```bash
       sudo iptables -L -v -n
       sudo iptables -t nat -L -v -n
       ```
-    - [ ] Option 1 (Recommandée) - Laisser Docker gérer ses règles iptables mais contrôler les ports exposés :
-      - Configurer les règles iptables de base pour le VPS :
-        ```bash
-        # Politiques par défaut
-        sudo iptables -P INPUT DROP
-        sudo iptables -P FORWARD DROP
-        sudo iptables -P OUTPUT ACCEPT
-        
-        # Autoriser les connexions établies et connexions internes
-        sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-        sudo iptables -A INPUT -i lo -j ACCEPT
-        
-        # Autoriser SSH
-        sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
-        
-        # Autoriser uniquement les services Docker spécifiques (exemples)
-        # Ces règles seront adaptées en fonction des services qui seront déployés
-        # Par exemple, pour Traefik (ports 80/443) :
-        sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-        sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-        ```
-    - [ ] Option 2 (Alternative) - Désactiver la gestion iptables par Docker :
-      - Modifier `/etc/docker/daemon.json` pour ajouter :
-        ```json
-        {
-          "iptables": false
-        }
-        ```
-      - Configurer manuellement les règles iptables pour Docker:
-        ```bash
-        # Règles pour le MASQUERADE
-        sudo iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
-        # Autoriser le forwarding entre les interfaces
-        sudo iptables -A FORWARD -i docker0 -o eth0 -j ACCEPT
-        sudo iptables -A FORWARD -i eth0 -o docker0 -j ACCEPT
-        ```
-    - [ ] Sauvegarder les règles iptables pour les rendre persistantes :
+    - [ ] Vérifier que les chaînes Docker sont présentes (DOCKER, DOCKER-USER, DOCKER-ISOLATION-STAGE-1, etc.) :
       ```bash
-      sudo sh -c "iptables-save > /etc/iptables/rules.v4"
+      sudo iptables -t filter -L DOCKER -n
+      sudo iptables -t nat -L DOCKER -n
+      ```
+    - [ ] Vérifier les ports en écoute : `sudo ss -tulpn | grep LISTEN`
+    - [ ] Tester l'interaction avec un conteneur :
+      ```bash
+      # Démarrer un conteneur de test
+      docker run -d --name test-nginx -p 8080:80 nginx
+      # Vérifier les règles iptables créées
+      sudo iptables -t nat -L -n | grep 8080
+      # Tester l'accès (selon les règles iptables existantes)
+      curl http://localhost:8080
+      # Nettoyer
+      docker stop test-nginx && docker rm test-nginx
       ```
 
 - [ ] Créer un utilisateur de déploiement dédié :
@@ -153,26 +143,67 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
       sudo chmod 600 /home/deploy-user/.ssh/authorized_keys
       ```
     - [ ] Ajouter l'utilisateur au groupe `docker` : `sudo usermod -aG docker deploy-user`
-    - [ ] Limiter les permissions sudo de cet utilisateur (optionnel, mais recommandé) en créant un fichier dans /etc/sudoers.d/
+    - [ ] Créer un fichier de configuration sudo avec les permissions limitées :
+      ```bash
+      sudo visudo -f /etc/sudoers.d/deploy-user
+      ```
+      Avec le contenu suivant :
+      ```
+      # Permissions Docker pour l'utilisateur de déploiement
+      deploy-user ALL=(ALL) NOPASSWD: /usr/bin/systemctl status docker, /usr/bin/systemctl restart docker, /usr/bin/docker info, /usr/bin/journalctl -u docker, /usr/bin/grep -r "" /etc/docker/, /usr/bin/cat /etc/docker/*, /usr/bin/apt-get update, /usr/bin/apt-get upgrade -y docker*
+      # Permissions pour vérifier la configuration système
+      deploy-user ALL=(ALL) NOPASSWD: /usr/bin/ss -tulpn, /usr/bin/iptables -L -n, /usr/bin/iptables -t nat -L -n, /usr/bin/df -h, /usr/bin/du -sh /var/lib/docker*
+      ```
+    - [ ] Configurer les permissions du fichier sudo : `sudo chmod 440 /etc/sudoers.d/deploy-user`
+    - [ ] Configurer l'authentification Docker Hub pour l'utilisateur deploy-user :
+      ```bash
+      # Option 1: Copier la configuration de l'utilisateur actuel
+      sudo mkdir -p /home/deploy-user/.docker
+      sudo cp ~/.docker/config.json /home/deploy-user/.docker/
+      sudo chown -R deploy-user:deploy-user /home/deploy-user/.docker
+      
+      # Option 2: Se connecter en tant qu'utilisateur deploy-user et s'authentifier
+      sudo -u deploy-user -i
+      docker login
+      exit
+      ```
 
 - [ ] Configurer les bonnes pratiques de sécurité supplémentaires :
     - [ ] Vérifier que le socket Docker n'est pas exposé sur le réseau : 
       ```bash
       ss -tlnp | grep docker
       ```
-    - [ ] Vérifier que les mises à jour de sécurité automatiques sont configurées :
+    - [ ] Configurer un nettoyage périodique des ressources Docker inutilisées :
       ```bash
-      dpkg -l | grep unattended-upgrades
-      ```
-    - [ ] Si nécessaire, installer et configurer les mises à jour automatiques :
-      ```bash
-      sudo apt-get install unattended-upgrades apt-listchanges -y
-      sudo dpkg-reconfigure -plow unattended-upgrades
+      # Créer un script de nettoyage
+      sudo tee /usr/local/bin/docker-cleanup.sh > /dev/null << 'EOF'
+      #!/bin/bash
+      # Nettoyer les conteneurs arrêtés
+      docker container prune -f
+      # Nettoyer les images sans tag et non utilisées
+      docker image prune -f
+      # Nettoyer les volumes inutilisés
+      docker volume prune -f
+      # Nettoyer les réseaux inutilisés
+      docker network prune -f
+      EOF
+      
+      # Rendre le script exécutable
+      sudo chmod +x /usr/local/bin/docker-cleanup.sh
+      
+      # Ajouter une tâche cron pour l'exécuter hebdomadairement
+      echo "0 2 * * 0 root /usr/local/bin/docker-cleanup.sh > /var/log/docker-cleanup.log 2>&1" | sudo tee /etc/cron.d/docker-cleanup
       ```
 
 - [ ] Documenter la configuration sécurisée :
-    - [ ] Mettre à jour le runbook opérationnel avec les détails de la configuration sécurisée
-    - [ ] Documenter les procédures de mise à jour et de maintenance
+    - [ ] Créer ou mettre à jour le document `docs/operations/runbook.md` avec des sections pour :
+      - Docker Engine et Docker Compose: versions et configuration
+      - Configuration de la sécurité du démon Docker (daemon.json)
+      - Authentification Docker Hub et gestion des tokens
+      - Utilisateur deploy-user: permissions et utilisation
+      - Interaction Docker-iptables et bonnes pratiques pour les ports
+      - Procédures de maintenance et mise à jour
+      - Procédure de déploiement Docker sécurisé
 
 ## Testing Requirements
 
@@ -180,27 +211,29 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
 - **Manual/CLI Verification:**
   - Vérifier les versions de Docker et Docker Compose : `docker version` et `docker compose version`
   - Vérifier que le service Docker est actif : `sudo systemctl status docker`
-  - L'utilisateur de déploiement dédié doit pouvoir exécuter `docker ps` sans `sudo` après connexion.
-  - L'exécution de `docker run hello-world` (sans sudo par l'utilisateur de déploiement) doit réussir.
-  - Vérifier que le démon Docker utilise la configuration sécurisée : `docker info | grep -i default` doit montrer les paramètres configurés.
-  - Tester que les règles iptables fonctionnent correctement avec Docker :
+  - Vérifier que l'authentification Docker Hub fonctionne : `docker pull hello-world` et `docker run hello-world` ne doivent pas générer d'erreur de limite de taux.
+  - Vérifier que le démon Docker utilise la configuration sécurisée : `docker info | grep -i "Default Runtime\|Live Restore\|Logging Driver"`
+  - Tester depuis le compte deploy-user :
     ```bash
-    # Démarrer un conteneur nginx exposant un port non autorisé (ex: 8080)
+    sudo su - deploy-user
+    docker ps
+    docker run hello-world
+    sudo systemctl status docker  # Devrait fonctionner sans mot de passe
+    sudo reboot  # Devrait être refusé (permission non accordée)
+    ```
+  - Tester l'interaction Docker-iptables avec un conteneur :
+    ```bash
+    # En tant qu'utilisateur normal ou deploy-user
     docker run -d --name test-nginx -p 8080:80 nginx
-    # Vérifier que le port n'est pas accessible depuis l'extérieur
-    curl http://PUBLIC_IP:8080
-    # Arrêter et supprimer le conteneur de test
-    docker stop test-nginx && docker rm test-nginx
-    # Démarrer un conteneur sur un port autorisé (ex: 80)
-    docker run -d --name test-nginx -p 80:80 nginx
-    # Vérifier que le port est accessible
-    curl http://PUBLIC_IP
+    # Vérifier les règles iptables (accès root nécessaire)
+    sudo iptables -t nat -L -n | grep 8080
+    # Tester l'accès selon les règles iptables
+    curl http://localhost:8080
     # Nettoyer
     docker stop test-nginx && docker rm test-nginx
     ```
-  - Vérifier que le socket Docker n'est pas exposé en réseau : `ss -tlnp | grep docker` ne devrait pas montrer d'écoute sur une interface réseau.
-  - Vérifier la persistance des règles iptables après redémarrage du système (si possible).
-  - Vérifier que la documentation a été mise à jour.
+  - Vérifier le nettoyage automatique : `sudo ls -la /etc/cron.d/docker-cleanup`
+  - Vérifier que la documentation a été mise à jour et est complète.
 - _(Hint: Voir `docs/strategie-tests.md` pour l'approche globale)_
 
 ## Story Wrap Up (Agent Populates After Execution)
@@ -212,12 +245,25 @@ Vérifier les versions existantes de Docker Engine et Docker Compose sur le serv
 
 ## Notes de sécurité additionnelles
 
-- **Socket Docker** : Ne jamais exposer le socket Docker (/var/run/docker.sock) sur le réseau ou le monter dans des conteneurs sans contrôle d'accès strict.
-- **Utilisateur dédié** : L'utilisateur de déploiement doit avoir les droits minimaux nécessaires pour effectuer ses tâches.
-- **Mises à jour** : Mettre en place une stratégie de mise à jour régulière pour Docker Engine, les images de base et l'OS hôte.
-- **Surveillance** : Envisager la mise en place d'outils de surveillance pour détecter les comportements anormaux (sera abordé dans une story ultérieure).
-- **Pare-feu OVH Edge** : Considérer l'activation du pare-feu OVH Edge Network comme couche de protection supplémentaire (voir section II.B du rapport Docker sécurisé).
-- **Pruning régulier** : Mettre en place un nettoyage régulier des images, volumes et conteneurs inutilisés pour éviter l'encombrement du système.
-- **Gestion manuelle des règles iptables** : Si vous optez pour l'option 2 (désactiver la gestion iptables par Docker), soyez vigilant lors des mises à jour de Docker, car vous devrez gérer manuellement toutes les règles nécessaires à son fonctionnement.
+- **Authentification Docker Hub**: Utiliser de préférence des tokens d'accès plutôt que le mot de passe principal. Envisager une rotation régulière des tokens (tous les 90 jours par exemple).
 
-Cette implémentation se concentre sur la sécurisation d'une installation Docker existante et suit les recommandations du rapport "Docker sécurisé sur VPS OVH" en utilisant iptables directement pour la gestion du pare-feu.
+- **Socket Docker**: Ne jamais exposer le socket Docker (/var/run/docker.sock) sur le réseau ou le monter dans des conteneurs sans contrôle d'accès strict. Si des outils comme Traefik ont besoin d'accéder au socket Docker, utiliser des permissions restreintes.
+
+- **Utilisateur de déploiement**: Les permissions sudo limitées accordées à l'utilisateur deploy-user suivent le principe du moindre privilège, lui permettant de gérer Docker et de diagnostiquer les problèmes sans avoir accès à toutes les commandes root.
+
+- **Configuration daemon.json**:
+  - **log-driver et log-opts**: Empêche les fichiers de logs Docker de remplir le disque en les limitant à 10Mo par fichier avec 3 fichiers max par conteneur.
+  - **default-ulimits**: Configure une limite de 64000 fichiers ouverts, suffisante pour la plupart des applications Docker sans risquer d'épuiser les ressources système.
+  - **live-restore**: Permet aux conteneurs de continuer à fonctionner pendant un redémarrage du démon Docker, réduisant les temps d'arrêt lors des mises à jour.
+  - **userland-proxy**: Désactivé pour utiliser directement iptables pour le mapping de ports, améliorant les performances réseau.
+  - **no-new-privileges**: Empêche les processus dans les conteneurs d'acquérir de nouveaux privilèges, bloquant un vecteur d'attaque courant.
+
+- **Nettoyage programmé**: Le nettoyage hebdomadaire des ressources Docker inutilisées évite l'encombrement du système et réduit la surface d'attaque.
+
+- **Pare-feu iptables**: La configuration actuelle est appropriée pour protéger le système tout en permettant à Docker de fonctionner correctement. La chaîne DOCKER-USER peut être utilisée pour ajouter des règles personnalisées supplémentaires si nécessaire.
+
+- **Mises à jour régulières**: Planifier des mises à jour régulières de Docker Engine et des images est essentiel pour la sécurité continue du système.
+
+- **SSH sécurisé**: Le port SSH non standard (3633) actuellement configuré est une bonne pratique de sécurité qui réduit les attaques automatisées.
+
+Cette implémentation se concentre sur la vérification et la sécurisation d'une installation Docker existante, en suivant les recommandations du rapport "Docker sécurisé sur VPS OVH" pour créer un environnement Docker robuste et sécurisé en production.
