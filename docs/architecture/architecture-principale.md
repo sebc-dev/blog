@@ -98,7 +98,7 @@ graph TD
     style TRAEFIK fill:#EBDEF0,stroke:#8E44AD
     style CLIENT fill:#EAECEE,stroke:#95A5A6
     style GHA fill:#FDEDEC,stroke:#E74C3C
-````
+```
 
 - **Client Web (Navigateur)** :
     - **Responsabilité :** Afficher le site web à l'utilisateur, permettre la navigation, la lecture des articles, et initier les interactions (sélection de langue, partage, vote d'utilité, recherche).
@@ -245,7 +245,7 @@ Plusieurs décisions architecturales et choix technologiques ont été définis 
 
 -   **Infrastructure en tant que Code (IaC) :**
     * **Docker Compose :** Utilisé pour définir et gérer les services multi-conteneurs sur le VPS. Les fichiers `docker-compose.yml` décriront les services, réseaux, et volumes nécessaires pour l'application en production et faciliteront également la configuration de l'environnement de développement local.
-    * La configuration de Traefik sera également gérée par des fichiers de configuration et/ou des labels Docker, s'intégrant avec Docker Compose.
+    * La configuration de Traefik sera également gérée par des fichiers et des labels Docker, s'intégrant avec Docker Compose. Un fichier principal `traefik.yml` définira la configuration statique (points d'entrée, fournisseurs, certificats resolvers comme Let's Encrypt). Les configurations dynamiques, telles que le routage spécifique aux services et la sécurisation du dashboard Traefik, seront gérées via des labels Docker directement sur les services concernés dans `docker-compose.yml`.
 
 ### Stratégie de Déploiement
 

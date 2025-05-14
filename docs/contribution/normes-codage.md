@@ -209,6 +209,11 @@ La sécurité est une préoccupation majeure à toutes les étapes du cycle de v
     -   Sécuriser l'accès SSH (clé uniquement, `PasswordAuthentication no`, `PermitRootLogin no`, `fail2ban` actif sur `sshd`). L'option 2FA TOTP peut être envisagée.
     -   Voir `docs/specs/epic1/story1.md` et `docs/operations/runbook.md` pour les détails de configuration.
 
+-   **Configuration Spécifique à Traefik:**
+    -   **Fichiers de Configuration YAML:** Les fichiers de configuration de Traefik (ex: `traefik.yml`) doivent être clairs, bien structurés et commentés pour expliquer les choix de configuration non triviaux.
+    -   **Durcissement TLS:** Configurer Traefik pour utiliser des versions TLS modernes (TLS 1.2 minimum, TLS 1.3 recommandé) et des suites de chiffrement robustes. Suivre les recommandations de l'industrie pour le durcissement TLS.
+    -   **Sécurité du Dashboard:** Si le dashboard Traefik est activé en production, il doit être sécurisé par une authentification robuste. L'utilisation de `Forward Auth` avec un fournisseur d'identité est fortement recommandée par rapport à une simple `Basic Auth`.
+
 -   **Logging et Monitoring de Sécurité:**
     -   Les logs d'accès et d'erreur (Traefik, Nginx, Spring Boot, PostgreSQL, `auth.log`, `fail2ban.log`) doivent être collectés et potentiellement monitorés pour détecter des activités suspectes (voir `docs/observabilite/strategie-observabilite.md`).
 

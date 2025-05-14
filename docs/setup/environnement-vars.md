@@ -43,9 +43,10 @@ Le tableau suivant détaille les variables d'environnement utilisées.
 | `ASTRO_TELEMETRY_DISABLED`| Désactive la télémétrie d'Astro.                                           | `1`                                | Non               | Non                 | Astro CLI          |
 | **TRAEFIK (Reverse Proxy)**|                                                                            |                                    |                   |                     | Traefik            |
 | `TRAEFIK_ACME_EMAIL`      | Adresse e-mail pour les certificats Let's Encrypt (production).            | `contact@votre-domaine.com`        | Oui (pour prod HTTPS) | Non               | Traefik            |
-| `TRAEFIK_DASHBOARD_USER`  | Utilisateur pour l'authentification du dashboard Traefik (si activé).      | `admin`                            | Non               | Oui                 | Traefik            |
-| `TRAEFIK_DASHBOARD_PASSWORD`| Mot de passe pour l'authentification du dashboard Traefik (haché).         | `AVotreChoixSecuriseEtHache`       | Non               | Oui                 | Traefik            |
 | `TRAEFIK_DOMAIN_MAIN`     | Domaine principal utilisé par Traefik pour le routage.                     | `votre-domaine.com` ou `localhost` | Oui (pour prod)   | Non                 | Traefik            |
+| `TRAEFIK_DASHBOARD_DOMAIN`| Domaine pour accéder au dashboard Traefik (si activé).                       | `traefik.votre-domaine.com`        | Non               | Non                 | Traefik            |
+| `TRAEFIK_DASHBOARD_USER`  | Utilisateur pour l'authentification du dashboard Traefik (si activé).      | `admin`                            | Non               | Oui                 | Traefik            |
+| `TRAEFIK_DASHBOARD_PASSWORD_HASHED`| Mot de passe **haché** pour l'authentification du dashboard Traefik.         | `UnMotDePasseHacheValide`       | Non               | Oui                 | Traefik            |
 
 **Notes sur les préfixes `PUBLIC_` pour Astro :**
 Dans Astro, les variables d'environnement préfixées par `PUBLIC_` sont exposées au code côté client (navigateur). Les autres variables ne sont disponibles que côté serveur (pendant le build ou en mode SSR).
