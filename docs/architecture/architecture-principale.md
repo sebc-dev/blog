@@ -64,7 +64,7 @@ graph TD
         GHA[GitHub Actions CI/CD]
     end
 
-    subgraph "VPS OVH"
+    subgraph "VPS OVH (/srv/docker)"
         direction LR
         TRAEFIK[Traefik Reverse Proxy]
 
@@ -86,10 +86,10 @@ graph TD
     ASTRO_BUILD -- Appels XHR #40;partage, utilité#41; --> TRAEFIK
     SPRING_API -- Lecture/Écriture des compteurs --> DB_POSTGRE
 
-    GHA -- Déploie via SSH & Docker Compose sur --> TRAEFIK
-    GHA -- Déploie via SSH & Docker Compose sur --> ASTRO_BUILD
-    GHA -- Déploie via SSH & Docker Compose sur --> SPRING_API
-    GHA -- Gère la configuration de la DB #40;si migrations#41; sur --> DB_POSTGRE
+    GHA -- Build & Push vers GHCR --> TRAEFIK
+    GHA -- Build & Push vers GHCR --> ASTRO_BUILD
+    GHA -- Build & Push vers GHCR --> SPRING_API
+    GHA -- Déploie via SSH & Docker Compose sur --> VPS OVH
 
     %% Styles des nœuds uniquement
     style ASTRO_BUILD fill:#D5F5E3,stroke:#2ECC71
@@ -105,16 +105,18 @@ graph TD
     - **Technologies :** HTML, CSS, JavaScript (générés par Astro).
 
 - **GitHub Actions (CI/CD - Service Externe)** :
-    - **Responsabilité :** Orchestrer le cycle de vie de développement logiciel. Sur des événements dans le dépôt GitHub (ex: push sur la branche principale), automatiser le build du frontend Astro et du backend Spring Boot, la création des images Docker, l'exécution des tests (unitaires, intégration, E2E avec Cypress, analyse de sécurité avec Trivy), et le déploiement des nouvelles versions des conteneurs sur le VPS OVH (par exemple, via SSH pour exécuter des commandes `docker compose up -d`).
+    - **Responsabilité :** Orchestrer le cycle de vie de développement logiciel. Sur des événements dans le dépôt GitHub (ex: push sur la branche principale), automatiser le build du frontend Astro et du backend Spring Boot, la création des images Docker et leur push vers GitHub Container Registry (GHCR), l'exécution des tests (unitaires, intégration, E2E avec Cypress, analyse de sécurité avec Trivy), et le déploiement des nouvelles versions des conteneurs sur le VPS OVH (par exemple, via SSH pour exécuter des commandes `docker compose pull && up -d`).
     - **Technologies :** GitHub Actions, Docker, Docker Compose, Vitest, Cypress, Trivy.
 
 - **Traefik Reverse Proxy (Conteneur Docker sur VPS OVH)** :
     - **Responsabilité :** Point d'entrée unique pour toutes les requêtes HTTP/HTTPS sur le VPS. Gérer les certificats SSL/TLS (via Let's Encrypt), router les requêtes vers le conteneur du frontend Astro pour les pages du site, et vers le conteneur du backend Spring Boot pour les appels API (par exemple, sur un chemin `/api/...`). Si le dashboard de Traefik est activé en production, il devra être sécurisé par une authentification appropriée (ex: Basic Auth).
     - **Technologies :** Traefik.
+    - **Déploiement :** `/srv/docker/proxy/docker-compose.yml`
 
 - **Frontend Astro (Site Statique - servi via un conteneur Docker sur VPS OVH)** :
     - **Responsabilité :** Générer (au moment du build par GitHub Actions) et servir les pages HTML statiques du blog. Gérer l'affichage bilingue des articles (MDX), la navigation, le sélecteur de langue, l'intégration Google Analytics. Initier les appels JavaScript vers l'API backend pour les compteurs. Implémenter la logique de recherche côté client (ex: Pagefind) ou intégrer un service externe.
     - **Technologies :** Astro, MDX, TailwindCSS, DaisyUI, JavaScript. Le conteneur Docker utilisera un serveur web simple (comme Nginx ou Caddy) pour servir les fichiers statiques.
+    - **Déploiement :** `/srv/docker/apps/site/docker-compose.prod.yml` (avec l'image préalablement construite et publiée sur GHCR)
 
 - **Backend Spring Boot (API - Conteneur Docker sur VPS OVH)** :
     - **Responsabilité :** Fournir des endpoints API RESTful sécurisés pour les fonctionnalités dynamiques. Pour le MVP, cela inclut :
@@ -122,15 +124,19 @@ graph TD
         - Enregistrer les votes "Oui/Non" sur l'utilité d'un article (anonymement).
         - Interagir avec la base de données PostgreSQL pour stocker et récupérer ces compteurs.
     - **Technologies :** Spring Boot (Java), Spring Web, Spring Data JPA (potentiellement).
+    - **Déploiement :** `/srv/docker/apps/site/docker-compose.prod.yml` (avec l'image préalablement construite et publiée sur GHCR)
 
 - **Base de Données PostgreSQL (Conteneur Docker sur VPS OVH)** :
     - **Responsabilité :** Stocker de manière persistante les données des compteurs anonymes (nombre de partages par article, nombre de votes "utile:oui" et "utile:non" par article). Les sauvegardes sont gérées au niveau du VPS OVH. Les migrations de schéma (si nécessaires) peuvent être gérées par des outils comme Flyway ou Liquibase, potentiellement déclenchées lors du déploiement backend par GitHub Actions.
     - **Technologies :** PostgreSQL.
+    - **Déploiement :** `/srv/docker/apps/site/docker-compose.prod.yml`
 
 **Interactions Clés :**
 1. **Affichage d'une page :** Navigateur -> Traefik (VPS) -> Astro (fichiers statiques sur VPS).
 2. **Interaction utilisateur (ex: vote d'utilité) :** Navigateur (JavaScript d'Astro) -> Traefik (VPS) -> API Spring Boot (VPS) -> Base de Données PostgreSQL (VPS).
-3. **Déploiement :** Développeur (push sur GitHub) -> GitHub Actions (Cloud GitHub) -> Build des images Docker -> Connexion SSH au VPS -> Déploiement sur VPS (mise à jour des conteneurs Docker via Docker Compose).
+3. **Déploiement :** 
+   - Développeur (push sur GitHub) -> GitHub Actions (Cloud GitHub) -> Build des images Docker -> Push vers GitHub Container Registry
+   - Connexion SSH au VPS -> Déploiement sur VPS (pull des images GHCR et mise à jour des conteneurs Docker via Docker Compose).
 ## Décisions Architecturales Clés & Motifs
 
 Plusieurs décisions architecturales et choix technologiques ont été définis pour répondre aux exigences du Blog Technique Bilingue, en mettant l'accent sur la performance, la maintenabilité, la sécurité et l'évolutivité du MVP.
@@ -269,13 +275,6 @@ Plusieurs décisions architecturales et choix technologiques ont été définis 
         * **Redémarrage des Services :** Mise à jour et redémarrage des services via `docker compose up -d`. Les services concernés utiliseront les nouvelles images tirées.
         * **Migrations de Base de Données :** Les migrations de schéma PostgreSQL seront gérées avec **Liquibase**. Les scripts de migration seront inclus dans l'application Spring Boot et pourront être appliqués automatiquement au démarrage de l'application backend, ou via une commande spécifique déclenchée par le pipeline de CI/CD après le build du backend et avant le déploiement final.
 -   **Rollback :** En cas de problème avec une nouvelle version, le rollback s'effectuera en redéployant une version d'image Docker stable précédente depuis GHCR. Cela peut être réalisé en mettant à jour les tags d'image dans la configuration Docker Compose sur le VPS et en réappliquant la commande `docker compose up -d`. Des procédures plus détaillées et potentiellement automatisées seront décrites dans `docs/ci-cd/pipeline.md` ou `docs/operations/runbook.md`.
--   **Outils de Déploiement :**
-    * **GitHub Actions** pour l'orchestration du pipeline.
-    * **GitHub Container Registry** pour le stockage des images Docker.
-    * **Docker** et **Docker Compose** sur le VPS pour la gestion des conteneurs.
-    * **Liquibase** pour la gestion des migrations de la base de données PostgreSQL.
-    * **SSH** pour la communication sécurisée entre GitHub Actions et le VPS.
-
 -   **Outils de Déploiement :**
     * **GitHub Actions** pour l'orchestration du pipeline.
     * **GitHub Container Registry** pour le stockage des images Docker.

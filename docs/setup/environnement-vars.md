@@ -9,8 +9,8 @@ Ce document liste et décrit les variables d'environnement utilisées par les di
     -   Pour les développements en dehors de Docker (ex: exécution directe de l'application Spring Boot ou du serveur de dev Astro depuis l'IDE), les variables peuvent être chargées via les configurations de lancement de l'IDE ou en utilisant des bibliothèques comme `dotenv` (pour Node.js, si nécessaire, bien qu'Astro gère nativement certaines variables via `import.meta.env`). Spring Boot peut lire les variables d'environnement du système.
     -   Un fichier `.env.example` est versionné dans le dépôt Git pour servir de modèle. **Le fichier `.env` contenant des valeurs réelles ne doit jamais être commité.**
 -   **Déploiement (Production sur VPS) :**
-    -   Les variables d'environnement sont injectées dans les conteneurs Docker via le fichier `docker-compose.yml` utilisé en production.
-    -   Les valeurs de ces variables (surtout les secrets) sont stockées de manière sécurisée sur le serveur VPS dans un fichier `.env` (par exemple, `/opt/blog-technique-bilingue/.env`) qui est référencé par le `docker-compose.yml` de production. Ce fichier doit avoir des permissions très restrictives (ex: `chmod 600`, propriétaire `root` ou un utilisateur de déploiement dédié).
+    -   Les variables d'environnement sont injectées dans les conteneurs Docker via les fichiers `docker-compose.yml` utilisés en production.
+    -   Les valeurs de ces variables (surtout les secrets) sont stockées de manière sécurisée sur le serveur VPS dans des fichiers `.env` spécifiques à chaque service (par exemple, `/srv/docker/proxy/.env` pour Traefik, `/srv/docker/apps/site/.env` pour la stack applicative) qui sont référencés par les fichiers `docker-compose.yml` de production correspondants. Ces fichiers doivent avoir des permissions très restrictives (ex: `chmod 600`, propriétaire `root` ou un utilisateur de déploiement dédié).
     -   Les secrets nécessaires au pipeline CI/CD (GitHub Actions) sont gérés via les "Encrypted Secrets" de GitHub Actions.
 
 ## Variables d'Environnement Requises et Optionnelles
@@ -57,9 +57,9 @@ Dans Astro, les variables d'environnement préfixées par `PUBLIC_` sont exposé
     -   **NE JAMAIS COMMITTER DE SECRETS DANS GIT.** Utilisez le fichier `.gitignore` pour exclure les fichiers `.env`.
     -   **Production :** Les fichiers `.env` sur le serveur VPS doivent avoir des permissions minimales (ex: `chmod 600`) et appartenir à un utilisateur non privilégié ou à `root` avec un accès limité pour le processus de déploiement. L'utilisation de solutions de gestion de secrets dédiées (comme HashiCorp Vault, AWS Secrets Manager, etc.) est recommandée pour des projets plus importants mais est hors scope pour ce MVP sur un VPS unique.
     -   **CI/CD :** Utiliser les mécanismes de secrets intégrés à la plateforme CI/CD (ex: GitHub Actions Encrypted Secrets).
--   **Fichier `.env.example` :**
-    -   Un fichier `/.env.example` doit être maintenu à la racine du dépôt. Il doit lister toutes les variables d'environnement nécessaires avec des valeurs d'exemple non sensibles ou des placeholders (ex: `your_api_key_here`).
-    -   Ce fichier sert de documentation et de modèle pour créer le fichier `.env` local.
+-   **Fichiers `.env.example` :**
+    -   Des fichiers `.env.example` doivent être maintenus dans chaque répertoire contenant un fichier `docker-compose.yml` (répertoires `infra/proxy/` et `infra/site/` pour le développement, `proxy/` et `apps/site/` sur le VPS pour la production). Ils doivent lister toutes les variables d'environnement nécessaires avec des valeurs d'exemple non sensibles ou des placeholders (ex: `your_api_key_here`).
+    -   Ces fichiers servent de documentation et de modèles pour créer les fichiers `.env` locaux.
 -   **Validation :**
     -   L'application Spring Boot peut valider la présence des variables d'environnement critiques au démarrage et échouer rapidement si elles sont manquantes.
     -   Le frontend Astro peut avoir des vérifications au moment du build pour les variables nécessaires à la génération du site.

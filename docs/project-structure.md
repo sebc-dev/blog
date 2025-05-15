@@ -88,10 +88,8 @@ blog-technique-bilingue/
 │   ├── tests/                  # Stratégies et documentation de tests
 │   └── ui-ux/                  # Spécifications d'interface utilisateur et expérience utilisateur
 │       └── ui-ux-spec.md
-├── epic1.md
-├── epic2.md
-├── ... (autres fichiers epic et PRD)
-└── prd-blog-bilingue.txt
+├── prd-blog-bilingue.md        # Product Requirements Document
+├── project-structure.md        # Structure du projet
 ├── frontend/                   # Code source de l'application frontend Astro
 │   ├── public/                 # Fichiers statiques (favicon, robots.txt, images globales)
 │   │   └── assets/
@@ -151,7 +149,7 @@ blog-technique-bilingue/
 ├── .env.example                # Fichier d'exemple pour les variables d'environnement globales
 ├── .gitignore                  # Fichiers et dossiers à ignorer par Git
 ├── docker-compose.yml          # Configuration Docker Compose pour la production et autres environnements
-├── docker-compose.override.yml # Configuration Docker Compose pour le développement local (optionnel)
+├── docker-compose.override.yml # Configuration Docker Compose pour le développement local
 └── README.md                   # README principal du projet
 ```
 

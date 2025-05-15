@@ -37,7 +37,7 @@ Nous prévoyons deux workflows principaux, situés dans `.github/workflows/` :
         * Build de l'image Docker pour le frontend (incluant Nginx et les fichiers statiques).
         * Analyse de sécurité de l'image Docker (Trivy).
         * Push de l'image Docker vers GitHub Container Registry (GHCR).
-        * Déploiement de l'image Docker frontend sur le VPS (sur `push` vers `main`).
+        * Déploiement de l'image Docker frontend sur le VPS (sur `push` vers `main`), via l'exécution d'une commande SSH pour effectuer un `docker compose pull && up -d` dans le répertoire `/srv/docker/apps/site/`.
 
 2.  **`ci-cd-backend.yml` :** Dédié au build, aux tests et au déploiement du backend Spring Boot.
     * **Déclencheurs :**
@@ -53,7 +53,7 @@ Nous prévoyons deux workflows principaux, situés dans `.github/workflows/` :
         * Build de l'image Docker pour le backend.
         * Analyse de sécurité de l'image Docker (Trivy).
         * Push de l'image Docker vers GitHub Container Registry (GHCR).
-        * Déploiement de l'image Docker backend sur le VPS (sur `push` vers `main`), incluant potentiellement l'exécution des migrations Liquibase.
+        * Déploiement de l'image Docker backend sur le VPS (sur `push` vers `main`), via l'exécution d'une commande SSH pour effectuer un `docker compose pull && up -d` dans le répertoire `/srv/docker/apps/site/`, incluant potentiellement l'exécution des migrations Liquibase.
 
 **Chemins de déclenchement conditionnels :**
 Chaque workflow sera configuré pour ne s'exécuter que si des modifications sont détectées dans les répertoires respectifs (`frontend/` ou `backend/`) afin d'optimiser l'utilisation des ressources GitHub Actions. Par exemple :
@@ -76,7 +76,10 @@ Chaque workflow sera configuré pour ne s'exécuter que si des modifications son
 
 - **Images Docker :**
     - `ghcr.io/VOTRE_ORGANISATION_OU_UTILISATEUR/blog-technique-frontend:TAG`
-    - `ghcr.io/VOTRE_ORGANISATION_OU_UTILISATEUR/blog-technique-backend:TAG` Les `TAG` correspondront typiquement au hash du commit Git (`${{ github.sha }}`) pour une traçabilité unique, ou à des versions sémantiques si une stratégie de versioning est mise en place.
+    - `ghcr.io/VOTRE_ORGANISATION_OU_UTILISATEUR/blog-technique-backend:TAG` 
+    
+    Les `TAG` correspondront typiquement au hash du commit Git (`${{ github.sha }}`) pour une traçabilité unique, ou à des versions sémantiques si une stratégie de versioning est mise en place. Pour le déploiement en production, les images taguées avec `latest` seront généralement utilisées.
+    
 - **Rapports de Tests :** Les résultats des tests (unitaires, E2E, sécurité) seront disponibles sous forme d'artéfacts ou directement dans l'interface GitHub Actions.
 - **Rapports de Couverture de Code :** (Optionnel, mais recommandé) Peuvent être générés et stockés comme artéfacts ou envoyés à des services comme Codecov.
 
@@ -108,7 +111,7 @@ graph TD
     G -- "PR mergée" --> I["Branche main"];
     I -- "Push sur main" --> J["Workflow Production #40;Builds, Tests, Création Images Docker taguées :sha ou :latest#41;"];
     J --> K["Stockage Images sur GHCR"];
-    K --> L["Déploiement sur VPS OVH"];
+    K --> L["Déploiement SSH sur VPS OVH #40;docker compose pull && up -d#41;"];
     L --> M["Site en Production Mis à Jour"];
 
     subgraph "GitHub / GitHub Actions"
@@ -125,7 +128,7 @@ graph TD
         K
     end
 
-    subgraph "VPS OVH"
+    subgraph "VPS OVH (/srv/docker)"
         L
         M
     end
@@ -174,12 +177,36 @@ Le VPS doit être configuré comme décrit dans `docs/operations/runbook.md` (Se
 
 - Utilisateur de déploiement avec accès SSH par clé.
 - Docker et Docker Compose installés.
-- Répertoire de déploiement (ex: `/opt/blog-technique-bilingue`) créé.
-- Fichier `.env` de production sécurisé et `docker-compose.prod.yml` présents sur le VPS.
+- Répertoire de déploiement (ex: `/srv/docker/`) créé avec la structure suivante :
+  ```
+  /srv/docker/
+  ├── proxy/                       # ⇢ Traefik (entrée unique 80/443)
+  │   ├── docker-compose.yml       # version *production*
+  │   ├── .env                     # TRAEFIK_* vars
+  │   └── traefik_data/
+  │       ├── traefik.yml
+  │       └── acme.json            # certs (chmod 600, hors Git)
+  ├── apps/
+  │   └── site/                    # ⇢ Astro + Spring + PostgreSQL
+  │       ├── docker-compose.prod.yml
+  │       ├── .env                 # POSTGRES_PASSWORD, etc.
+  │       └── data/                # uploads, dumps éventuels
+  └── backups/                     # dépôt Restic/Borg (hors Git)
+  ```
+- Fichiers `.env` de production sécurisés et `docker-compose.yml` / `docker-compose.prod.yml` présents dans leurs répertoires respectifs sur le VPS.
 
 ### 3.4. Registre de Conteneurs (GHCR)
 
-Les images Docker seront poussées sur GHCR. Le `GHCR_TOKEN` doit avoir les permissions nécessaires.
+Les images Docker seront poussées sur GitHub Container Registry (GHCR). Le `GHCR_TOKEN` doit avoir les permissions nécessaires pour effectuer des pushs vers le registre. Les images seront taguées selon le format suivant :
+
+- `ghcr.io/ORGANISATION/site-astro:<tag>` pour le frontend
+- `ghcr.io/ORGANISATION/site-api:<tag>` pour le backend
+
+Les tags utilisés incluront généralement:
+- Le hash du commit (`${{ github.sha }}`)
+- Le nom de la branche pour les branches de développement (`develop`, `feature-*`)
+- `latest` pour la branche principale (`main`)
+- Des versions sémantiques spécifiques pour les releases taguées (`v1.0.0`, `v2.1.3`, etc.)
 
 ## 4. Workflow CI/CD Frontend (`ci-cd-frontend.yml`)
 

@@ -65,11 +65,20 @@ Avant de commencer, assurez-vous d'avoir installé les outils suivants sur votre
 
 ## Lancement de l'Environnement avec Docker Compose
 
-La majorité des services sont gérés par Docker Compose via Docker Desktop.
+La majorité des services sont gérés par Docker Compose via Docker Desktop, mais suivant la nouvelle structure du projet, chaque service dispose de son propre fichier Compose dédié.
 
-1.  **Démarrer tous les services :**
-    Depuis la racine du projet (dans PowerShell ou Git Bash), lancez Docker Compose en mode détaché :
+1.  **Démarrer le proxy Traefik :**
+    Depuis le répertoire `infra/proxy/` :
     ```bash
+    cd infra/proxy
+    docker compose up -d
+    ```
+    Cette commande va démarrer le service Traefik qui agira comme reverse proxy pour rediriger les requêtes vers les services appropriés.
+
+2.  **Démarrer la stack d'application (backend, frontend, base de données) :**
+    Depuis le répertoire `infra/site/` :
+    ```bash
+    cd infra/site
     docker compose up -d
     ```
     Cette commande va :
@@ -78,22 +87,26 @@ La majorité des services sont gérés par Docker Compose via Docker Desktop.
         * Le **backend Spring Boot** (avec rechargement à chaud si configuré via Spring Boot DevTools).
         * La **base de données PostgreSQL**. Les données seront persistées dans un volume Docker.
         * Le **frontend Astro** en mode développement (avec rechargement à chaud).
-        * Le **reverse proxy Traefik**, qui exposera les services sur des URLs locales (ex: `http://localhost` pour le frontend, `http://localhost/api` pour le backend, ou des sous-domaines comme `http://blog.localhost`).
 
-2.  **Vérifier les logs des conteneurs :**
-    Vous pouvez utiliser l'interface de Docker Desktop pour voir les logs des conteneurs, ou utiliser la ligne de commande :
+    Le **reverse proxy Traefik**, préalablement démarré, exposera les services sur des URLs locales (ex: `http://localhost` pour le frontend, `http://localhost/api` pour le backend, ou des sous-domaines comme `http://blog.localhost`).
+
+3.  **Alternative : utiliser Docker Desktop pour démarrer les services :**
+    Vous pouvez également utiliser l'interface graphique de Docker Desktop pour démarrer et arrêter les services. Naviguez jusqu'aux différents répertoires contenant les fichiers `docker-compose.yml` et démarrez les services via l'interface.
+
+4.  **Vérifier les logs des conteneurs :**
+    Vous pouvez utiliser l'interface de Docker Desktop pour voir les logs des conteneurs, ou utiliser la ligne de commande depuis le répertoire de chaque service :
     ```bash
+    # Pour les services de l'application (dans le répertoire infra/site)
     docker compose logs -f backend
     docker compose logs -f frontend
-    ```
-    Pour voir tous les logs :
-    ```bash
+    
+    # Pour Traefik (dans le répertoire infra/proxy)
     docker compose logs -f
     ```
 
-3.  **Accéder aux applications :**
+5.  **Accéder aux applications :**
     * **Frontend (Astro) :** Généralement accessible sur `http://localhost:4321` (port par défaut d'Astro en dev) ou via l'URL configurée par Traefik (ex: `http://localhost` ou `http://blog.localhost`). Vérifiez la configuration de Traefik et les logs.
-    * **Backend (Spring Boot API) :** Généralement accessible via Traefik sur un chemin spécifique (ex: `http://localhost/api/v1/...` ou `http://api.blog.localhost/api/v1/...`). Le port direct du service backend (ex: 8080) pourrait aussi être exposé pour un accès direct en local si configuré dans `docker-compose.override.yml`.
+    * **Backend (Spring Boot API) :** Généralement accessible via Traefik sur un chemin spécifique (ex: `http://localhost/api/v1/...` ou `http://api.blog.localhost/api/v1/...`). Le port direct du service backend (ex: 8080) pourrait aussi être exposé pour un accès direct en local si configuré dans le fichier Compose.
     * **Traefik Dashboard :** Si activé et configuré, le dashboard de Traefik est souvent sur `http://localhost:8081` (ou un autre port pour éviter les conflits, le port 8080 étant souvent utilisé par Spring Boot).
     * **Base de données PostgreSQL :** Le port (par défaut `5432`) est généralement exposé sur l'hôte pour permettre la connexion avec des outils de gestion de base de données (ex: pgAdmin, DBeaver, ou les outils intégrés à Cursor). Les identifiants sont ceux définis dans votre fichier `.env`.
 
@@ -134,7 +147,7 @@ La majorité des services sont gérés par Docker Compose via Docker Desktop.
 Pour arrêter tous les services Docker Compose via Docker Desktop ou en ligne de commande :
 ```bash
 docker compose down
-````
+```
 
 Pour arrêter et supprimer les volumes (attention, cela supprimera les données de la base de données PostgreSQL locale si le volume est anonyme ou listé pour suppression) :
 

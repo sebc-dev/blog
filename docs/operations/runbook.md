@@ -384,99 +384,463 @@ Mettez en place un nettoyage périodique des conteneurs, images, volumes et rés
 
 (Source : `docs/specs/epic1/story2.md`)
 
-### 1.3. Création de la Structure de Répertoires sur le VPS
+### 1.3. Préparation de la Structure de Déploiement
 
-Nous aurons besoin d'une structure de base pour stocker les fichiers de configuration de l'application et les données persistantes des conteneurs.
+Après avoir configuré l'accès SSH et installé Docker Engine + Docker Compose, la prochaine étape consiste à préparer la structure de répertoire sur le VPS pour accueillir les différents services du blog technique bilingue. Cette structure suit les bonnes pratiques pour un déploiement Docker dans `/srv`.
 
-1.  **Répertoire Principal de l'Application :**
-    Créez un répertoire où les fichiers `docker-compose.yml` et les configurations spécifiques à l'environnement de production seront stockés (par exemple, le fichier `.env` de production).
-    ```bash
-    sudo mkdir -p /opt/blog-technique-bilingue/data
-    sudo chown -R $USER:$USER /opt/blog-technique-bilingue # Adaptez $USER si un utilisateur de déploiement dédié est utilisé
-    cd /opt/blog-technique-bilingue
-    ```
-    Ce répertoire `/opt/blog-technique-bilingue` contiendra :
-    * `docker-compose.prod.yml` (ou `docker-compose.yml` s'il est spécifique à la prod)
-    * `.env` (contenant les variables d'environnement de production, **avec permissions restrictives**)
-    * Le sous-répertoire `data/` pourra être utilisé pour les volumes persistants Docker si nécessaire (ex: données Traefik pour les certificats Let's Encrypt, données PostgreSQL).
+**1. Création de la structure de répertoires :**
 
-### 1.4. Configuration Initiale de Traefik (sera gérée via Docker Compose)
+```bash
+# Créer la structure principale
+sudo mkdir -p /srv/docker
+sudo mkdir -p /srv/docker/proxy
+sudo mkdir -p /srv/docker/proxy/traefik_data
+sudo mkdir -p /srv/docker/apps/site
+sudo mkdir -p /srv/docker/apps/site/data
+sudo mkdir -p /srv/docker/backups
 
-L'installation et la configuration de Traefik se feront principalement via son image Docker et un fichier de configuration dynamique ou des labels Docker dans le `docker-compose.yml` de production. Les points clés à préparer sont :
+# Définir les permissions appropriées
+sudo chmod 750 /srv/docker
+```
 
-* **Réseau Docker pour Traefik :** Un réseau Docker dédié (ex: `traefik_proxy`) sera créé pour que Traefik puisse communiquer avec les conteneurs qu'il gère.
-* **Fichier de configuration statique de Traefik (`traefik.yml` ou via arguments CLI dans Docker Compose) :** Définira les points d'entrée (HTTP, HTTPS), les fournisseurs de services (Docker), et la configuration pour Let's Encrypt (ACME).
-* **Volume pour les certificats Let's Encrypt :** Un volume Docker persistant sera utilisé pour stocker les certificats SSL/TLS afin qu'ils ne soient pas perdus lors des redémarrages de Traefik. Par exemple : `/opt/blog-technique-bilingue/data/traefik/acme.json`. Ce fichier devra avoir des permissions restrictives (`chmod 600`).
+**2. Configuration de l'utilisateur de déploiement :**
 
-Les détails spécifiques de la configuration de Traefik seront dans le fichier `docker-compose.prod.yml` (ou équivalent) et potentiellement un fichier `traefik.dynamic.yml` si une configuration dynamique est utilisée.
+Assurez-vous que l'utilisateur qui sera utilisé pour les déploiements (via GitHub Actions ou manuellement) a les permissions nécessaires sur ces répertoires :
+
+```bash
+# Remplacez 'deployer' par le nom d'utilisateur effectif utilisé pour le déploiement
+# Si vous utilisez un groupe dédié (ex: 'deployers'), ajustez en conséquence
+sudo chown -R root:deployer /srv/docker
+# Permettre à l'utilisateur de déploiement d'écrire dans les répertoires nécessaires
+sudo chmod -R g+w /srv/docker/proxy
+sudo chmod -R g+w /srv/docker/apps
+```
+
+**3. Création des fichiers de configuration Traefik (proxy) :**
+
+Créez le fichier de configuration Traefik principal :
+
+```bash
+sudo nano /srv/docker/proxy/traefik_data/traefik.yml
+```
+
+Contenu recommandé pour `traefik.yml` :
+
+```yaml
+# Traefik static configuration
+global:
+  sendAnonymousUsage: false  # Désactiver la télémétrie
+
+# Configuration des points d'entrée (HTTP/HTTPS)
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+# Activation du tableau de bord (optionnel, sécurisé par auth en prod)
+api:
+  dashboard: true
+  insecure: false  # Ne pas activer en prod sans auth
+
+# Logs
+log:
+  level: "INFO"  # DEBUG, INFO, WARN, ERROR, FATAL
+  filePath: "/var/log/traefik.log"  # Si monté en volume
+
+# Certificats Let's Encrypt
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: "${TRAEFIK_ACME_EMAIL}"
+      storage: "/acme.json"
+      tlsChallenge: {}
+
+# Configuration des providers
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false  # Sécurité : ne pas exposer tous les conteneurs par défaut
+    network: "webproxy_net"
+    swarmMode: false
+    watch: true
+    # Ne gérer que les conteneurs avec le label spécifique
+    constraints: "Label(`myapp.traefik.managed`, `true`)"
+```
+
+**4. Création du fichier pour les certificats ACME :**
+
+```bash
+sudo touch /srv/docker/proxy/traefik_data/acme.json
+sudo chmod 600 /srv/docker/proxy/traefik_data/acme.json
+```
+
+**5. Création du docker-compose.yml pour Traefik :**
+
+```bash
+sudo nano /srv/docker/proxy/docker-compose.yml
+```
+
+Contenu adapté de `docker-compose.yml` pour Traefik :
+
+```yaml
+version: "3.9"
+
+########################
+# Réseau externe commun
+########################
+networks:
+  webproxy_net:
+    external: true
+
+########################
+# Services
+########################
+services:
+  traefik:
+    image: traefik:v3.4.0
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+
+    ####################
+    # Ports publiés
+    ####################
+    ports:
+      - "80:80"
+      - "443:443"
+
+    ####################
+    # Variables d'environnement
+    ####################
+    environment:
+      - TRAEFIK_ACME_EMAIL=${TRAEFIK_ACME_EMAIL}
+
+    ####################
+    # Volumes montés
+    ####################
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik_data/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik_data/acme.json:/acme.json
+
+    ####################
+    # Labels (dashboard)
+    ####################
+    labels:
+      - "traefik.enable=true"
+      - "myapp.traefik.managed=true"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DASHBOARD_DOMAIN}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+      # Authentification Basic Auth (recommandé en production)
+      - "traefik.http.routers.traefik.middlewares=dashboard-auth@docker"
+      - "traefik.http.middlewares.dashboard-auth.basicAuth.users=${TRAEFIK_DASHBOARD_USER}:${TRAEFIK_DASHBOARD_PASSWORD_HASHED}"
+
+    networks:
+      - webproxy_net
+```
+
+**6. Création du docker-compose.yml pour l'application :**
+
+```bash
+sudo nano /srv/docker/apps/site/docker-compose.prod.yml
+```
+
+Contenu du `docker-compose.prod.yml` pour l'application :
+
+```yaml
+version: "3.9"
+
+########################
+# Réseaux
+########################
+networks:
+  webproxy_net:
+    external: true
+  site_net:
+    name: site_net
+
+########################
+# Volumes
+########################
+volumes:
+  pgdata:
+    name: pgdata
+
+########################
+# Services
+########################
+services:
+  frontend:
+    image: ghcr.io/ORGANISATION/site-astro:latest
+    container_name: blog-frontend
+    restart: unless-stopped
+    networks:
+      - webproxy_net
+    labels:
+      - "traefik.enable=true"
+      - "myapp.traefik.managed=true" 
+      - "traefik.http.routers.frontend.rule=Host(`${TRAEFIK_DOMAIN_MAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  backend:
+    image: ghcr.io/ORGANISATION/site-api:latest
+    container_name: blog-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - webproxy_net
+      - site_net
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      - "myapp.traefik.managed=true"
+      - "traefik.http.routers.backend.rule=Host(`${TRAEFIK_DOMAIN_MAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver" 
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+
+  db:
+    image: postgres:16.4-alpine
+    container_name: blog-db
+    restart: unless-stopped
+    networks:
+      - site_net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+```
+
+**7. Création des fichiers .env pour chaque service :**
+
+Pour Traefik :
+```bash
+sudo nano /srv/docker/proxy/.env
+```
+
+Contenu minimal du fichier `.env` pour Traefik :
+```
+TRAEFIK_ACME_EMAIL=contact@votre-domaine.com
+TRAEFIK_DOMAIN_MAIN=votre-domaine.com
+TRAEFIK_DASHBOARD_DOMAIN=traefik.votre-domaine.com
+TRAEFIK_DASHBOARD_USER=admin
+TRAEFIK_DASHBOARD_PASSWORD_HASHED=HASHPASSWORD_BCrypt_ou_MD5_ici
+```
+
+Pour l'application :
+```bash
+sudo nano /srv/docker/apps/site/.env
+```
+
+Contenu minimal du fichier `.env` pour l'application :
+```
+POSTGRES_USER=bloguser
+POSTGRES_PASSWORD=MotDePasseTresTresSecret
+POSTGRES_DB=blog_db
+TRAEFIK_DOMAIN_MAIN=votre-domaine.com
+```
+
+**8. Sécurisation des fichiers de configuration :**
+
+Assurez-vous que les fichiers `.env` sont correctement protégés :
+```bash
+sudo chmod 600 /srv/docker/proxy/.env
+sudo chmod 600 /srv/docker/apps/site/.env
+```
+
+**9. Création du réseau Docker pour Traefik :**
+
+Créez le réseau Docker qui sera utilisé par Traefik pour communiquer avec les services :
+```bash
+docker network create webproxy_net
+```
+
+Référence : `docs/specs/epic1/story3.md` pour les détails complets de la configuration Traefik et la structure des répertoires.
+
+### 1.4. Configuration de GitHub Container Registry (GHCR)
+
+Pour permettre au VPS de télécharger les images Docker depuis GitHub Container Registry (GHCR), vous devez configurer l'authentification Docker sur le serveur.
+
+**1. Créez un Personal Access Token (PAT) GitHub avec les permissions appropriées :**
+   - Connectez-vous à votre compte GitHub
+   - Accédez à `Settings` > `Developer settings` > `Personal access tokens` > `Tokens (classic)`
+   - Cliquez sur `Generate new token`
+   - Cochez au minimum les permissions suivantes : `read:packages` (pour pull d'images)
+   - Notez le token généré (il n'est affiché qu'une fois)
+
+**2. Configurez Docker sur le VPS pour s'authentifier auprès de GHCR :**
+   
+```bash
+# Connexion à GHCR (entrez votre nom d'utilisateur GitHub et le PAT comme mot de passe)
+echo "VOTRE_PAT_GITHUB" | docker login ghcr.io -u VOTRE_USERNAME_GITHUB --password-stdin
+
+# Vérifiez que le fichier d'authentification est créé
+ls -la ~/.docker/config.json
+
+# Si l'utilisateur de déploiement n'est pas celui qui a exécuté la commande ci-dessus
+# copiez le fichier config.json vers son répertoire home (si nécessaire)
+sudo mkdir -p /home/deployer/.docker
+sudo cp ~/.docker/config.json /home/deployer/.docker/
+sudo chown -R deployer:deployer /home/deployer/.docker
+```
+
+Remarque : Dans un environnement de production, envisagez d'utiliser un compte technique GitHub dédié pour cette authentification, plutôt qu'un compte personnel.
 
 ## 2. Procédures de Déploiement
 
-Le déploiement de l'application "Blog Technique Bilingue" est automatisé via un pipeline CI/CD utilisant **GitHub Actions**. Ce pipeline est responsable du build, des tests, de la création des images Docker, et du déploiement des nouvelles versions sur le VPS OVH.
+Cette section détaille les procédures de déploiement sur le VPS OVH, majoritairement automatisées via GitHub Actions mais aussi manuelles en cas de besoin.
 
-### 2.1. Vue d'Ensemble du Pipeline de Déploiement (CI/CD avec GitHub Actions)
+### 2.1. Déploiement automatisé via GitHub Actions
 
-Le pipeline est typiquement déclenché par un `push` ou un `merge` sur la branche principale (ex: `main`). Les étapes générales sont les suivantes (détaillées dans `docs/ci-cd/pipeline.md`) :
+Le déploiement principal est géré par GitHub Actions comme décrit dans `docs/ci-cd/pipeline.md`. Voici un résumé du processus pour référence :
 
-1.  **Checkout du Code :** Récupération de la dernière version du code depuis le dépôt GitHub.
-2.  **Setup des Environnements de Build :** Installation de Node.js/PNPM (pour le frontend Astro) et JDK/Maven (pour le backend Spring Boot).
-3.  **Exécution des Tests :**
-    * Tests unitaires et d'intégration pour le frontend (Vitest).
-    * Tests unitaires et d'intégration pour le backend (JUnit, Mockito, Spring Test).
-    * Analyse de sécurité des dépendances et des images Docker (Trivy).
-    * (Optionnel, selon configuration) Tests E2E (Cypress).
-4.  **Build des Applications :**
-    * Frontend : Génération des fichiers statiques du site Astro (`pnpm build`).
-    * Backend : Compilation de l'application Spring Boot en un fichier JAR exécutable (`./mvnw package`).
-5.  **Build des Images Docker :**
-    * Création d'une image Docker pour le frontend (intégrant les fichiers statiques et un serveur Nginx).
-    * Création d'une image Docker pour le backend (intégrant le JAR de l'application Java).
-    * Les images sont taguées (ex: avec le hash du commit ou un numéro de version).
-6.  **Push des Images Docker :** Les images construites sont poussées vers un registre de conteneurs (ex: **GitHub Container Registry (GHCR)**).
-7.  **Déploiement sur le VPS :**
-    * GitHub Actions se connecte au VPS via SSH (en utilisant une clé SSH configurée dans les secrets GitHub).
-    * Sur le VPS, un script de déploiement est exécuté. Ce script :
-        * Navigue vers le répertoire de l'application (ex: `/opt/blog-technique-bilingue`).
-        * S'assure que le fichier `docker-compose.prod.yml` (ou équivalent) et le fichier `.env` de production sont présents et corrects.
-        * Effectue un `docker compose pull` pour récupérer les nouvelles versions des images depuis GHCR.
-        * Effectue un `docker compose up -d` pour redémarrer les services avec les nouvelles images. Traefik détectera les nouveaux conteneurs et mettra à jour le routage.
-        * (Si applicable) Exécute les migrations de base de données via Liquibase (peut être une étape dans le `docker compose up` du backend si Liquibase est configuré pour s'exécuter au démarrage, ou une commande `docker compose exec backend ./mvnw liquibase:update` appelée par le script).
+1. Le développeur pousse du code sur la branche `main` ou effectue un merge de PR vers `main`.
+2. GitHub Actions déclenche les workflows qui :
+   - Construisent les applications frontend et backend
+   - Exécutent les tests
+   - Construisent des images Docker et les poussent vers GHCR
+   - Se connectent au VPS via SSH
+   - Mettent à jour les conteneurs en exécutant des commandes `docker compose pull && docker compose up -d`
 
-*(Référence : `architecture-principale.txt` - Stratégie de Déploiement)*
+**Vérification après déploiement automatisé :**
+```bash
+# Connexion au VPS
+ssh user@vps-hostname
 
-### 2.2. Prérequis pour le Déploiement sur le VPS
+# Vérification de l'état des conteneurs
+cd /srv/docker/proxy/
+docker compose ps
+cd /srv/docker/apps/site/
+docker compose -f docker-compose.prod.yml ps
 
-Avant le premier déploiement automatisé, ou en cas de reconfiguration :
+# Vérification des logs récents
+docker compose -f docker-compose.prod.yml logs --tail=50 frontend
+docker compose -f docker-compose.prod.yml logs --tail=50 backend
+```
 
-* **Clé SSH pour GitHub Actions :**
-    * Une paire de clés SSH doit être générée. La clé publique sera ajoutée au fichier `~/.ssh/authorized_keys` de l'utilisateur de déploiement sur le VPS.
-    * La clé privée sera stockée en tant que "secret" dans les paramètres du dépôt GitHub Actions (ex: `VPS_SSH_PRIVATE_KEY`).
-* **Utilisateur de Déploiement sur le VPS :**
-    * Un utilisateur dédié pour les déploiements est recommandé (ex: `deployer`). Cet utilisateur doit pouvoir exécuter des commandes `docker` (faire partie du groupe `docker`) et avoir les droits d'écriture sur les répertoires nécessaires (ex: `/opt/blog-technique-bilingue`).
-* **Fichiers de Configuration sur le VPS :**
-    * Le répertoire `/opt/blog-technique-bilingue/` doit être créé.
-    * Un fichier `docker-compose.prod.yml` (ou son nom définitif) doit y être placé. Ce fichier définit les services, les images à utiliser (qui seront tirées de GHCR), les réseaux, les volumes, et les variables d'environnement (qui peuvent pointer vers le fichier `.env`).
-    * Un fichier `.env` contenant les secrets de production (identifiants de base de données, clés API, etc.) doit être créé dans `/opt/blog-technique-bilingue/` avec des permissions restrictives (`chmod 600`). **Ce fichier n'est PAS versionné dans Git.**
-* **Configuration de Traefik :**
-    * Le `docker-compose.prod.yml` doit inclure la configuration du service Traefik, y compris le montage des volumes pour la configuration statique (si fichier `traefik.yml`), la configuration dynamique (si `traefik.dynamic.yml`), et le stockage des certificats ACME (`acme.json` avec `chmod 600`).
+### 2.2. Déploiement manuel (si nécessaire)
 
-### 2.3. Procédure de Déploiement Manuel (Fallback ou Dépannage)
+Si un déploiement manuel est nécessaire (par exemple, en cas de problème avec GitHub Actions), procédez comme suit :
 
-Bien que le déploiement soit automatisé, il est utile de connaître la procédure manuelle :
+**1. Pour Traefik (proxy) :**
+```bash
+# Se connecter au VPS
+ssh user@vps-hostname
 
-1.  **Accès SSH au VPS :** Connectez-vous au VPS en tant qu'utilisateur ayant les droits Docker.
-2.  **Naviguer vers le Répertoire de l'Application :**
-    ```bash
-    cd /opt/blog-technique-bilingue
-    ```
-3.  **Mettre à Jour les Images Docker :**
-    Récupérez les dernières versions des images (ou une version spécifique si rollback) depuis le registre de conteneurs.
-    ```bash
-    docker compose pull nom_service_frontend nom_service_backend
-    # Ou pour tous les services définis dans le docker-compose.yml :
-    # docker compose pull
-    ```
-    (Assurez-vous que le `docker-compose.prod.yml` référence les bons tags d'image si vous ne tirez pas `latest`).
-4.  **Redémarrer les Services :**
-    Appliquez les changements en redémarrant les services. Docker Compose ne recréera que les conteneurs dont l'image ou la configuration a changé.
-    ```
+# Accéder au répertoire du proxy
+cd /srv/docker/proxy/
+
+# Vérifier que le fichier .env et les configs sont à jour
+ls -la
+
+# Redémarrer Traefik (ou le démarrer s'il n'est pas encore en cours d'exécution)
+docker compose down
+docker compose up -d
+
+# Vérifier l'état
+docker compose ps
+docker compose logs --tail=20
+```
+
+**2. Pour l'application (frontend, backend, db) :**
+```bash
+# Accéder au répertoire de l'application
+cd /srv/docker/apps/site/
+
+# Mettre à jour les images depuis GHCR
+docker compose -f docker-compose.prod.yml pull
+
+# Redémarrer les services avec les nouvelles images
+docker compose -f docker-compose.prod.yml up -d
+
+# Vérifier l'état
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs --tail=50
+```
+
+**3. Déploiement sélectif d'un seul service :**
+Si vous devez déployer un service spécifique sans affecter les autres :
+```bash
+# Par exemple, pour mettre à jour uniquement le frontend
+cd /srv/docker/apps/site/
+docker compose -f docker-compose.prod.yml pull frontend
+docker compose -f docker-compose.prod.yml up -d frontend
+
+# Ou pour le backend
+docker compose -f docker-compose.prod.yml pull backend
+docker compose -f docker-compose.prod.yml up -d backend
+```
+
+### 2.3. Rollback vers une version antérieure
+
+En cas de problème avec une nouvelle version, vous pouvez effectuer un rollback vers une version précédente connue pour être stable.
+
+```bash
+cd /srv/docker/apps/site/
+
+# Option 1: Spécifier une version précédente précise dans le docker-compose.prod.yml
+# Éditez le fichier pour remplacer "latest" par un tag de version spécifique
+# Par exemple: ghcr.io/ORGANISATION/site-astro:v1.0.2
+sudo nano docker-compose.prod.yml
+
+# Option 2: Utiliser une commande pour spécifier la version
+# Remplacez TAG par le tag de la version connue comme stable (ex: v1.0.2, un SHA spécifique, etc.)
+TAG=v1.0.2
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### 2.4. Comment vérifier l'état du déploiement
+
+Après un déploiement (automatique ou manuel), vérifiez l'état du système :
+
+**1. Vérification de base des conteneurs :**
+```bash
+cd /srv/docker/apps/site/
+docker compose -f docker-compose.prod.yml ps
+```
+Tous les conteneurs doivent avoir le statut "Up" sans redémarrages récents.
+
+**2. Vérification des logs pour détecter d'éventuelles erreurs :**
+```bash
+# Logs du frontend
+docker compose -f docker-compose.prod.yml logs --tail=50 frontend
+
+# Logs du backend
+docker compose -f docker-compose.prod.yml logs --tail=50 backend
+
+# Logs de la base de données (en cas de problème de connexion)
+docker compose -f docker-compose.prod.yml logs --tail=50 db
+```
+
+**3. Vérification du fonctionnement du site :**
+- Accédez au site web depuis un navigateur et vérifiez que la page d'accueil se charge correctement.
+- Testez la navigation entre les pages et les fonctionnalités de base.
+- Vérifiez que les fonctionnalités qui impliquent l'API backend fonctionnent (votes d'utilité, partages).
+- Vérifiez que le site est accessible en français et en anglais.
+
+**4. Vérification de Traefik :**
+```bash
+cd /srv/docker/proxy/
+docker compose logs --tail=50
+```
+Assurez-vous que les routes sont correctement configurées et que les certificats SSL sont valides.

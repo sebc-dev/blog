@@ -36,6 +36,15 @@ Le projet utilise une architecture moderne :
 Pour lancer le projet en développement :
 
 ```bash
+# Démarrer Traefik (proxy)
+cd infra/proxy
+docker compose up -d
+
+# Démarrer la stack d'application (frontend, backend, db)
+cd ../site
+docker compose up -d
+
+# Ou démarrer les services individuellement
 # Frontend
 cd frontend
 pnpm install
@@ -52,7 +61,22 @@ Le projet suit une organisation monorepo :
 
 - `/frontend` - Application Astro (gestion du contenu et affichage)
 - `/backend` - API Spring Boot (métriques et fonctionnalités dynamiques)
+- `/infra` - Configuration Docker Compose pour le développement
+  - `/proxy` - Configuration Traefik
+  - `/site` - Stack d'application (frontend, backend, db)
 - `/docs` - Documentation complète du projet
+
+En production, le projet est déployé selon la structure suivante sur le VPS :
+
+```
+/srv/docker/
+├── proxy/                       # ⇢ Traefik (entrée unique 80/443)
+├── apps/
+│   └── site/                    # ⇢ Astro + Spring + PostgreSQL
+└── backups/                     # ⇢ Sauvegardes
+```
+
+Les images Docker sont construites par GitHub Actions et publiées sur GitHub Container Registry (GHCR).
 
 ## 📊 Objectifs
 
