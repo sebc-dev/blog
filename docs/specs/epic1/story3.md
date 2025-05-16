@@ -73,8 +73,8 @@ Déployer et configurer Traefik Proxy (version **v3.4.0** ou la dernière versio
     -   [x] Configurer le pare-feu du VPS pour autoriser les ports 80 et 443 entrants.
     -   [x] Configurer les enregistrements DNS pour `TRAEFIK_DOMAIN_MAIN` (et `TRAEFIK_DASHBOARD_DOMAIN` si utilisé) pour qu'ils pointent vers l'IP du VPS.
 -   **Traefik Static Configuration (`traefik.yml`):**
-    -   [ ] Créer le répertoire `./traefik_data/`.
-    -   [ ] Créer le fichier `traefik_data/traefik.yml`. Y configurer :
+    -   [x] Créer le répertoire `./traefik_data/`.
+    -   [x] Créer le fichier `traefik_data/traefik.yml`. Y configurer :
         -   **Global Settings**:
             -   `global.checkNewVersion: true`
             -   `global.sendAnonymousUsage: false` (Recommandé pour la confidentialité)
@@ -120,23 +120,23 @@ Déployer et configurer Traefik Proxy (version **v3.4.0** ou la dernière versio
             -   `tls.options.default.curvePreferences: [CurveP256, CurveP384]`
             -   `tls.options.default.sniStrict: true` (Recommandé)
 -   **`acme.json` File:**
-    -   [ ] Créer un fichier `acme.json` vide dans `./traefik_data/`.
-    -   [ ] Lui donner les permissions `600` (`touch ./traefik_data/acme.json && chmod 600 ./traefik_data/acme.json`).
-    -   [ ] **Noter l'impératif de sauvegarder `acme.json` régulièrement après la génération réussie des certificats**.
+    -   [x] Créer un fichier `acme.json` vide dans `./traefik_data/`.
+    -   [x] Lui donner les permissions `600` (`touch ./traefik_data/acme.json && chmod 600 ./traefik_data/acme.json`).
+    -   [x] **Noter l'impératif de sauvegarder `acme.json` régulièrement après la génération réussie des certificats**.
 -   **`docker-compose.yml` for Traefik Service:**
-    -   [ ] Utiliser l'image `traefik:v3.4.0` (ou version patch spécifiée).
-    -   [ ] Définir `container_name: traefik`.
-    -   [ ] Configurer `restart: unless-stopped`.
-    -   [ ] Ajouter `security_opt: [ "no-new-privileges:true" ]`.
-    -   [ ] Attacher au réseau `networks: [ webproxy_net ]`.
-    -   [ ] Mapper les ports `ports: [ "80:80", "443:443" ]`.
-    -   [ ] Définir les `environment` variables (ex: `TRAEFIK_ACME_EMAIL` via `.env`).
-    -   [ ] Monter les `volumes`:
+    -   [x] Utiliser l'image `traefik:v3.4.0` (ou version patch spécifiée).
+    -   [x] Définir `container_name: traefik`.
+    -   [x] Configurer `restart: unless-stopped`.
+    -   [x] Ajouter `security_opt: [ "no-new-privileges:true" ]`.
+    -   [x] Attacher au réseau `networks: [ webproxy_net ]`.
+    -   [x] Mapper les ports `ports: [ "80:80", "443:443" ]`.
+    -   [x] Définir les `environment` variables (ex: `TRAEFIK_ACME_EMAIL` via `.env`).
+    -   [x] Monter les `volumes`:
         -   `/var/run/docker.sock:/var/run/docker.sock:ro` 
         -   `./traefik_data/traefik.yml:/etc/traefik/traefik.yml:ro` 
         -   `./traefik_data/acme.json:/acme.json` 
         -   (Optionnel) `./traefik_data/logs:/var/log` (pour la persistance des logs) 
-    -   [ ] Ajouter des `labels` Docker pour Traefik lui-même (dashboard):
+    -   [x] Ajouter des `labels` Docker pour Traefik lui-même (dashboard):
         -   `traefik.enable=true`
         -   `myapp.traefik.managed=true` (pour correspondre aux `constraints` du provider)
         -   `traefik.http.routers.traefik-dashboard.rule=Host(\`${TRAEFIK_DASHBOARD_DOMAIN}\`)`
