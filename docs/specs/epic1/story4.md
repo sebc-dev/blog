@@ -71,14 +71,14 @@ Déployer un conteneur PostgreSQL (version spécifiée dans `docs/teck-stack.md`
 
 1.  **Préparation sur le serveur :**
 
-      * [ ] Créer l'arborescence : `sudo mkdir -p /srv/docker/postgre/secrets`
-      * [ ] Créer les fichiers de secrets avec leur contenu :
+      * [x] Créer l'arborescence : `sudo mkdir -p /srv/docker/postgre/secrets`
+      * [x] Créer les fichiers de secrets avec leur contenu :
           * `sudo sh -c 'echo "mon_utilisateur_pg" > /srv/docker/postgre/secrets/postgres_user.txt'`
           * `sudo sh -c 'echo "mon_mot_de_passe_pg_tres_secret" > /srv/docker/postgre/secrets/postgres_password.txt'`
-      * [ ] Définir des permissions restrictives pour les secrets :
+      * [x] Définir des permissions restrictives pour les secrets :
           * `sudo chmod 600 /srv/docker/postgre/secrets/*`
           * `sudo chown <votre_utilisateur_admin_docker>:<votre_groupe_admin_docker> /srv/docker/postgre/secrets/*` (adapter si nécessaire)
-      * [ ] (Optionnel) Créer et peupler `/srv/docker/postgre/.env` :
+      * [x] (Optionnel) Créer et peupler `/srv/docker/postgre/.env` :
         ```env
         # /srv/docker/postgre/.env
         POSTGRES_DB=app_metrics_db
@@ -88,7 +88,7 @@ Déployer un conteneur PostgreSQL (version spécifiée dans `docs/teck-stack.md`
 
 2.  **Création du fichier `/srv/docker/postgre/docker-compose.yml` :**
 
-      * [ ] Créer le fichier avec le contenu suivant (à adapter) :
+      * [x] Créer le fichier avec le contenu suivant (à adapter) :
         ```yaml
         # /srv/docker/postgre/docker-compose.yml
         version: '3.8'
@@ -145,13 +145,13 @@ Déployer un conteneur PostgreSQL (version spécifiée dans `docs/teck-stack.md`
 
 4.  **Déploiement et vérification :**
 
-      * [ ] Naviguer vers le répertoire : `cd /srv/docker/postgre/`
-      * [ ] Lancer le service PostgreSQL : `docker compose up -d` (le `-f docker-compose.yml` est implicite si exécuté depuis ce répertoire)
+      * [x] Naviguer vers le répertoire : `cd /srv/docker/postgre/`
+      * [x] Lancer le service PostgreSQL : `docker compose up -d` (le `-f docker-compose.yml` est implicite si exécuté depuis ce répertoire)
           * Ou depuis ailleurs : `docker compose -f /srv/docker/postgre/docker-compose.yml up -d`
-      * [ ] Vérifier les logs : `docker compose logs -f db` (si exécuté depuis `/srv/docker/postgre/`)
-      * [ ] Vérifier que les secrets sont montés : `docker compose exec db ls -l /run/secrets/`
-      * [ ] Vérifier la création du volume nommé (le nom sera préfixé, ex: `bilingue_blog_pg_postgres_data_volume`) : `docker volume ls`
-      * [ ] Tester la persistance.
+      * [x] Vérifier les logs : `docker compose logs -f db` (si exécuté depuis `/srv/docker/postgre/`)
+      * [x] Vérifier que les secrets sont montés : `docker compose exec db ls -l /run/secrets/`
+      * [x] Vérifier la création du volume nommé (le nom sera préfixé, ex: `bilingue_blog_pg_postgres_data_volume`) : `docker volume ls`
+      * [x] Tester la persistance.
 
 ### Testing Requirements
 
