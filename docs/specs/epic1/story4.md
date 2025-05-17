@@ -1,96 +1,177 @@
-# Story 1.4: Configuration de Base de PostgreSQL avec Persistance
+Absolument, nous allons ajuster la structure pour que tous les fichiers spécifiques à PostgreSQL soient dans `/srv/docker/postgre/`.
 
-**Status:** Draft
+## Story 1.4 (Révisée avec Structure `/srv/docker/postgre/`) : Configuration de Base de PostgreSQL avec Persistance Robuste et Secrets
 
-## Goal & Context
+**Statut :** Brouillon
 
-**User Story:** En tant qu'Administrateur Système (Admin), je veux configurer la base de données PostgreSQL dans un conteneur Docker, avec persistance des données, afin de fournir un stockage de données relationnel pour les métriques de l'application backend.
+### Goal & Context
 
-**Context:** Cette story fait suite à la mise en place de Traefik (Story 1.3) et de Docker (Story 1.2). Elle est cruciale pour le backend Spring Boot qui stockera les compteurs anonymes de partage et d'utilité des articles. La persistance garantit que les données ne sont pas perdues lors des redémarrages du conteneur.
+**User Story :** En tant qu'Administrateur Système (Admin), je veux configurer la base de données PostgreSQL dans un conteneur Docker en utilisant un fichier `docker-compose.yml` et des Secrets Docker dédiés, tous situés dans le répertoire `/srv/docker/postgre/` sur le serveur, afin de fournir un stockage de données relationnel fiable pour les métriques de l'application backend.
 
-## Detailed Requirements
+**Context :** Cette story fait suite à la mise en place de Traefik (Story 1.3) et de Docker (Story 1.2). Elle est cruciale pour le backend Spring Boot. Centraliser tous les fichiers de configuration de PostgreSQL (Compose file, secrets, .env) sous `/srv/docker/postgre/` améliore l'organisation et la modularité des services Docker sur le serveur.
 
-Déployer un conteneur PostgreSQL (version spécifiée dans `docs/teck-stack.md`). Configurer les variables d'environnement nécessaires pour l'utilisateur, le mot de passe et le nom de la base de données. Mettre en place un volume Docker pour assurer la persistance des données de PostgreSQL.
+### Detailed Requirements
 
-## Acceptance Criteria (ACs)
+Déployer un conteneur PostgreSQL (version spécifiée dans `docs/teck-stack.md`) en utilisant un fichier `docker-compose.yml` situé dans `/srv/docker/postgre/`. Configurer l'utilisateur, le mot de passe et le nom de la base de données en utilisant des **Secrets Docker**, dont les fichiers sources seront dans `/srv/docker/postgre/secrets/`. Mettre en place un **volume Docker nommé** pour assurer la persistance des données.
 
-- AC1: Un conteneur PostgreSQL (version spécifiée, ex: 16.9) est fonctionnel sur le VPS.
-- AC2: Les variables d'environnement pour `POSTGRES_USER`, `POSTGRES_PASSWORD`, et `POSTGRES_DB` sont configurées et utilisées par le conteneur pour initialiser la base de données et l'utilisateur.
-- AC3: Un volume Docker est correctement monté sur `/var/lib/postgresql/data` dans le conteneur pour assurer la persistance des données.
-- AC4: La base de données est accessible depuis le réseau Docker interne par le futur service backend (testable ultérieurement, ou via un outil client DB depuis un autre conteneur sur le même réseau si nécessaire pour un test immédiat).
-- AC5: Les données persistent après un arrêt et redémarrage du conteneur PostgreSQL (testable en créant une table simple, puis en redémarrant le conteneur et en vérifiant sa présence).
+### Acceptance Criteria (ACs)
 
-## Technical Implementation Context
+  * AC1 : Un conteneur PostgreSQL (version spécifiée) est fonctionnel sur le VPS, lancé via `docker compose -f /srv/docker/postgre/docker-compose.yml up -d` (ou en exécutant `docker compose up -d` depuis `/srv/docker/postgre/`).
+  * AC2 : Les identifiants de base de données (`POSTGRES_USER`, `POSTGRES_PASSWORD`) sont gérés via des Secrets Docker, avec les fichiers sources dans `/srv/docker/postgre/secrets/`.
+  * AC3 : Un volume Docker nommé est correctement créé et monté directement sur `/var/lib/postgresql/data` dans le conteneur.
+  * AC4 : La base de données est accessible depuis le réseau Docker interne partagé.
+  * AC5 : Les données persistent après un arrêt et redémarrage du conteneur PostgreSQL.
+  * AC6 : Les fichiers de secrets sur l'hôte (`/srv/docker/postgre/secrets/*.txt`) sont correctement sécurisés.
+  * AC7 : La structure des fichiers sur le serveur respecte `/srv/docker/postgre/` pour le fichier `docker-compose.yml` et `/srv/docker/postgre/secrets/` pour les fichiers de secrets.
 
-**Guidance:** Utiliser les détails suivants pour l'implémentation. Le service PostgreSQL sera défini dans le fichier `docker-compose.yml`.
+### Technical Implementation Context
 
-- **Relevant Files:**
-  - Files to Create/Modify:
-    - `docker-compose.yml`: Définir le service `db` pour PostgreSQL.
-    - `.env`: Ajouter/Vérifier les variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`.
-  - Files to Create (sur le VPS, géré par Docker):
-    - Un répertoire sur l'hôte pour le volume Docker persistant (ex: `/opt/blog-technique-bilingue/pgdata` ou un volume nommé géré par Docker).
-  - _(Hint: Voir `docs/project-structure.md`, `docs/architecture/architecture-principale.md` et `docs/data-models.md`)_
+**Guidance :** Le service PostgreSQL sera défini dans `/srv/docker/postgre/docker-compose.yml`.
 
-- **Key Technologies:**
-  - PostgreSQL (version 16.9 ou compatible, voir `docs/teck-stack.md`)
-  - Docker, Docker Compose
-  - _(Hint: Voir `docs/teck-stack.md`)_
+  * **Server Directory Structure (cible) :**
 
-- **API Interactions / SDK Usage:**
-  - Non applicable directement pour cette story (le backend interagira avec la DB via JDBC plus tard).
+    ```
+    /srv/docker/
+    └── postgre/
+        ├── docker-compose.yml
+        ├── secrets/
+        │   ├── postgres_user.txt
+        │   └── postgres_password.txt
+        └── .env  (Optionnel, pour les variables non sensibles)
+    ```
 
-- **UI/UX Notes:**
-  - Non applicable pour cette story.
+  * **Relevant Files:**
 
-- **Data Structures:**
-  - Le schéma initial sera créé par Liquibase dans une story ultérieure (Epic 1, Story E1-B02 pour la configuration backend, et plus spécifiquement lors des premières migrations définies dans `docs/data-models.md`). Cette story se concentre sur la mise en place du service de base de données lui-même.
+      * Files to Create/Modify on the server:
+          * `/srv/docker/postgre/docker-compose.yml`: Définition du service `db` pour PostgreSQL et la section `secrets`.
+          * `/srv/docker/postgre/secrets/postgres_user.txt`: Contient le nom d'utilisateur PostgreSQL.
+          * `/srv/docker/postgre/secrets/postgres_password.txt`: Contient le mot de passe PostgreSQL.
+          * `/srv/docker/postgre/.env` (Optionnel) : Pour des variables comme `POSTGRES_DB`, `POSTGRES_PORT_HOST`, `COMPOSE_PROJECT_NAME`.
+      * Files to Create (sur le poste de développement, si la configuration est versionnée via un git repo racine à `/srv/docker/` ou `/srv/docker/postgre/`) :
+          * `.gitignore`: Pour s'assurer que le répertoire `secrets/` (ou son contenu) n'est pas versionné.
 
-- **Environment Variables:**
-  - `POSTGRES_USER`
-  - `POSTGRES_PASSWORD`
-  - `POSTGRES_DB`
-  - `PGDATA` (variable interne à l'image PostgreSQL, généralement `/var/lib/postgresql/data/pgdata`)
-  - `POSTGRES_PORT_HOST` (pour le développement local si le port est exposé, non critique pour la prod interne)
-  - _(Hint: Voir `docs/environnement-vars.md`)_
+  * **Key Technologies:**
 
-- **Coding Standards Notes:**
-  - S'assurer que les mots de passe de base de données sont forts et gérés de manière sécurisée via le fichier `.env`.
-  - Suivre les bonnes pratiques pour la configuration des volumes Docker pour la persistance.
-  - _(Hint: Voir `docs/normes-codage.md`)_
+      * PostgreSQL (version 16.9 ou compatible)
+      * Docker, Docker Compose
 
-## Tasks / Subtasks
+  * **Environment Variables (utilisant les versions `_FILE` pour les secrets):**
 
-- [ ] Définir le service `db` dans `docker-compose.yml` :
-    - [ ] Utiliser l'image officielle `postgres:<version>` (ex: `postgres:16.9-alpine`).
-    - [ ] Configurer les variables d'environnement `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` en utilisant les valeurs du fichier `.env`.
-    - [ ] Définir un volume pour la persistance des données. Exemple : `volumes: - postgres_data:/var/lib/postgresql/data` (avec un volume nommé `postgres_data` défini en haut niveau dans `docker-compose.yml`) ou un bind mount vers un chemin sur l'hôte.
-    - [ ] Assigner le conteneur à un réseau Docker dédié (ex: `internal_net`) que le backend pourra rejoindre.
-    - [ ] (Optionnel pour dev) Exposer le port `5432` à l'hôte pour un accès facile avec des outils clients : `ports: - "${POSTGRES_PORT_HOST:-5432}:5432"`. Pour la production, ce port ne devrait pas être exposé à l'extérieur du VPS.
-    - [ ] Configurer `restart: unless-stopped` ou `always`.
-- [ ] Mettre à jour le fichier `.env` avec les valeurs pour `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`.
-- [ ] Lancer le service PostgreSQL avec `docker compose up -d db`.
-- [ ] Vérifier les logs du conteneur `db` pour s'assurer qu'il a démarré correctement et que la base de données a été initialisée.
-- [ ] Tester la persistance :
-    - [ ] Se connecter à la base de données (ex: via `docker exec -it <container_name> psql -U $POSTGRES_USER -d $POSTGRES_DB`).
-    - [ ] Créer une table de test simple.
-    - [ ] Arrêter et redémarrer le conteneur (`docker compose stop db`, `docker compose up -d db`).
-    - [ ] Se reconnecter et vérifier que la table de test existe toujours.
+      * `POSTGRES_PASSWORD_FILE`: Pointant vers `/run/secrets/db_password` (ou le nom du secret choisi) dans le conteneur.
+      * `POSTGRES_USER_FILE`: Pointant vers `/run/secrets/db_user` (ou le nom du secret choisi) dans le conteneur.
+      * `POSTGRES_DB`: Variable d'environnement classique (via `/srv/docker/postgre/.env`).
 
-## Testing Requirements
+  * **Coding Standards Notes:**
 
-**Guidance:** Vérifier l'implémentation par rapport aux ACs en utilisant les tests suivants.
-- **Manual/CLI Verification:**
-  - Vérifier les logs du conteneur PostgreSQL (`docker logs db_container_name`).
-  - Exécuter `docker ps` pour voir le conteneur `db` en cours d'exécution.
-  - Exécuter `docker volume ls` pour vérifier la création du volume nommé (si utilisé).
-  - Effectuer le test de persistance décrit dans les tâches.
-  - (Plus tard) Le backend Spring Boot devra pouvoir se connecter à cette base de données.
-- _(Hint: Voir `docs/strategie-tests.md` pour l'approche globale)_
+      * Utiliser les Secrets Docker pour toutes les informations sensibles.
+      * Les fichiers de secrets sur l'hôte (`/srv/docker/postgre/secrets/*`) doivent avoir des permissions restrictives.
+      * Utiliser des volumes Docker nommés.
 
-## Story Wrap Up (Agent Populates After Execution)
+### Tasks / Subtasks
 
-- **Agent Model Used:** `<Agent Model Name/Version>`
-- **Completion Notes:** {Any notes about implementation choices, difficulties, or follow-up needed}
-- **Change Log:**
-  - Initial Draft
+1.  **Préparation sur le serveur :**
+
+      * [ ] Créer l'arborescence : `sudo mkdir -p /srv/docker/postgre/secrets`
+      * [ ] Créer les fichiers de secrets avec leur contenu :
+          * `sudo sh -c 'echo "mon_utilisateur_pg" > /srv/docker/postgre/secrets/postgres_user.txt'`
+          * `sudo sh -c 'echo "mon_mot_de_passe_pg_tres_secret" > /srv/docker/postgre/secrets/postgres_password.txt'`
+      * [ ] Définir des permissions restrictives pour les secrets :
+          * `sudo chmod 600 /srv/docker/postgre/secrets/*`
+          * `sudo chown <votre_utilisateur_admin_docker>:<votre_groupe_admin_docker> /srv/docker/postgre/secrets/*` (adapter si nécessaire)
+      * [ ] (Optionnel) Créer et peupler `/srv/docker/postgre/.env` :
+        ```env
+        # /srv/docker/postgre/.env
+        POSTGRES_DB=app_metrics_db
+        POSTGRES_PORT_HOST=5432
+        COMPOSE_PROJECT_NAME=bilingue_blog_pg # Nom de projet spécifique pour ce compose
+        ```
+
+2.  **Création du fichier `/srv/docker/postgre/docker-compose.yml` :**
+
+      * [ ] Créer le fichier avec le contenu suivant (à adapter) :
+        ```yaml
+        # /srv/docker/postgre/docker-compose.yml
+        version: '3.8'
+
+        services:
+          db: # Nom du service, sera préfixé par COMPOSE_PROJECT_NAME si défini
+            image: postgres:16.9-alpine # ou la version de docs/teck-stack.md
+            container_name: ${COMPOSE_PROJECT_NAME:-postgres_db_container} # Nom de conteneur explicite
+            restart: unless-stopped
+            environment:
+              POSTGRES_USER_FILE: /run/secrets/db_user
+              POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+              POSTGRES_DB: ${POSTGRES_DB} # Provient du fichier .env
+            volumes:
+              - postgres_data:/var/lib/postgresql/data # Volume nommé
+            secrets:
+              - db_user   # Nom du secret tel que défini plus bas
+              - db_password # Nom du secret tel que défini plus bas
+            networks:
+              - db_internal_net # Réseau spécifique ou partagé
+            ports:
+            #  - "${POSTGRES_PORT_HOST:-5432}:5432" # Décommenter si besoin
+            healthcheck:
+              test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/db_user || echo 'postgres') -d $${POSTGRES_DB} -q"]
+              interval: 10s
+              timeout: 5s
+              retries: 5
+              start_period: 30s
+
+        volumes:
+          postgres_data: # Nom du volume, sera préfixé par COMPOSE_PROJECT_NAME
+            name: ${COMPOSE_PROJECT_NAME:-pg_data}_volume # Nom explicite pour le volume
+
+        secrets:
+          db_user:
+            file: ./secrets/postgres_user.txt # Chemin relatif au docker-compose.yml
+          db_password:
+            file: ./secrets/postgres_password.txt # Chemin relatif au docker-compose.yml
+
+        networks:
+          db_internal_net: # Nom du réseau, sera préfixé par COMPOSE_PROJECT_NAME
+            name: ${COMPOSE_PROJECT_NAME:-pg_network}_default
+            driver: bridge
+        ```
+
+3.  **Gestion de la configuration (si versionnée) :**
+
+      * [ ] Si le répertoire `/srv/docker/postgre/` ou un de ses parents est un dépôt git, s'assurer que `.gitignore` contient :
+        ```gitignore
+        # Dans /srv/docker/postgre/.gitignore ou /srv/docker/.gitignore
+        **/secrets/
+        **/.env
+        ```
+
+4.  **Déploiement et vérification :**
+
+      * [ ] Naviguer vers le répertoire : `cd /srv/docker/postgre/`
+      * [ ] Lancer le service PostgreSQL : `docker compose up -d` (le `-f docker-compose.yml` est implicite si exécuté depuis ce répertoire)
+          * Ou depuis ailleurs : `docker compose -f /srv/docker/postgre/docker-compose.yml up -d`
+      * [ ] Vérifier les logs : `docker compose logs -f db` (si exécuté depuis `/srv/docker/postgre/`)
+      * [ ] Vérifier que les secrets sont montés : `docker compose exec db ls -l /run/secrets/`
+      * [ ] Vérifier la création du volume nommé (le nom sera préfixé, ex: `bilingue_blog_pg_postgres_data_volume`) : `docker volume ls`
+      * [ ] Tester la persistance.
+
+### Testing Requirements
+
+**Guidance :** Vérifier l'implémentation par rapport aux ACs.
+
+  * **Manual/CLI Verification:**
+      * Exécuter `cd /srv/docker/postgre/` puis `docker compose ps` pour voir le conteneur.
+      * Vérifier les logs du conteneur.
+      * Lister les volumes et identifier le volume de PostgreSQL.
+      * Vérifier l'existence et les permissions des fichiers secrets dans `/srv/docker/postgre/secrets/`.
+      * Confirmer la présence des fichiers de secrets dans le conteneur.
+      * Effectuer le test de persistance.
+
+### Story Wrap Up (Agent Populates After Execution)
+
+  * **Agent Model Used:** `<Agent Model Name/Version>`
+  * **Completion Notes:** {Configuration PostgreSQL déployée avec succès en utilisant la structure de répertoires `/srv/docker/postgre/`. Secrets Docker et volume nommé correctement configurés. Tests de persistance et d'accès validés.}
+  * **Change Log:**
+      * Adaptation pour la structure de répertoires `/srv/docker/postgre/`.
+      * Adaptation pour fichier Compose séparé et structure `/srv/docker/`.
+      * Révision pour intégrer l'utilisation des Secrets Docker.
+      * Version révisée basée sur le rapport de validation.
+      * Initial Draft

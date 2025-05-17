@@ -3,8 +3,8 @@
 
 Ce document décrit :
 
-1. **L’arborescence du dépôt Git (monorepo)** – inchangée pour la partie code.  
-2. **L’arborescence de déploiement sur le VPS OVH** – nouvelle section intégrée selon la stratégie `/srv/docker` proposée.  
+1. **L'arborescence du dépôt Git (monorepo)** – inchangée pour la partie code.  
+2. **L'arborescence de déploiement sur le VPS OVH** – nouvelle section intégrée selon la stratégie `/srv/docker` proposée.  
 3. Les ajustements CI/CD (images pré-construites poussées sur GitHub Container Registry).  
 
 ---
@@ -33,7 +33,7 @@ blog-technique-bilingue/
 ````
 
 *Changement majeur :* **le dépôt ne contient plus de `docker-compose.yml` racine « tout-en-un »**.
-Chaque stack dispose d’un fichier Compose dédié placé **dans son propre dossier** ; Compose dérive ainsi automatiquement le *project name* à partir du nom du dossier, ce qui évite toute collision de ressources (containers, volumes, réseaux). ([Docker Documentation][1], [Docker Community Forums][2])
+Chaque stack dispose d'un fichier Compose dédié placé **dans son propre dossier** ; Compose dérive ainsi automatiquement le *project name* à partir du nom du dossier, ce qui évite toute collision de ressources (containers, volumes, réseaux). ([Docker Documentation][1], [Docker Community Forums][2])
 
 ---
 
@@ -50,15 +50,23 @@ Les artefacts Docker sont construits par GitHub Actions, poussés sur GHCR puis 
     │   └── traefik_data/
     │       ├── traefik.yml
     │       └── acme.json            # certs (chmod 600, hors Git)
+    ├── postgre/                     # ⇢ PostgreSQL
+    │   ├── docker-compose.yml       # configuration PostgreSQL
+    │   ├── .env                     # POSTGRES_DB, etc. (variables non-sensibles)
+    │   └── secrets/                 # fichiers de secrets (credentials)
+    │       ├── postgres_user.txt    # nom d'utilisateur (chmod 600)
+    │       └── postgres_password.txt # mot de passe (chmod 600)
     ├── apps/
-    │   └── site/                    # ⇢ Astro + Spring + PostgreSQL
+    │   └── site/                    # ⇢ Astro + Spring
     │       ├── docker-compose.prod.yml
-    │       ├── .env                 # POSTGRES_PASSWORD, etc.
+    │       ├── .env                 # variables d'environnement
     │       └── data/                # uploads, dumps éventuels
     └── backups/                     # dépôt Restic/Borg (hors Git)
 ```
 
 *Justification `/srv`* : le FHS réserve ce répertoire aux **données servies par le système** (HTTP, FTP, VCS, etc.) ; placer vos stacks ici respecte la convention et simplifie la sauvegarde. ([Wikipédia][3], [tldp.org][4])
+
+*Justification `/srv/docker/postgre/`* : Séparer le service PostgreSQL dans son propre répertoire permet une meilleure modularité et une gestion indépendante des configurations, secrets et volumes. Cela facilite la maintenance et suit les bonnes pratiques de séparation des services.
 
 ### Réseaux Docker
 
@@ -76,13 +84,13 @@ Les artefacts Docker sont construits par GitHub Actions, poussés sur GHCR puis 
 | **Traefik**  | Non (image officielle)    | N/A                            | `/srv/docker/proxy/docker-compose.yml`          | 80/443       |
 | **Astro**    | Oui (`astro/Dockerfile`)  | `ghcr.io/org/site-astro:<tag>` | `/srv/docker/apps/site/docker-compose.prod.yml` | interne 8080 |
 | **Spring**   | Oui (`spring/Dockerfile`) | `ghcr.io/org/site-api:<tag>`   | idem                                            | interne 8080 |
-| **Postgres** | Non (image officielle)    | N/A                            | idem                                            | interne 5432 |
+| **Postgres** | Non (image officielle)    | N/A                            | `/srv/docker/postgre/docker-compose.yml`        | interne 5432 |
 
 ---
 
 ## 4. Flux CI/CD (résumé)
 
-1. **Push d’un tag Git `v1.0.3`**
+1. **Push d'un tag Git `v1.0.3`**
 2. **GitHub Actions**
 
    * *Job build-push* : `docker build`, `docker push` vers GHCR.
@@ -95,6 +103,7 @@ Les artefacts Docker sont construits par GitHub Actions, poussés sur GHCR puis 
 
 | Date       | Ver. | Nature                                                                                    | Auteur                        |
 | ---------- | ---- | ----------------------------------------------------------------------------------------- | ----------------------------- |
+| 2025-05-15 | 0.5  | Ajout de la structure dédiée pour PostgreSQL dans `/srv/docker/postgre/`                  | Architecte (IA)               |
 | 2025-05-15 | 0.4  | Ajout de la section *Arborescence VPS* et retrait du Compose racine ; adaptation CI GHCR. | Architecte (IA)               |
 | 2025-05-11 | 0.3  | MàJ structure `docs/`.                                                                    | Utilisateur                   |
 | 2025-05-11 | 0.2  | Package racine backend modifié.                                                           | Architecte (IA) & Utilisateur |
@@ -102,7 +111,7 @@ Les artefacts Docker sont construits par GitHub Actions, poussés sur GHCR puis 
 
 ---
 
-**Cette nouvelle version reflète fidèlement la séparation ‘code ↔ infra ↔ données’ et l’utilisation d’images pré-construites hébergées sur GitHub Container Registry.**
+**Cette nouvelle version reflète fidèlement la séparation 'code ↔ infra ↔ données' et l'utilisation d'images pré-construites hébergées sur GitHub Container Registry.**
 
 ```
 ::contentReference[oaicite:2]{index=2}

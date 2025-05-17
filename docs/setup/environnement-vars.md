@@ -11,6 +11,7 @@ Ce document liste et décrit les variables d'environnement utilisées par les di
 - **Déploiement (Production sur VPS) :**
   - Les variables d'environnement sont injectées dans les conteneurs Docker via les fichiers `docker-compose.yml` utilisés en production.
   - Les valeurs de ces variables (surtout les secrets) sont stockées de manière sécurisée sur le serveur VPS dans des fichiers `.env` spécifiques à chaque service (par exemple, `/srv/docker/proxy/.env` pour Traefik, `/srv/docker/apps/site/.env` pour la stack applicative) qui sont référencés par les fichiers `docker-compose.yml` de production correspondants. Ces fichiers doivent avoir des permissions très restrictives (ex: `chmod 600`, propriétaire `root` ou un utilisateur de déploiement dédié).
+  - Pour les informations sensibles comme les identifiants PostgreSQL, l'approche privilégiée est l'utilisation de **Docker Secrets** (via des fichiers dans `/srv/docker/postgre/secrets/`) plutôt que des variables d'environnement.
   - Les secrets nécessaires au pipeline CI/CD (GitHub Actions) sont gérés via les "Encrypted Secrets" de GitHub Actions.
 
 ## Variables d'Environnement Requises et Optionnelles
@@ -23,8 +24,10 @@ Le tableau suivant détaille les variables d'environnement utilisées.
 | `COMPOSE_PROJECT_NAME`              | Nom du projet Docker Compose (utile pour isoler les réseaux/volumes)        | `blogtechnique`                                                  | Non                   | Non                 | Docker Compose       |
 | `TZ`                                | Fuseau horaire pour les conteneurs (ex: logs)                               | `Europe/Paris`                                                   | Non                   | Non                 | Tous conteneurs      |
 | **POSTGRESQL (Backend)**            |                                                                             |                                                                  |                       |                     | PostgreSQL, Backend  |
-| `POSTGRES_USER`                     | Nom d'utilisateur pour la base de données PostgreSQL.                       | `bloguser`                                                       | Oui                   | Oui                 | PostgreSQL, Backend  |
-| `POSTGRES_PASSWORD`                 | Mot de passe pour l'utilisateur PostgreSQL.                                 | `AVotreChoixSecurise`                                            | Oui                   | Oui                 | PostgreSQL, Backend  |
+| `POSTGRES_USER`                     | **(Dev)** Nom d'utilisateur pour la base de données PostgreSQL.             | `bloguser`                                                       | Oui (dev)             | Oui                 | PostgreSQL, Backend  |
+| `POSTGRES_PASSWORD`                 | **(Dev)** Mot de passe pour l'utilisateur PostgreSQL.                       | `AVotreChoixSecurise`                                            | Oui (dev)             | Oui                 | PostgreSQL, Backend  |
+| `POSTGRES_USER_FILE`                | **(Prod)** Chemin vers le fichier de secret contenant l'utilisateur PG.     | `/run/secrets/db_user`                                           | Oui (prod)            | Non (chemin)        | PostgreSQL           |
+| `POSTGRES_PASSWORD_FILE`            | **(Prod)** Chemin vers le fichier de secret contenant le mot de passe PG.   | `/run/secrets/db_password`                                       | Oui (prod)            | Non (chemin)        | PostgreSQL           |
 | `POSTGRES_DB`                       | Nom de la base de données PostgreSQL.                                       | `blog_db`                                                        | Oui                   | Non                 | PostgreSQL, Backend  |
 | `POSTGRES_PORT_HOST`                | Port de l'hôte exposé pour PostgreSQL (dev local).                          | `5432`                                                           | Non (pour dev)        | Non                 | Docker Compose (dev) |
 | `PGDATA`                            | Chemin de persistance des données PostgreSQL dans le conteneur.             | `/var/lib/postgresql/data/pgdata`                                | Non (interne PG)      | Non                 | PostgreSQL           |
@@ -38,13 +41,18 @@ Le tableau suivant détaille les variables d'environnement utilisées.
 | `LOGGING_LEVEL_FR_KALIFAZZIA`       | Niveau de log spécifique pour les packages de l'application.                | `DEBUG` (dev), `INFO` (prod)                                     | Non                   | Non                 | Backend              |
 | **FRONTEND (Astro)**                |                                                                             |                                                                  |                       |                     | Frontend             |
 | `PUBLIC_API_BASE_URL`               | URL de base pour appeler l'API backend depuis le client.                    | `/api/v1` (via Traefik)                                          | Oui                   | Non                 | Frontend (client)    |
-| `PUBLIC_SITE_URL`                   | URL canonique du site (pour sitemap, SEO).                                  | `http://localhost:4321` (dev) `https://votre-domaine.com` (prod) | Oui                   | Non                 | Frontend (build)     |
-| `PUBLIC_GOOGLE_ANALYTICS_ID`        | ID de suivi Google Analytics (GA4).                                         | `G-XXXXXXXXXX`                                                   | Non                   | Non                 | Frontend (client)    |
-| `ASTRO_TELEMETRY_DISABLED`          | Désactive la télémétrie d'Astro.                                            | `1`                                                              | Non                   | Non                 | Astro CLI            |
-| **TRAEFIK (Reverse Proxy)**         |                                                                             |                                                                  |                       |                     | Traefik              |
-| `LETSENCRYPT_EMAIL`                 | Adresse e-mail pour les certificats Let's Encrypt (production).             | `contact@votre-domaine.com`                                      | Oui (pour prod HTTPS) | Non                 | Traefik              |
-| `MY_DOMAIN`                         | Domaine principal utilisé par Traefik pour le routage.                      | `votre-domaine.com` ou `localhost`                               | Oui (pour prod)       | Non                 | Traefik              |
-| `TRAEFIK_SUBDOMAIN`                 | Sous-domaine utilisé pour accéder au dashboard Traefik.                     | `traefik`                                                        | Non                   | Non                 | Traefik              |
+| **TRAEFIK (Proxy)**                 |                                                                             |                                                                  |                       |                     | Traefik              |
+| `TRAEFIK_DOMAIN_MAIN`               | Domaine principal de l'application.                                         | `monsite.com`                                                    | Oui                   | Non                 | Traefik              |
+| `TRAEFIK_HTTPS_REDIRECT`            | Activation de la redirection HTTP vers HTTPS.                               | `true`                                                           | Non                   | Non                 | Traefik              |
+| `TRAEFIK_ACME_EMAIL`                | Email pour Let's Encrypt.                                                   | `admin@monsite.com`                                              | Oui (pour Let's E.)   | Non                 | Traefik              |
+| `TRAEFIK_ACME_CASERVER`             | URL du serveur CA Let's Encrypt (prod ou staging).                           | `https://acme-v02.api.letsencrypt.org/directory`                 | Non                   | Non                 | Traefik              |
+| `TRAEFIK_ACME_RESOLVERS`            | Résolveurs DNS à utiliser pour le DNS Challenge.                            | `1.1.1.1:53,8.8.8.8:53`                                          | Non                   | Non                 | Traefik              |
+| `TRAEFIK_SUBDOMAIN`                 | Sous-domaine pour le dashboard Traefik.                                     | `traefik`                                                        | Non                   | Non                 | Traefik              |
+| `TRAEFIK_LOG_LEVEL`                 | Niveau de log pour Traefik.                                                 | `INFO` (prod), `DEBUG` (dev)                                     | Non                   | Non                 | Traefik              |
+| `TRAEFIK_ACCESS_LOGS`               | Activation des logs d'accès.                                                | `true`                                                           | Non                   | Non                 | Traefik              |
+| `OVH_APPLICATION_KEY`               | Clé d'API OVH pour le DNS Challenge.                                        | `XXX_VOTRE_CLE_XXX`                                              | Oui (pour OVH DNS)    | Oui                 | Traefik              |
+| `OVH_APPLICATION_SECRET`            | Secret d'API OVH pour le DNS Challenge.                                     | `XXX_VOTRE_SECRET_XXX`                                           | Oui (pour OVH DNS)    | Oui                 | Traefik              |
+| `OVH_CONSUMER_KEY`                  | Consumer Key OVH pour le DNS Challenge.                                     | `XXX_VOTRE_CLE_CONSOMMATEUR_XXX`                                 | Oui (pour OVH DNS)    | Oui                 | Traefik              |
 | `OVH_ENDPOINT_CONFIG`               | Endpoint OVH pour le DNS Challenge.                                         | `ovh-europe`                                                     | Oui (pour OVH DNS)    | Non                 | Traefik              |
 | `TRAEFIK_DASHBOARD_USER`            | Utilisateur pour l'authentification du dashboard Traefik (si activé).       | `admin`                                                          | Non                   | Oui                 | Traefik              |
 | `TRAEFIK_DASHBOARD_PASSWORD_HASHED` | Mot de passe **haché** pour l'authentification du dashboard Traefik.        | `UnMotDePasseHacheValide`                                        | Non                   | Oui                 | Traefik              |
@@ -52,21 +60,31 @@ Le tableau suivant détaille les variables d'environnement utilisées.
 **Notes sur les préfixes `PUBLIC_` pour Astro :**
 Dans Astro, les variables d'environnement préfixées par `PUBLIC_` sont exposées au code côté client (navigateur). Les autres variables ne sont disponibles que côté serveur (pendant le build ou en mode SSR).
 
+## Gestion des Variables Sensibles en Production
+
+Pour sécuriser les informations sensibles en production, deux approches complémentaires sont utilisées :
+
+1. **Docker Secrets pour PostgreSQL (/srv/docker/postgre/) :**
+   - Les identifiants PostgreSQL sont stockés comme des fichiers texte dans `/srv/docker/postgre/secrets/` :
+     - `postgres_user.txt` : Contient le nom d'utilisateur
+     - `postgres_password.txt` : Contient le mot de passe
+   - Ces fichiers ont des permissions restrictives : `chmod 600` (lecture/écriture pour le propriétaire uniquement)
+   - Dans le `docker-compose.yml`, ces secrets sont référencés via la section `secrets` et rendus disponibles au conteneur PostgreSQL via les variables `POSTGRES_USER_FILE` et `POSTGRES_PASSWORD_FILE` plutôt que les variables d'environnement standard.
+
+2. **Fichiers .env pour les Autres Services :**
+   - Les variables non sensibles peuvent être stockées dans des fichiers `.env` spécifiques à chaque service.
+   - Pour les autres services ayant besoin d'accéder à PostgreSQL, les identifiants peuvent être montés via des secrets Docker ou des variables d'environnement selon le niveau de sécurité requis.
+
 ## Notes
 
 - **Gestion des Secrets :**
-  - **NE JAMAIS COMMITTER DE SECRETS DANS GIT.** Utilisez le fichier `.gitignore` pour exclure les fichiers `.env`.
-  - **Production :** Les fichiers `.env` sur le serveur VPS doivent avoir des permissions minimales (ex: `chmod 600`) et appartenir à un utilisateur non privilégié ou à `root` avec un accès limité pour le processus de déploiement. L'utilisation de solutions de gestion de secrets dédiées (comme HashiCorp Vault, AWS Secrets Manager, etc.) est recommandée pour des projets plus importants mais est hors scope pour ce MVP sur un VPS unique.
+  - **NE JAMAIS COMMITTER DE SECRETS DANS GIT.** Utilisez le fichier `.gitignore` pour exclure les fichiers `.env` et les répertoires `secrets/`.
+  - **Production :** Les fichiers `.env` et les secrets sur le serveur VPS doivent avoir des permissions minimales (ex: `chmod 600`) et appartenir à un utilisateur non privilégié ou à `root` avec un accès limité pour le processus de déploiement. L'utilisation de solutions de gestion de secrets dédiées (comme HashiCorp Vault, AWS Secrets Manager, etc.) est recommandée pour des projets plus importants mais est hors scope pour ce MVP sur un VPS unique.
   - **CI/CD :** Utiliser les mécanismes de secrets intégrés à la plateforme CI/CD (ex: GitHub Actions Encrypted Secrets).
-- **Fichiers `.env.example` :**
-  - Des fichiers `.env.example` doivent être maintenus dans chaque répertoire contenant un fichier `docker-compose.yml` (répertoires `infra/proxy/` et `infra/site/` pour le développement, `proxy/` et `apps/site/` sur le VPS pour la production). Ils doivent lister toutes les variables d'environnement nécessaires avec des valeurs d'exemple non sensibles ou des placeholders (ex: `your_api_key_here`).
-  - Ces fichiers servent de documentation et de modèles pour créer les fichiers `.env` locaux.
-- **Validation :**
-  - L'application Spring Boot peut valider la présence des variables d'environnement critiques au démarrage et échouer rapidement si elles sont manquantes.
-  - Le frontend Astro peut avoir des vérifications au moment du build pour les variables nécessaires à la génération du site.
 
 ## Change Log
 
 | Change        | Date       | Version | Description                                        | Author              |
 | ------------- | ---------- | ------- | -------------------------------------------------- | ------------------- |
 | Initial draft | 2025-05-11 | 0.1     | Création initiale du document des variables d'env. | 3 - Architecte (IA) |
+| Update        | 2025-05-15 | 0.2     | Ajout des détails sur l'utilisation des Docker Secrets pour PostgreSQL. | 3 - Architecte (IA) |

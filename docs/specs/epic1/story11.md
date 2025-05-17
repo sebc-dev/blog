@@ -15,35 +15,32 @@ Configurer le fichier `application.yml` (ou `.properties`) pour permettre à l'a
 ## Acceptance Criteria (ACs)
 
 - AC1: La configuration de la source de données (datasource) pour PostgreSQL est définie dans `backend/src/main/resources/application.yml` (ou `.properties`).
-- AC2: L'URL de la base de données, le nom d'utilisateur et le mot de passe sont lus à partir des variables d'environnement (`SPRING_DATASOURCE_URL` implicitement construite, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` qui référencent `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD` du `.env`).
-- AC3: L'application Spring Boot peut démarrer avec succès et établir une connexion à la base de données PostgreSQL (configurée dans la Story 1.4) lorsqu'elle est lancée via Docker Compose avec les bonnes variables d'environnement.
-- AC4: La configuration de logging de base est en place (via Logback, par défaut avec Spring Boot) et permet de logger des messages à différents niveaux (INFO, DEBUG).
-- AC5: (Optionnel mais recommandé) Les logs en production (ou via un profil `prod`) sont configurés pour être structurés en JSON pour une meilleure analyse par des outils de centralisation de logs.
-- AC6: Les configurations Liquibase de base sont présentes pour permettre l'exécution des migrations (ex: `spring.liquibase.change-log=classpath:/db/changelog/db.changelog-master.xml`).
+- AC2: En développement, l'URL de la base de données, le nom d'utilisateur et le mot de passe sont lus à partir des variables d'environnement (`SPRING_DATASOURCE_URL` implicitement construite, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` qui référencent `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD` du `.env`).
+- AC3: En production, l'application peut se connecter au service PostgreSQL qui utilise des Docker Secrets situés dans `/srv/docker/postgre/secrets/`.
+- AC4: L'application Spring Boot peut démarrer avec succès et établir une connexion à la base de données PostgreSQL (configurée dans la Story 1.4) lorsqu'elle est lancée via Docker Compose avec les bonnes variables d'environnement.
+- AC5: La configuration de logging de base est en place (via Logback, par défaut avec Spring Boot) et permet de logger des messages à différents niveaux (INFO, DEBUG).
 
 ## Technical Implementation Context
 
-**Guidance:** Modifier `application.yml` et potentiellement ajouter `logback-spring.xml`. Utiliser les profils Spring (`application-dev.yml`, `application-prod.yml`) pour des configurations de logging différentes si nécessaire.
+**Guidance:** Utiliser les informations suivantes pour l'implémentation.
 
 - **Relevant Files:**
   - Files to Create/Modify:
-    - `backend/src/main/resources/application.yml` (ou `application.properties`)
-    - `backend/src/main/resources/application-dev.yml` (optionnel, pour logging DEBUG)
-    - `backend/src/main/resources/application-prod.yml` (optionnel, pour logging JSON)
-    - `backend/src/main/resources/logback-spring.xml` (optionnel, pour configuration avancée des logs comme JSON)
-    - `backend/src/main/resources/db/changelog/db.changelog-master.xml` (fichier Liquibase principal, peut être vide initialement ou pointer vers le premier script de création de table).
-  - _(Hint: Consulter la documentation Spring Boot pour la configuration de la datasource et du logging. Se référer à `docs/setup/environnement-vars.md` pour les noms des variables et `docs/observabilite/strategie-observabilite.md` pour la stratégie de logging.)_
+    - `backend/src/main/resources/application.yml`: Configurer la datasource pour PostgreSQL et la gestion des logs.
+    - `backend/src/main/resources/application-dev.yml`: Configuration spécifique pour le développement local (optionnel).
+    - `backend/src/main/resources/application-prod.yml`: Configuration spécifique pour la production (optionnel).
+  - _(Hint: Voir `docs/project-structure.md`)_
 
 - **Key Technologies:**
   - Spring Boot
-  - PostgreSQL
-  - Logback (SLF4J)
-  - Liquibase
-  - YAML (pour configuration)
+  - PostgreSQL (JDBC Driver)
+  - Logback
   - _(Hint: Voir `docs/teck-stack.md`)_
 
 - **API Interactions / SDK Usage:**
-  - Non applicable pour cette story.
+  - Spring Data JPA / DataSource
+  - Logback Configuration
+  - Liquibase (préparer le terrain pour les futures migrations)
 
 - **UI/UX Notes:**
   - Non applicable pour cette story.
@@ -53,7 +50,10 @@ Configurer le fichier `application.yml` (ou `.properties`) pour permettre à l'a
 
 - **Environment Variables:**
   - `SPRING_PROFILES_ACTIVE` (pour activer `dev` ou `prod`)
-  - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (utilisées par Spring Boot via `SPRING_DATASOURCE_USERNAME`, etc.)
+  - **Développement** : 
+    - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (utilisées par Spring Boot via `SPRING_DATASOURCE_USERNAME`, etc.)
+  - **Production** : 
+    - L'application doit pouvoir se connecter au service PostgreSQL qui utilise des Docker Secrets dans `/srv/docker/postgre/secrets/`
   - `LOGGING_LEVEL_ROOT`, `LOGGING_LEVEL_FR_KALIFAZZIA` (comme défini dans `docs/environnement-vars.md`)
   - _(Hint: Voir `docs/environnement-vars.md`)_
 
@@ -95,45 +95,92 @@ Configurer le fichier `application.yml` (ou `.properties`) pour permettre à l'a
       endpoints:
         web:
           exposure:
-            include: health,info,liquibase # Exposer liquibase endpoint
+            include: "health"
+      endpoint:
+        health:
+          show-details: never # en prod, ne pas exposer les détails (à mettre dans application-prod.yml)
     ```
-- [ ] (Optionnel) Créer `application-dev.yml` pour surcharger le niveau de log en mode développement :
+    
+- [ ] (Optionnel) Créer `backend/src/main/resources/application-dev.yml` pour des configurations spécifiques au développement :
     ```yaml
+    # Application profile dev
+    
+    spring:
+      jpa:
+        show-sql: true
+        properties:
+          hibernate:
+            format_sql: true
+    
     logging:
       level:
-        fr.kalifazzia: DEBUG
-        org.springframework.web: DEBUG # Utile pour voir les requêtes
-        #org.hibernate.SQL: DEBUG # Pour voir les requêtes SQL générées
-        #org.hibernate.type.descriptor.sql: TRACE # Pour voir les paramètres des requêtes SQL
+        org.hibernate.SQL: DEBUG # SQL logs uniquement en dev
+        org.hibernate.type.descriptor.sql.BasicBinder: TRACE # paramètres SQL en dev
+    
+    management:
+      endpoint:
+        health:
+          show-details: always # en dev, exposer les détails pour le diagnostic
     ```
-- [ ] (Optionnel, pour logs JSON) Créer `backend/src/main/resources/logback-spring.xml` et configurer un appender JSON (ex: `net.logstash.logback.encoder.LogstashEncoder`). Ceci est une configuration plus avancée. Pour le MVP, les logs par défaut peuvent suffire.
-    * Si `logback-spring.xml` est créé, s'assurer qu'il est correctement référencé ou pris en compte par Spring Boot.
-- [ ] Créer la structure de répertoires et le fichier master pour Liquibase :
-    - `mkdir -p backend/src/main/resources/db/changelog/changes`
-    - Créer `backend/src/main/resources/db/changelog/db.changelog-master.xml` (peut être vide ou inclure le premier script si disponible). Exemple de contenu vide initial :
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <databaseChangeLog
-            xmlns="[http://www.liquibase.org/xml/ns/dbchangelog](http://www.liquibase.org/xml/ns/dbchangelog)"
-            xmlns:xsi="[http://www.w3.org/2001/XMLSchema-instance](http://www.w3.org/2001/XMLSchema-instance)"
-            xsi:schemaLocation="[http://www.liquibase.org/xml/ns/dbchangelog](http://www.liquibase.org/xml/ns/dbchangelog)
-                               [http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd](http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd)">
-        </databaseChangeLog>
+    
+- [ ] (Optionnel) Créer `backend/src/main/resources/application-prod.yml` pour des configurations spécifiques à la production :
+    ```yaml
+    # Application profile prod
+    
+    # Aucune configuration spécifique nécessaire pour l'instant, car application.yml a de bonnes valeurs par défaut.
     ```
-- [ ] Mettre à jour `docker-compose.yml` pour le service backend afin de s'assurer qu'il dépend de `db` (`depends_on`) et qu'il utilise les bonnes variables d'environnement pour la base de données et le profil actif.
-- [ ] Lancer l'ensemble des services (`db` et `backend`) via `docker compose up --build backend` (ou `docker compose up -d`).
-- [ ] Vérifier les logs du backend pour confirmer une connexion réussie à la base de données et l'initialisation de Liquibase.
-- [ ] Accéder à l'endpoint Actuator `/actuator/health` du backend (via Traefik si déjà configuré ou en exposant temporairement le port du backend) pour vérifier l'état de santé (devrait inclure `db` et `liquibase` comme `UP`).
+
+- [ ] Adapter le fichier `docker-compose.yml` (ou `.prod.yml` pour la production) pour le backend en s'assurant que les variables d'environnement nécessaires sont injectées dans le conteneur, incluant la connexion à PostgreSQL :
+    ```yaml
+    # Exemple pour l'environnement de développement
+    backend:
+      # ...
+      environment:
+        SPRING_PROFILES_ACTIVE: dev
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+        DB_HOST: db # nom du service PostgreSQL
+        DB_PORT: 5432
+        LOGGING_LEVEL_ROOT: INFO
+        LOGGING_LEVEL_FR_KALIFAZZIA: DEBUG
+      depends_on:
+        - db
+      # ...
+    ```
+
+- [ ] Pour l'environnement de production, assurer la connexion au service PostgreSQL qui utilise des Docker Secrets :
+    ```yaml
+    # Exemple pour l'environnement de production dans apps/site/docker-compose.prod.yml
+    backend:
+      # ...
+      environment:
+        SPRING_PROFILES_ACTIVE: prod
+        DB_HOST: db # ou l'adresse complète du service PostgreSQL depuis /srv/docker/postgre/
+        DB_PORT: 5432
+        POSTGRES_DB: ${POSTGRES_DB}
+        # Les credentials sont gérés via des secrets pour PostgreSQL
+        POSTGRES_USER: ${POSTGRES_USER} # Ces variables doivent être définies pour Spring
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # même si PostgreSQL utilise des secrets
+      # ...
+      networks:
+        - site_net # réseau partagé avec PostgreSQL
+        - webproxy_net # pour exposition par Traefik
+    ```
+
+- [ ] Tester localement la connexion à la base de données en démarrant le backend avec Docker Compose et en vérifiant les logs pour confirmer une connexion réussie.
 
 ## Testing Requirements
 
-**Guidance:** Vérifier l'implémentation par rapport aux ACs en utilisant les tests suivants.
+**Guidance:** Vérifier l'implémentation par rapport aux ACs.
+
 - **Manual/CLI Verification:**
-  - Les logs de l'application Spring Boot doivent indiquer une connexion réussie à PostgreSQL.
-  - Les logs doivent indiquer que Liquibase s'est exécuté (même s'il n'y a pas encore de migrations à appliquer).
-  - L'endpoint `/actuator/health` doit montrer un statut `UP` pour les composants `db` et `liquibase`.
-  - Modifier les niveaux de log via les variables d'environnement ou les profils et observer le changement dans la verbosité des logs.
-- _(Hint: Voir `docs/strategie-tests.md`, `docs/observabilite/strategie-observabilite.md`)_
+  - Lancer `docker compose up -d` et vérifier les logs du backend pour s'assurer qu'il démarre correctement.
+  - Vérifier les journaux pour voir s'il y a des erreurs liées à la configuration de la source de données.
+  - S'assurer que l'application peut se connecter à la base de données PostgreSQL (visible dans les logs).
+  - Vérifier que le niveau de log est respecté (INFO, DEBUG selon le profil).
+- **Test d'Intégration:**
+  - Si possible, écrire un test d'intégration simple qui vérifie la connexion à la base de données.
 
 ## Story Wrap Up (Agent Populates After Execution)
 

@@ -148,8 +148,11 @@ blog-technique-bilingue/
 ├── .editorconfig               # Configuration pour la cohérence de style entre éditeurs
 ├── .env.example                # Fichier d'exemple pour les variables d'environnement globales
 ├── .gitignore                  # Fichiers et dossiers à ignorer par Git
-├── docker-compose.yml          # Configuration Docker Compose pour la production et autres environnements
-├── docker-compose.override.yml # Configuration Docker Compose pour le développement local
+├── infra/                      # Configurations d'infrastructure pour le développement 
+│   ├── proxy/                  # Configuration Traefik pour le développement
+│   │   └── docker-compose.yml
+│   └── site/                   # Configuration pour Astro, Spring Boot et PostgreSQL (dev)
+│       └── docker-compose.yml
 └── README.md                   # README principal du projet
 ```
 
@@ -202,13 +205,40 @@ blog-technique-bilingue/
     - `tsconfig.json`: Configuration du compilateur TypeScript.
     - `tailwind.config.cjs`: Configuration de TailwindCSS.
     - `Dockerfile`: Définit comment construire l'image Docker pour le site statique Astro (généralement avec un serveur Nginx ou Caddy pour servir les fichiers).
+- **`infra/`**: Contient les fichiers de configuration Docker Compose pour le développement local uniquement.
+    - `proxy/`: Configuration de Traefik pour le développement.
+    - `site/`: Configuration de la stack Astro + Spring Boot + PostgreSQL pour le développement.
 - **`scripts/`**: Scripts d'aide pour diverses tâches (déploiement, setup, etc.).
 - **Fichiers à la racine :**
     - `.editorconfig`, `.gitignore`: Configuration standard de projet.
     - `.env.example`: Modèle pour les variables d'environnement.
-    - `docker-compose.yml`: Orchestration des services Docker pour la production et potentiellement d'autres environnements.
-    - `docker-compose.override.yml`: Surcharges pour l'environnement de développement local (non versionné par défaut, mais sa structure peut être définie ici).
     - `README.md`: Instructions générales pour le projet.
+
+## Structure de Déploiement VPS (Production)
+
+Pour l'environnement de production, une structure basée sur le répertoire `/srv/docker/` est utilisée sur le VPS :
+
+```plaintext
+/srv/docker/
+├── proxy/                       # Configuration Traefik (entrée unique 80/443)
+│   ├── docker-compose.yml       # version production
+│   ├── .env                     # Variables pour Traefik
+│   └── traefik_data/            # Données Traefik
+├── postgre/                     # Configuration PostgreSQL indépendante
+│   ├── docker-compose.yml       # Configuration du service PostgreSQL
+│   ├── .env                     # Variables non sensibles (DB_NAME, etc.)
+│   └── secrets/                 # Gestion des secrets Docker
+│       ├── postgres_user.txt    # Nom d'utilisateur (chmod 600)
+│       └── postgres_password.txt # Mot de passe (chmod 600)
+├── apps/
+│   └── site/                    # Configuration Astro + Spring Boot
+│       ├── docker-compose.prod.yml # Production compose file
+│       ├── .env                 # Variables d'environnement
+│       └── data/                # Données persistantes
+└── backups/                     # Sauvegardes
+```
+
+Cette séparation des services, en particulier pour PostgreSQL dans son propre répertoire `/srv/docker/postgre/`, permet une meilleure modularité, une gestion indépendante et sécurisée des secrets (avec Docker Secrets), et une maintenance plus facile.
 
 ## Notes sur la Structure du Backend (Spring Boot)
 
@@ -234,3 +264,4 @@ Cette structure vise à offrir une bonne séparation des préoccupations tout en
 |Initial draft|2025-05-11|0.1|Création initiale de la structure du projet.|3 - Architecte (IA)|
 |Update|2025-05-11|0.2|Modification du package racine backend pour `fr.kalifazzia.blogtechnique`.|3 - Architecte (IA) & Utilisateur|
 |Update|2023-11-04|0.3|Mise à jour de la structure du dossier docs pour refléter l'organisation actuelle.|Utilisateur|
+|Update|2025-05-15|0.4|Ajout de la structure de déploiement VPS avec PostgreSQL dans `/srv/docker/postgre/`.|Architecte (IA)|
