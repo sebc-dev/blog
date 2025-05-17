@@ -60,12 +60,12 @@ Créer un dépôt Git. Mettre en place la structure de dossiers de haut niveau c
 
 ## Tasks / Subtasks
 
-- [ ] Créer le répertoire racine du projet (ex: `mkdir blog-technique-bilingue && cd blog-technique-bilingue`).
-- [ ] Initialiser le dépôt Git (`git init`).
-- [ ] Créer la structure de dossiers de haut niveau :
+- [x] Créer le répertoire racine du projet (ex: `mkdir blog-technique-bilingue && cd blog-technique-bilingue`).
+- [x] Initialiser le dépôt Git (`git init`).
+- [x] Créer la structure de dossiers de haut niveau :
     - [ ] `mkdir frontend backend docs .github .github/workflows scripts`
     - [ ] Créer les sous-dossiers dans `docs/` comme spécifié dans `docs/project-structure.md` (ex: `docs/architecture`, `docs/setup`, `docs/ci-cd`, etc.).
-- [ ] Créer le fichier `.gitignore` à la racine avec les contenus suivants (liste indicative à compléter) :
+- [x] Créer le fichier `.gitignore` à la racine avec les contenus suivants (liste indicative à compléter) :
     ```
     # Build artifacts
     dist/

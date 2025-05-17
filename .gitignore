@@ -1,2 +1,39 @@
+# Build artifacts
+dist/
+target/
+build/
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*.local
+*.local
+
+# Log files
+*.log
+logs/
+
+# Docker data (if local and not using named volumes exclusively for gitignore)
+# traefik_data/acme.json # Example if stored locally and not a named volume for gitignore
+# pgdata/ # Example
+
+# PNPM specific
+frontend/pnpm-debug.log
+
+# Maven specific
+# Add specific Maven exclusions if necessary beyond target/
+
 .obsidian/
-traefik_data/
