@@ -1,0 +1,59 @@
+services:
+  traefik:
+    image: "traefik:v3.4"
+    container_name: "traefik"
+    command:
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=ovh"
+      # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory" # Décommentez pour les tests
+      - "--certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}" # Assurez-vous que LETSENCRYPT_EMAIL est dans votre .env
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--core.defaultRuleSyntax=v2" # Note: Traefik v3 pourrait avoir une syntaxe par défaut v3, vérifiez la documentation si des problèmes surviennent.
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - "OVH_ENDPOINT=${OVH_ENDPOINT_CONFIG}"
+      - "OVH_APPLICATION_KEY_FILE=/run/secrets/ovh_app_key_secret"
+      - "OVH_APPLICATION_SECRET_FILE=/run/secrets/ovh_app_secret_secret"
+      - "OVH_CONSUMER_KEY_FILE=/run/secrets/ovh_consumer_key_secret"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    secrets:
+      - ovh_app_key_secret
+      - ovh_app_secret_secret
+      - ovh_consumer_key_secret
+      - traefik_dashboard_credentials_secret # Nouveau secret pour les identifiants du dashboard
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${TRAEFIK_SUBDOMAIN}.${MY_DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))" # Assurez-vous que ces variables sont dans .env
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth@docker"
+      # Modification ici: utilisation de usersFile pointant vers le secret
+      - "traefik.http.middlewares.dashboard-auth.basicauth.usersfile=/run/secrets/traefik_dashboard_credentials_secret"
+      # Ancienne méthode (sera ignorée si usersfile est spécifié et correct):
+      # - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_USER}:${TRAEFIK_DASHBOARD_PASSWORD_HASHED}"
+
+secrets:
+  ovh_app_key_secret:
+    file: ./secrets/ovh_app_key.txt
+  ovh_app_secret_secret:
+    file: ./secrets/ovh_app_secret.txt
+  ovh_consumer_key_secret:
+    file: ./secrets/ovh_consumer_key.txt
+  # Définition du nouveau secret pour les identifiants du dashboard
+  traefik_dashboard_credentials_secret:
+    file: ./secrets/traefik_dashboard_credentials.txt # Ce fichier doit contenir "utilisateur:mot_de_passe_haché"
