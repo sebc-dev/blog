@@ -57,20 +57,20 @@
 #### Tasks / Subtasks
 
 - **Initial Setup:**
-  - [ ] Configurer le pare-feu du VPS pour autoriser les ports 80 et 443 entrants.
-  - [ ] Configurer les enregistrements DNS pour `MY_DOMAIN` (et `TRAEFIK_SUBDOMAIN.MY_DOMAIN` si utilisé) pour qu'ils pointent vers l'IP du VPS.
-  - [ ] Créer la structure de répertoires : un répertoire principal pour le projet, et les sous-répertoires `./letsencrypt/` et `./secrets/`.
+  - [x] Configurer le pare-feu du VPS pour autoriser les ports 80 et 443 entrants.
+  - [x] Configurer les enregistrements DNS pour `MY_DOMAIN` (et `TRAEFIK_SUBDOMAIN.MY_DOMAIN` si utilisé) pour qu'ils pointent vers l'IP du VPS.
+  - [x] Créer la structure de répertoires : un répertoire principal pour le projet, et les sous-répertoires `./letsencrypt/` et `./secrets/`.
 - **acme.json File:**
-  - [ ] Créer un fichier `acme.json` vide dans `./letsencrypt/` (touch `./letsencrypt/acme.json`).
-  - [ ] Lui donner les permissions 600 (`chmod 600 ./letsencrypt/acme.json`).
-  - [ ] **Noter l'impératif de sauvegarder** `acme.json` **régulièrement après la génération réussie des certificats**.
+  - [x] Créer un fichier `acme.json` vide dans `./letsencrypt/` (touch `./letsencrypt/acme.json`).
+  - [x] Lui donner les permissions 600 (`chmod 600 ./letsencrypt/acme.json`).
+  - [x] **Noter l'impératif de sauvegarder** `acme.json` **régulièrement après la génération réussie des certificats**.
 - **Docker Secrets Files:**
-  - [ ] Créer un fichier par secret sensible pour OVH dans le répertoire `./secrets/`. Chaque fichier ne doit contenir que la valeur du secret (ex: `./secrets/ovh_app_key.txt` contenant uniquement la clé d'application OVH).
-  - [ ] Donner les permissions 600 à chaque fichier secret (ex: `chmod 600 ./secrets/ovh_app_key.txt`).
-  - [ ] Créer un fichier `traefik_dashboard_credentials.txt` dans le répertoire `./secrets/` contenant la ligne `${TRAEFIK_DASHBOARD_USER}:${TRAEFIK_DASHBOARD_PASSWORD_HASHED}` (remplacer par les valeurs réelles).
-  - [ ] Donner les permissions 600 au fichier `traefik_dashboard_credentials.txt` (`chmod 600 ./secrets/traefik_dashboard_credentials.txt`).
+  - [x] Créer un fichier par secret sensible pour OVH dans le répertoire `./secrets/`. Chaque fichier ne doit contenir que la valeur du secret (ex: `./secrets/ovh_app_key.txt` contenant uniquement la clé d'application OVH).
+  - [x] Donner les permissions 600 à chaque fichier secret (ex: `chmod 600 ./secrets/ovh_app_key.txt`).
+  - [x] Créer un fichier `traefik_dashboard_credentials.txt` dans le répertoire `./secrets/` contenant la ligne `${TRAEFIK_DASHBOARD_USER}:${TRAEFIK_DASHBOARD_PASSWORD_HASHED}` (remplacer par les valeurs réelles).
+  - [x] Donner les permissions 600 au fichier `traefik_dashboard_credentials.txt` (`chmod 600 ./secrets/traefik_dashboard_credentials.txt`).
 - **.env File:**
-  - [ ] Créer ou modifier le fichier `.env` à la racine du projet pour définir les variables suivantes :
+  - [x] Créer ou modifier le fichier `.env` à la racine du projet pour définir les variables suivantes :
     - `LETSENCRYPT_EMAIL="votre-email@votredomaine.com"` (à remplacer par votre email)
     - `MY_DOMAIN="votredomaine.com"` (à remplacer par votre domaine principal)
     - `TRAEFIK_SUBDOMAIN="traefik"` (sous-domaine pour le dashboard)
@@ -78,13 +78,13 @@
     - `TRAEFIK_DASHBOARD_PASSWORD_HASHED="mot_de_passe_hashe_htpasswd"` (mot de passe haché, voir tâche ci-dessous)
     - `OVH_ENDPOINT_CONFIG="ovh-europe"` (endpoint OVH)
 - **Generate Hashed Password for Dashboard Basic Auth:**
-  - [ ] Installer `htpasswd` si non présent (ex: `sudo apt-get update && sudo apt-get install apache2-utils`).
-  - [ ] Générer le mot de passe haché pour l'utilisateur et le mot de passe choisis (`htpasswd -nb votre_utilisateur votre_mot_de_passe`).
-  - [ ] Copier la sortie (la chaîne `utilisateur:haché`). **Échapper les caractères `$` par `$$` si vous collez directement dans un fichier `.yml` ou `.env`**.
-  - [ ] Coller uniquement le mot de passe haché (sans le nom d'utilisateur) dans votre fichier `.env` pour la variable `TRAEFIK_DASHBOARD_PASSWORD_HASHED`.
+  - [x] Installer `htpasswd` si non présent (ex: `sudo apt-get update && sudo apt-get install apache2-utils`).
+  - [x] Générer le mot de passe haché pour l'utilisateur et le mot de passe choisis (`htpasswd -nb votre_utilisateur votre_mot_de_passe`).
+  - [x] Copier la sortie (la chaîne `utilisateur:haché`). **Échapper les caractères `$` par `$$` si vous collez directement dans un fichier `.yml` ou `.env`**.
+  - [x] Coller uniquement le mot de passe haché (sans le nom d'utilisateur) dans votre fichier `.env` pour la variable `TRAEFIK_DASHBOARD_PASSWORD_HASHED`.
 - **docker-compose.yml for Traefik Service:**
-  - [ ] Créer ou modifier le fichier `docker-compose.yml` à la racine du projet.
-  - [ ] Définir le service `traefik` selon l'exemple suivant :
+  - [x] Créer ou modifier le fichier `docker-compose.yml` à la racine du projet.
+  - [x] Définir le service `traefik` selon l'exemple suivant :
 
 ```yaml
 version: "3.3"
@@ -147,7 +147,7 @@ secrets:
 ```
 
 - **(Optionnel pour test initial) Définir un service placeholder dans** `docker-compose.yml` **(ex:** `mon-app` **avec** `traefik/whoami`**):**
-  - [ ] Ajouter une section pour votre service de test (ex: `whoami`):
+  - [x] Ajouter une section pour votre service de test (ex: `whoami`):
 
 ```yaml
 whoami:
@@ -164,19 +164,19 @@ whoami:
 ```
 
 - **Déploiement et Tests Initiaux:**
-  - [ ] **S'assurer que la ligne** `--certificatesresolvers.myresolver.acme.caserver=...` **est décommentée pour pointer vers le serveur de staging de Let's Encrypt**.
-  - [ ] Lancer Traefik (et le service de test optionnel) : `docker compose up -d`.
-  - [ ] **Vérifier les logs de Traefik** (`docker logs -f traefik`) pour confirmer qu'il démarre sans erreur, détecte les services, et initie la demande de certificat de staging.
-  - [ ] Attendre quelques minutes le temps de la validation DNS.
-  - [ ] Tester l'accès au service de test via HTTPS (`https://test-service.votredomaine.com/`). Vérifier que le certificat est émis par "Fake LE Intermediate X1" (staging).
-  - [ ] Tester la redirection HTTP vers HTTPS (`http://test-service.votredomaine.com/`).
-  - [ ] Tester l'accès au dashboard sécurisé (`https://traefik.votredomaine.com/dashboard/`). Vérifier l'authentification Basic Auth et l'accès en HTTPS.
+  - [x] **S'assurer que la ligne** `--certificatesresolvers.myresolver.acme.caserver=...` **est décommentée pour pointer vers le serveur de staging de Let's Encrypt**.
+  - [x] Lancer Traefik (et le service de test optionnel) : `docker compose up -d`.
+  - [x] **Vérifier les logs de Traefik** (`docker logs -f traefik`) pour confirmer qu'il démarre sans erreur, détecte les services, et initie la demande de certificat de staging.
+  - [x] Attendre quelques minutes le temps de la validation DNS.
+  - [x] Tester l'accès au service de test via HTTPS (`https://test-service.votredomaine.com/`). Vérifier que le certificat est émis par "Fake LE Intermediate X1" (staging).
+  - [x] Tester la redirection HTTP vers HTTPS (`http://test-service.votredomaine.com/`).
+  - [x] Tester l'accès au dashboard sécurisé (`https://traefik.votredomaine.com/dashboard/`). Vérifier l'authentification Basic Auth et l'accès en HTTPS.
 - **Passage en Production (Certificats Réels):**
-  - [ ] Si les tests avec le serveur de staging sont concluants, **commenter la ligne** `--certificatesresolvers.myresolver.acme.caserver=...` **dans** `docker-compose.yml`.
-  - [ ] **Supprimer ou renommer le fichier `acme.json` existant** (pour forcer Traefik à redemander un certificat à l'environnement de production).
-  - [ ] Redémarrer le service Traefik (`docker compose restart traefik` ou `docker compose up -d --force-recreate traefik`).
-  - [ ] **Vérifier à nouveau les logs de Traefik** pour confirmer l'obtention des certificats de production.
-  - [ ] Tester l'accès aux services via HTTPS et vérifier que le certificat est maintenant émis par "Let's Encrypt".
+  - [x] Si les tests avec le serveur de staging sont concluants, **commenter la ligne** `--certificatesresolvers.myresolver.acme.caserver=...` **dans** `docker-compose.yml`.
+  - [x] **Supprimer ou renommer le fichier `acme.json` existant** (pour forcer Traefik à redemander un certificat à l'environnement de production).
+  - [x] Redémarrer le service Traefik (`docker compose restart traefik` ou `docker compose up -d --force-recreate traefik`).
+  - [x] **Vérifier à nouveau les logs de Traefik** pour confirmer l'obtention des certificats de production.
+  - [x] Tester l'accès aux services via HTTPS et vérifier que le certificat est maintenant émis par "Let's Encrypt".
 
 #### Story Wrap Up (Agent Populates After Execution)
 
