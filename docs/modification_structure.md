@@ -163,3 +163,43 @@ Pour les développeurs travaillant sur le projet, ces modifications impliquent :
 -   L'utilisation de plugins via la syntaxe `@plugin "nom-du-plugin";` dans les fichiers CSS
 -   La configuration de TailwindCSS se fait via le plugin Vite dans `astro.config.ts` et non plus via un fichier de configuration séparé
 -   La structure des tests a été simplifiée, avec un focus sur les tests unitaires avec Vitest
+
+## Modifications suite à la branche story7
+
+### 1. Configuration CSS-first pour TailwindCSS v4 et DaisyUI v5
+
+La branche story7 a apporté les modifications suivantes dans la configuration des thèmes et des styles :
+
+-   Adoption complète de l'approche "CSS-first" de TailwindCSS v4 et DaisyUI v5
+-   Configuration des thèmes DaisyUI directement dans le fichier CSS via `@plugin "daisyui"` avec définition des thèmes clairs et sombres
+-   Mise en place des polices de caractères "Inter" et "JetBrains Mono" via `@theme` dans le CSS
+-   Personnalisation du plugin `@tailwindcss/typography` avec des surcharges CSS utilisant les variables de thème DaisyUI
+-   Implémentation d'un sélecteur de thème avec persistance des préférences via `localStorage`
+
+### 2. Avantages de l'approche CSS-first
+
+Cette nouvelle approche offre plusieurs avantages :
+
+-   Centralisation de la configuration dans les fichiers CSS (au lieu de fichiers JavaScript)
+-   Exploitation native des fonctionnalités CSS modernes (variables CSS, fonctions comme `color-mix()`)
+-   Simplification de la structure du projet (suppression de `tailwind.config.js`)
+-   Amélioration des performances grâce à la réduction de la dépendance à JavaScript
+-   Meilleure intégration avec les mécanismes de thèmes natifs des navigateurs
+-   Configuration plus intuitive pour les développeurs front-end
+
+### 3. Documents impactés
+
+Les documents suivants ont été mis à jour pour refléter ces changements :
+
+-   `docs/ui-ux/ui-ux-spec.md` : Mise à jour des informations sur l'implémentation des thèmes et des polices
+-   `docs/project-structure.md` : Ajout de précisions sur le rôle du fichier `global.css`
+-   `docs/specs/epic1/story7.md` : Documentation détaillée sur la configuration des thèmes DaisyUI v5 avec TailwindCSS v4
+
+### 4. Impact sur le développement
+
+Pour les développeurs, ces changements impliquent :
+
+-   Une meilleure compréhension des mécanismes de personnalisation CSS modernes
+-   Un workflow simplifié pour la modification des thèmes (modifications directement dans le CSS)
+-   Une transition des configurations JavaScript vers les directives CSS
+-   Une approche plus cohérente avec les standards web actuels

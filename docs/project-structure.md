@@ -130,7 +130,7 @@ blog-technique-bilingue/
 │   │   │   │   │   │   └── 404.astro
 │   │   │   │   │   └── index.astro     # Page d'accueil principale (pourrait rediriger ou être une landing)
 │   │   └── styles/             # Styles globaux (si nécessaire en plus de Tailwind)
-│   │       └── global.css
+│   │       └── global.css      # Fichier CSS principal avec imports et config TailwindCSS v4 et DaisyUI v5
 │   ├── test/                  # Tests pour le frontend
 │   │   └── unit/              # Tests unitaires avec Vitest
 │   │       └── basic.test.ts

@@ -237,3 +237,26 @@ La sécurité est une préoccupation majeure à toutes les étapes du cycle de v
 
 -   **Plugin `@tailwindcss/typography` :**
     -   Sera utilisé avec `@tailwindcss/vite` et personnalisé via les imports CSS (dans `src/styles/global.css`) pour styliser le contenu MDX, en s'assurant que les styles générés (couleurs de liens, styles de blockquotes, etc.) s'alignent avec la palette de couleurs définie pour les modes clair et sombre. (Conforme Rapport UI/UX, Section 5.1.1)
+
+## Approche CSS-first avec TailwindCSS v4 et DaisyUI v5
+
+Conformément aux évolutions récentes des standards CSS et à l'approche adoptée dans TailwindCSS v4 et DaisyUI v5, le projet utilise une approche "CSS-first" pour la configuration et la personnalisation du design system.
+
+-   **Configuration Centralisée en CSS :**
+
+    -   L'import et la configuration des plugins se font directement dans le fichier CSS principal (`src/styles/global.css`) via des directives comme `@import "tailwindcss"`, `@plugin "daisyui"` et `@plugin "@tailwindcss/typography"`.
+    -   Les thèmes DaisyUI sont définis directement en CSS avec une syntaxe proche de JSON, en utilisant les valeurs HSL définies dans les spécifications UI/UX.
+    -   Les polices et autres jetons de design sont configurés via la directive `@theme` en CSS.
+
+-   **Utilisation des Variables CSS Natives :**
+
+    -   Les surcharges pour le plugin `@tailwindcss/typography` utilisent directement les variables CSS du thème DaisyUI actif (par exemple, `var(--primary)`, `var(--base-content)`), garantissant l'adaptation automatique aux changements de thème.
+    -   Cette approche tire parti des fonctionnalités CSS modernes (variables personnalisées, fonctions comme `color-mix()`) pour une personnalisation plus intuitive.
+
+-   **Avantages :**
+    -   Suppression ou simplification extrême du fichier `tailwind.config.js`, centralisant la configuration du design system directement en CSS.
+    -   Meilleure performance et réduction de la dépendance à JavaScript pour la configuration et la compilation.
+    -   Approche plus intuitive pour les développeurs front-end habitués à travailler directement avec le CSS.
+    -   Source unique de vérité pour les jetons de design (couleurs, typographie) dans le CSS.
+
+Cette approche est documentée en détail dans `docs/specs/epic1/story7.md` et reflète l'évolution des meilleures pratiques pour l'utilisation de TailwindCSS v4 et DaisyUI v5.
