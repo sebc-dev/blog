@@ -7,10 +7,7 @@ export interface Props {
     description?: string;
 }
 
-const {
-    title = 'Blog Technique Bilingue',
-    description = 'Un blog sur IA, UX, Ingénierie & Tauri',
-} = Astro.props;
+const { title = '…', description = '…' }: Props = Astro.props;
 
 const currentLang = Astro.currentLocale || 'fr';
 ---

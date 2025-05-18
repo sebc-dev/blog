@@ -1,6 +1,7 @@
 ---
-// src/components/common/Footer.astro
+const currentYear = new Date().getFullYear();
 ---
+
 <footer class="bg-base-200 p-4 mt-8 text-center">
-    <p>&copy; {new Date().getFullYear()} Blog Technique Bilingue. Placeholder.</p>
+  <p>&copy; {currentYear} Blog Technique Bilingue. Placeholder.</p>
 </footer>
