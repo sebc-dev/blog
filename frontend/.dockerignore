@@ -1,0 +1,39 @@
+# Fichiers et dossiers générés par Node/PNPM
+node_modules
+pnpm-debug.log
+dist
+.astro
+
+# Fichiers de configuration locale et sensibles
+.env
+.env.*
+*.local
+
+# Cache et logs de développement
+.cache
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Répertoires et fichiers de gestion de version
+.git
+.gitignore
+.gitattributes
+
+# Fichiers spécifiques au système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration Docker (non nécessaires dans le contexte de build pour être copiés)
+# Dockerfile # Exclure pour éviter de le copier dans l'image si COPY . . est utilisé imprudemment
+# .dockerignore # Idem
+
+# Documentation et autres fichiers non nécessaires à l'image de runtime
+README.md
+# docs/ # Exclure si non nécessaire au build
+
+# Fichiers de test locaux, rapports de couverture, etc.
+coverage/
+test-results/
