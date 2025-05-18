@@ -17,7 +17,8 @@ const {
     description = 'Un blog sur IA, UX, Ingénierie & Tauri',
 } = Astro.props;
 
-const currentLang = Astro.currentLocale || 'fr';
+const currentLang = Astro.currentLocale || 'en';
+import '../styles/global.css';
 ---
 <!DOCTYPE html>
 <html lang={currentLang} data-theme="darkTheme">
@@ -27,7 +28,6 @@ const currentLang = Astro.currentLocale || 'fr';
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content={description} />
     <title>{title}</title>
-    <link rel="stylesheet" href="/src/styles/global.css">
     <script is:inline>
       const savedTheme = localStorage.getItem('theme');
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
