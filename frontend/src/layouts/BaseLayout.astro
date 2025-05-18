@@ -2,12 +2,20 @@
 import Header from '../components/common/Header.astro';
 import Footer from '../components/common/Footer.astro';
 
+/**
+ * Base layout component for all pages
+ */
 export interface Props {
+    /** Page title, defaults to 'Blog Technique Bilingue' */
     title?: string;
+    /** Page description for meta tag, defaults to blog description */
     description?: string;
 }
 
-const { title = '…', description = '…' }: Props = Astro.props;
+const {
+    title = 'Blog Technique Bilingue',
+    description = 'Un blog sur IA, UX, Ingénierie & Tauri',
+} = Astro.props;
 
 const currentLang = Astro.currentLocale || 'fr';
 ---
@@ -20,6 +28,12 @@ const currentLang = Astro.currentLocale || 'fr';
     <meta name="description" content={description} />
     <title>{title}</title>
     <link rel="stylesheet" href="/src/styles/global.css">
+    <script is:inline>
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = savedTheme ||
+        (systemPrefersDark ? 'darkTheme' : 'lightTheme');
+    </script>
 </head>
 <body class="font-sans bg-base-100 text-base-content min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-content">
@@ -35,3 +49,4 @@ const currentLang = Astro.currentLocale || 'fr';
     <Footer />
 </body>
 </html>
+
