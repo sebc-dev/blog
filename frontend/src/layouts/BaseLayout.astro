@@ -1,34 +1,16 @@
-<head>
-  <script is:inline>
-    (function () {
-      const THEMES_AVAILABLE = ["customLight", "customDark"];
-      const DEFAULT_THEME = "customLight";
-      const DARK_THEME = "customDark";
-      let themeToApply = DEFAULT_THEME;
-      try {
-        const storedTheme = localStorage.getItem("theme");
-        if (storedTheme && THEMES_AVAILABLE.includes(storedTheme)) {
-          themeToApply = storedTheme;
-        } else {
-          if (
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-          ) {
-            themeToApply = DARK_THEME;
-          }
-          if (storedTheme && !THEMES_AVAILABLE.includes(storedTheme)) {
-            localStorage.removeItem("theme");
-          }
-        }
-      } catch (e) {
-        console.warn("localStorage not accessible for theme persistence.");
-        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-        ) {
-          themeToApply = DARK_THEME;
-        }
-      }
-      document.documentElement.setAttribute("data-theme", themeToApply);
-    })();
-  </script>
-
-</head>
+---
+const { title } = Astro.props;
+import "../styles/global.css";
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

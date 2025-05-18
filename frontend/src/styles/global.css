@@ -122,31 +122,8 @@
 /*                                  DaisyUI                                  */
 /* -------------------------------------------------------------------------- */
 @plugin "daisyui" {
-    themes: mytheme --preferslight, darkTheme --default;
+    themes: lightTheme --preferslight, darkTheme --default;
 }
-  
-  /* @plugin "daisyui/theme" {
-    name: "customLight";
-    color-scheme: light;
-    
-    --color-primary: hsl(217 91% 60%);
-    --color-primary-content: hsl(0 0% 100%);
-    --color-secondary: hsl(160 84% 39%);
-    --color-secondary-content: hsl(0 0% 100%);
-    --color-accent: hsl(249 115% 22%);
-    --color-accent-content: hsl(0 0% 100%);
-    --color-neutral: hsl(210 20% 94%);
-    --color-neutral-content: hsl(215 22% 47%);
-    --color-base-100: hsl(210 33% 98%);
-    --color-base-content: hsl(210 40% 15%);
-    --color-error: hsl(0 84.2% 60.2%);
-    --color-error-content: hsl(0 0% 100%);
-    
-    --border-color: hsl(214 32% 91%);
-    --input-color: hsl(214 32% 91%);
-    --ring-color: hsl(217 91% 60%);
-    --radius-field: 0.5rem;
-  } */
 
   @plugin "daisyui/theme" {
     name: "lightTheme";
