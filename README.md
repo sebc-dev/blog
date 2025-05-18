@@ -7,7 +7,7 @@
 
 # Blog Technique Bilingue
 
-Un blog technique bilingue (français/anglais) spécialisé dans l'IA, l'UX, l'ingénierie logicielle et le framework Tauri.
+Un blog technique bilingue (français/anglais) spécialisé dans l'IA, l'UX, l'ingénierie logicielle et le framework Tauri, Javascript, Typescript, Java, Spring
 
 ## 📝 Description
 
