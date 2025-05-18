@@ -92,63 +92,61 @@ blog-technique-bilingue/
 ├── project-structure.md        # Structure du projet
 ├── frontend/                   # Code source de l'application frontend Astro
 │   ├── public/                 # Fichiers statiques (favicon, robots.txt, images globales)
-│   │   └── assets/
-│   │       └── images/
-│   ├── src/
-│   │   ├── assets/             # Assets spécifiques au build (CSS global non Tailwind, polices locales)
-│   │   ├── components/         # Composants Astro/UI réutilisables
-│   │   │   ├── common/         # Composants très génériques (boutons, cartes)
-│   │   │   │   └── LanguageSwitcher.astro
-│   │   │   └── article/        # Composants spécifiques aux articles
-│   │   │       ├── ArticleToc.astro
-│   │   │       ├── CodeBlock.astro
-│   │   │       └── ShareButtons.astro
-│   │   ├── content/            # Collections de contenu MDX (articles de blog)
-│   │   │   ├── blog/           # Collection 'blog'
-│   │   │   │   ├── en/         # Articles en anglais
-│   │   │   │   │   └── my-first-post.mdx
-│   │   │   │   └── fr/         # Articles en français
-│   │   │   │       └── mon-premier-article.mdx
-│   │   │   └── config.ts       # Configuration des collections Astro (schemas, etc.)
-│   │   ├── env.d.ts            # Définitions de types pour les variables d'environnement
-│   │   ├── layouts/            # Composants de layout Astro
-│   │   │   └── BaseLayout.astro
-│   │   ├── lib/                # Fonctions utilitaires, clients API
-│   │   │   ├── apiService.ts   # Fonctions pour appeler le backend
-│   │   │   └── i18nUtils.ts    # Utilitaires pour l'internationalisation
-│   │   ├── pages/              # Structure des pages et routes Astro
-│   │   │   ├── en/             # Pages en anglais
-│   │   │   │   ├── about.astro
-│   │   │   │   └── blog/
-│   │   │   │       ├── [slug].astro # Page dynamique pour afficher un article
-│   │   │   │       └── index.astro  # Liste des articles en anglais
-│   │   │   ├── fr/             # Pages en français
-│   │   │   │   ├── a-propos.astro
-│   │   │   │   └── blog/
-│   │   │   │       ├── [slug].astro
-│   │   │   │       └── index.astro
-│   │   │   ├── 404.astro
-│   │   │   └── index.astro     # Page d'accueil principale (pourrait rediriger ou être une landing)
-│   │   └── styles/             # Styles globaux (si nécessaire en plus de Tailwind)
-│   │       └── global.css
-│   ├── tests/                  # Tests pour le frontend
-│   │   ├── e2e/                # Tests End-to-End avec Cypress
-│   │   │   └── *.cy.ts
-│   │   └── unit/               # Tests unitaires avec Vitest
-│   │       └── *.test.ts
-│   ├── astro.config.mjs        # Configuration d'Astro
+│   │   ├── favicon.svg        # Favicon SVG avec coloration basée sur le schéma de couleur
+│   │   └── fonts/             # Polices de caractères (Inter, JetBrains Mono)
+│   │   ├── src/
+│   │   │   ├── assets/             # Assets spécifiques au build (CSS global non Tailwind, polices locales)
+│   │   │   ├── components/         # Composants Astro/UI réutilisables
+│   │   │   │   ├── common/         # Composants très génériques (boutons, cartes)
+│   │   │   │   │   ├── LanguageSwitcher.astro
+│   │   │   │   │   └── ThemeSwitcher.astro # Sélecteur de thème clair/sombre
+│   │   │   │   └── article/        # Composants spécifiques aux articles
+│   │   │   │       ├── ArticleToc.astro
+│   │   │   │       ├── CodeBlock.astro
+│   │   │   │       └── ShareButtons.astro
+│   │   │   ├── content/            # Collections de contenu MDX (articles de blog)
+│   │   │   │   ├── blog/           # Collection 'blog'
+│   │   │   │   │   ├── en/         # Articles en anglais
+│   │   │   │   │   │   └── my-first-post.mdx
+│   │   │   │   │   └── fr/         # Articles en français
+│   │   │   │   │   │   └── mon-premier-article.mdx
+│   │   │   │   │   └── config.ts       # Configuration des collections Astro (schemas, etc.)
+│   │   │   │   ├── env.d.ts            # Définitions de types pour les variables d'environnement
+│   │   │   │   ├── layouts/            # Composants de layout Astro
+│   │   │   │   │   └── BaseLayout.astro # Layout de base avec méta-tags et gestionnaire de thème
+│   │   │   │   ├── lib/                # Fonctions utilitaires, clients API
+│   │   │   │   │   ├── apiService.ts   # Fonctions pour appeler le backend
+│   │   │   │   │   └── i18nUtils.ts    # Utilitaires pour l'internationalisation
+│   │   │   │   ├── pages/              # Structure des pages et routes Astro
+│   │   │   │   │   ├── en/             # Pages en anglais
+│   │   │   │   │   │   ├── about.astro
+│   │   │   │   │   │   └── blog/
+│   │   │   │   │   │   │   ├── [slug].astro # Page dynamique pour afficher un article
+│   │   │   │   │   │   │   └── index.astro  # Liste des articles en anglais
+│   │   │   │   │   │   ├── fr/             # Pages en français
+│   │   │   │   │   │   │   ├── a-propos.astro
+│   │   │   │   │   │   │   └── blog/
+│   │   │   │   │   │   │   │   ├── [slug].astro
+│   │   │   │   │   │   │   └── index.astro
+│   │   │   │   │   │   └── 404.astro
+│   │   │   │   │   └── index.astro     # Page d'accueil principale (pourrait rediriger ou être une landing)
+│   │   └── styles/             # Styles globaux
+│   │       └── global.css      # Fichier CSS principal avec imports et config TailwindCSS v4 et DaisyUI v5
+│   ├── test/                  # Tests pour le frontend
+│   │   └── unit/              # Tests unitaires avec Vitest
+│   │       └── basic.test.ts  # Tests basiques pour Vitest
+│   ├── astro.config.ts        # Configuration d'Astro avec plugin tailwindcss/vite
 │   ├── package.json            # Dépendances et scripts PNPM pour le frontend
 │   ├── pnpm-lock.yaml          # Fichier de lock PNPM
 │   ├── tsconfig.json           # Configuration TypeScript pour Astro
-│   ├── tailwind.config.cjs     # Configuration de TailwindCSS
-│   ├── postcss.config.cjs      # Configuration de PostCSS (utilisé par Tailwind)
+│   ├── vitest.config.ts       # Configuration Vitest pour les tests unitaires
 │   └── Dockerfile              # Instructions pour builder l'image Docker du frontend
 ├── scripts/                    # Scripts utilitaires divers (ex: setup local, déploiement)
 │   └── deploy-vps.sh           # Exemple de script de déploiement
 ├── .editorconfig               # Configuration pour la cohérence de style entre éditeurs
 ├── .env.example                # Fichier d'exemple pour les variables d'environnement globales
 ├── .gitignore                  # Fichiers et dossiers à ignorer par Git
-├── infra/                      # Configurations d'infrastructure pour le développement 
+├── infra/                      # Configurations d'infrastructure pour le développement
 │   ├── proxy/                  # Configuration Traefik pour le développement
 │   │   └── docker-compose.yml
 │   └── site/                   # Configuration pour Astro, Spring Boot et PostgreSQL (dev)
@@ -158,61 +156,63 @@ blog-technique-bilingue/
 
 ## Descriptions des Répertoires Clés
 
-- **`.github/`**: Contient les workflows GitHub Actions pour l'intégration continue (CI) et le déploiement continu (CD).
-    - `workflows/`: Définitions des pipelines pour le frontend et le backend.
-- **`backend/`**: Projet Spring Boot (Maven).
-    - `src/main/java/fr/kalifazzia/blogtechnique/`: Code source principal de l'application Java.
-        - `config/`: Classes de configuration Spring (sécurité, beans, etc.).
-        - `metrics/`: Module spécifique à la gestion des métriques des articles (contrôleurs, services, entités JPA, DTOs, repositories). Suivant une approche par fonctionnalité.
-        - `shared/`: Classes utilitaires ou DTOs partagés globalement au sein du backend (ex: gestionnaires d'exceptions globaux, DTOs d'erreur).
-    - `src/main/resources/`: Fichiers de ressources.
-        - `application.yml`: Configuration centrale de Spring Boot.
-        - `db/changelog/`: Scripts de migration de base de données Liquibase.
-    - `src/test/java/fr/kalifazzia/blogtechnique/`: Tests unitaires et d'intégration pour le backend.
-    - `pom.xml`: Descripteur de projet Maven, gère les dépendances et le build.
-    - `Dockerfile`: Définit comment construire l'image Docker pour l'application backend.
-- **`docs/`**: Toute la documentation du projet (architecture, normes, guides, etc.).
-    - `architecture/`: Documentation sur l'architecture technique du projet.
-    - `bilinguisme/`: Guides et stratégies pour la gestion du contenu bilingue.
-    - `ci-cd/`: Configuration et documentation des pipelines CI/CD.
-    - `contribution/`: Normes et guides pour les contributeurs au projet.
-    - `cursor/`: Documentation sur l'utilisation de l'IDE Cursor pour ce projet.
-    - `observabilite/`: Stratégies pour le monitoring et l'observabilité.
-    - `operations/`: Runbooks et procédures opérationnelles.
-    - `securite/`: Documentation sur la sécurité du projet.
-    - `seo/`: Stratégies et bonnes pratiques d'optimisation pour les moteurs de recherche.
-    - `setup/`: Guides d'installation et de configuration des environnements.
-    - `specs/`: Spécifications fonctionnelles organisées par épopées (epics).
-    - `tests/`: Stratégies et documentation sur les approches de test.
-    - `ui-ux/`: Spécifications et guidelines pour l'interface et l'expérience utilisateur.
-- **`frontend/`**: Projet Astro (PNPM).
-    - `public/`: Fichiers statiques copiés tels quels dans le build final (ex: `favicon.ico`, `robots.txt`).
-    - `src/`: Code source principal du site Astro.
-        - `assets/`: Fichiers traités par le build d'Astro (images optimisées, CSS global).
-        - `components/`: Composants Astro réutilisables (`.astro`, `.tsx`, `.jsx`).
-        - `content/`: Collections de contenu, principalement les articles de blog en format MDX, organisés par langue.
-            - `config.ts`: Définition des schémas pour les collections de contenu Astro.
-        - `layouts/`: Mises en page globales pour les pages Astro.
-        - `lib/`: Code TypeScript/JavaScript utilitaire (ex: appels API, helpers i18n).
-        - `pages/`: Fichiers qui définissent les routes du site, organisés par langue.
-        - `styles/`: Fichiers CSS globaux ou feuilles de style non gérées par Tailwind directement.
-    - `tests/`:
-        - `e2e/`: Tests de bout-en-bout (Cypress).
-        - `unit/`: Tests unitaires (Vitest).
-    - `astro.config.mjs`: Fichier de configuration principal d'Astro.
-    - `package.json`: Manifeste du projet Node.js, gère les dépendances frontend avec PNPM.
-    - `pnpm-lock.yaml`: Fichier de lock pour des builds déterministes avec PNPM.
-    - `tsconfig.json`: Configuration du compilateur TypeScript.
-    - `tailwind.config.cjs`: Configuration de TailwindCSS.
-    - `Dockerfile`: Définit comment construire l'image Docker pour le site statique Astro (généralement avec un serveur Nginx ou Caddy pour servir les fichiers).
-- **`infra/`**: Contient les fichiers de configuration Docker Compose pour le développement local uniquement.
-    - `proxy/`: Configuration de Traefik pour le développement.
-    - `site/`: Configuration de la stack Astro + Spring Boot + PostgreSQL pour le développement.
-- **`scripts/`**: Scripts d'aide pour diverses tâches (déploiement, setup, etc.).
-- **Fichiers à la racine :**
-    - `.editorconfig`, `.gitignore`: Configuration standard de projet.
-    - `.env.example`: Modèle pour les variables d'environnement.
-    - `README.md`: Instructions générales pour le projet.
+-   **`.github/`**: Contient les workflows GitHub Actions pour l'intégration continue (CI) et le déploiement continu (CD).
+    -   `workflows/`: Définitions des pipelines pour le frontend et le backend.
+-   **`backend/`**: Projet Spring Boot (Maven).
+    -   `src/main/java/fr/kalifazzia/blogtechnique/`: Code source principal de l'application Java.
+        -   `config/`: Classes de configuration Spring (sécurité, beans, etc.).
+        -   `metrics/`: Module spécifique à la gestion des métriques des articles (contrôleurs, services, entités JPA, DTOs, repositories). Suivant une approche par fonctionnalité.
+        -   `shared/`: Classes utilitaires ou DTOs partagés globalement au sein du backend (ex: gestionnaires d'exceptions globaux, DTOs d'erreur).
+    -   `src/main/resources/`: Fichiers de ressources.
+        -   `application.yml`: Configuration centrale de Spring Boot.
+        -   `db/changelog/`: Scripts de migration de base de données Liquibase.
+    -   `src/test/java/fr/kalifazzia/blogtechnique/`: Tests unitaires et d'intégration pour le backend.
+    -   `pom.xml`: Descripteur de projet Maven, gère les dépendances et le build.
+    -   `Dockerfile`: Définit comment construire l'image Docker pour l'application backend.
+-   **`docs/`**: Toute la documentation du projet (architecture, normes, guides, etc.).
+    -   `architecture/`: Documentation sur l'architecture technique du projet.
+    -   `bilinguisme/`: Guides et stratégies pour la gestion du contenu bilingue.
+    -   `ci-cd/`: Configuration et documentation des pipelines CI/CD.
+    -   `contribution/`: Normes et guides pour les contributeurs au projet.
+    -   `cursor/`: Documentation sur l'utilisation de l'IDE Cursor pour ce projet.
+    -   `observabilite/`: Stratégies pour le monitoring et l'observabilité.
+    -   `operations/`: Runbooks et procédures opérationnelles.
+    -   `securite/`: Documentation sur la sécurité du projet.
+    -   `seo/`: Stratégies et bonnes pratiques d'optimisation pour les moteurs de recherche.
+    -   `setup/`: Guides d'installation et de configuration des environnements.
+    -   `specs/`: Spécifications fonctionnelles organisées par épopées (epics).
+    -   `tests/`: Stratégies et documentation sur les approches de test.
+    -   `ui-ux/`: Spécifications et guidelines pour l'interface et l'expérience utilisateur.
+-   **`frontend/`**: Projet Astro (PNPM).
+    -   `public/`: Fichiers statiques copiés tels quels dans le build final (ex: `favicon.ico`, `robots.txt`).
+    -   `fonts/`: Polices de caractère locales (Inter, JetBrains Mono).
+    -   `src/`: Code source principal du site Astro.
+        -   `assets/`: Fichiers traités par le build d'Astro (images optimisées, CSS global).
+        -   `components/`: Composants Astro réutilisables (`.astro`, `.tsx`, `.jsx`).
+            -   `common/`: Composants génériques comme ThemeSwitcher pour le changement de thème.
+        -   `content/`: Collections de contenu, principalement les articles de blog en format MDX, organisés par langue.
+            -   `config.ts`: Définition des schémas pour les collections de contenu Astro.
+        -   `layouts/`: Mises en page globales pour les pages Astro.
+        -   `lib/`: Code TypeScript/JavaScript utilitaire (ex: appels API, helpers i18n).
+        -   `pages/`: Fichiers qui définissent les routes du site, organisés par langue.
+        -   `styles/`: Fichiers CSS globaux ou feuilles de style.
+            -   `global.css`: Fichier CSS principal avec imports et configuration pour TailwindCSS v4 et DaisyUI v5 via une approche "CSS-first".
+    -   `test/`:
+        -   `unit/`: Tests unitaires avec Vitest.
+    -   `astro.config.ts`: Fichier de configuration principal d'Astro avec plugin tailwindcss/vite.
+    -   `package.json`: Manifeste du projet Node.js, gère les dépendances frontend avec PNPM.
+    -   `pnpm-lock.yaml`: Fichier de lock pour des builds déterministes avec PNPM.
+    -   `tsconfig.json`: Configuration du compilateur TypeScript.
+    -   `vitest.config.ts`: Configuration Vitest pour les tests unitaires.
+    -   `Dockerfile`: Définit comment construire l'image Docker pour le site statique Astro (généralement avec un serveur Nginx ou Caddy pour servir les fichiers).
+-   **`infra/`**: Contient les fichiers de configuration Docker Compose pour le développement local uniquement.
+    -   `proxy/`: Configuration de Traefik pour le développement.
+    -   `site/`: Configuration de la stack Astro + Spring Boot + PostgreSQL pour le développement.
+-   **`scripts/`**: Scripts d'aide pour diverses tâches (déploiement, setup, etc.).
+-   **Fichiers à la racine :**
+    -   `.editorconfig`, `.gitignore`: Configuration standard de projet.
+    -   `.env.example`: Modèle pour les variables d'environnement.
+    -   `README.md`: Instructions générales pour le projet.
 
 ## Structure de Déploiement VPS (Production)
 
@@ -244,24 +244,25 @@ Cette séparation des services, en particulier pour PostgreSQL dans son propre r
 
 La structure des packages du backend (`fr.kalifazzia.blogtechnique`) est organisée par **module fonctionnel** (ex: `metrics`). À l'intérieur de chaque module fonctionnel, les classes sont ensuite organisées par **couche technique** (ex: `controller`, `service`, `entity`, `repository`, `dto`).
 
-- **`config`**: Contient les configurations globales de Spring (sécurité, JPA, Web MVC, etc.).
-- **`metrics` (exemple de module fonctionnel)**:
-    - `controller`: Points d'entrée de l'API REST (annotés avec `@RestController`).
-    - `dto`: Data Transfer Objects, utilisés pour les payloads des requêtes et les corps des réponses API.
-    - `entity`: Entités JPA représentant les tables de la base de données (annotées avec `@Entity`).
-    - `repository`: Interfaces Spring Data JPA pour l'accès aux données (étendant `JpaRepository` ou similaire).
-    - `service`: Contient la logique métier, orchestre les appels aux repositories et autres services.
-- **`shared`**:
-    - `exception`: Gestionnaires d'exceptions globaux (`@ControllerAdvice`) et exceptions personnalisées.
-    - `dto`: DTOs globaux comme `ErrorResponse`.
+-   **`config`**: Contient les configurations globales de Spring (sécurité, JPA, Web MVC, etc.).
+-   **`metrics` (exemple de module fonctionnel)**:
+    -   `controller`: Points d'entrée de l'API REST (annotés avec `@RestController`).
+    -   `dto`: Data Transfer Objects, utilisés pour les payloads des requêtes et les corps des réponses API.
+    -   `entity`: Entités JPA représentant les tables de la base de données (annotées avec `@Entity`).
+    -   `repository`: Interfaces Spring Data JPA pour l'accès aux données (étendant `JpaRepository` ou similaire).
+    -   `service`: Contient la logique métier, orchestre les appels aux repositories et autres services.
+-   **`shared`**:
+    -   `exception`: Gestionnaires d'exceptions globaux (`@ControllerAdvice`) et exceptions personnalisées.
+    -   `dto`: DTOs globaux comme `ErrorResponse`.
 
 Cette structure vise à offrir une bonne séparation des préoccupations tout en maintenant une cohésion élevée au sein des modules fonctionnels.
 
 ## Change Log
 
-|   |   |   |   |   |
-|---|---|---|---|---|
-|Initial draft|2025-05-11|0.1|Création initiale de la structure du projet.|3 - Architecte (IA)|
-|Update|2025-05-11|0.2|Modification du package racine backend pour `fr.kalifazzia.blogtechnique`.|3 - Architecte (IA) & Utilisateur|
-|Update|2023-11-04|0.3|Mise à jour de la structure du dossier docs pour refléter l'organisation actuelle.|Utilisateur|
-|Update|2025-05-15|0.4|Ajout de la structure de déploiement VPS avec PostgreSQL dans `/srv/docker/postgre/`.|Architecte (IA)|
+|               |            |     |                                                                                                  |                                   |
+| ------------- | ---------- | --- | ------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Initial draft | 2025-05-11 | 0.1 | Création initiale de la structure du projet.                                                     | 3 - Architecte (IA)               |
+| Update        | 2025-05-11 | 0.2 | Modification du package racine backend pour `fr.kalifazzia.blogtechnique`.                       | 3 - Architecte (IA) & Utilisateur |
+| Update        | 2023-11-04 | 0.3 | Mise à jour de la structure du dossier docs pour refléter l'organisation actuelle.               | Utilisateur                       |
+| Update        | 2025-05-15 | 0.4 | Ajout de la structure de déploiement VPS avec PostgreSQL dans `/srv/docker/postgre/`.            | Architecte (IA)                   |
+| Update        | 2025-05-17 | 0.5 | Mise à jour de la structure frontend: astro.config.ts, TailwindCSS v4, DaisyUI v5, tests Vitest. | Architecte (IA)                   |

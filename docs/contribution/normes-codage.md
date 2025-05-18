@@ -110,6 +110,7 @@ Les patterns architecturaux et de conception suivants sont adoptés pour ce proj
 Une stratégie de gestion des erreurs robuste est essentielle pour la stabilité et la maintenabilité de l'application.
 
 -   **General Approach:**
+
     -   **Backend (Spring Boot):**
         -   Utiliser le mécanisme d'exceptions de Java.
         -   Mettre en place des `@ControllerAdvice` globaux pour intercepter les exceptions spécifiques (ex: `ResourceNotFoundException`, `ValidationException`) et les exceptions génériques (`RuntimeException`, `Exception`) afin de les transformer en réponses HTTP standardisées (voir `docs/architecture/api-reference.md` et la section "API Design" dans `architecture-principale.txt` pour le format JSON des erreurs).
@@ -120,6 +121,7 @@ Une stratégie de gestion des erreurs robuste est essentielle pour la stabilité
         -   Afficher des messages d'erreur discrets et informatifs si une action utilisateur échoue (ex: échec de la soumission d'un feedback).
 
 -   **Logging:**
+
     -   **Library/Method:**
         -   **Backend (Spring Boot):** SLF4J avec Logback (configuration par défaut de Spring Boot).
         -   **Frontend (Astro/TypeScript):** `console.error()` pour les erreurs capturées importantes. Des logs plus structurés pourraient être envoyés à un service de logging externe post-MVP si nécessaire.
@@ -139,6 +141,7 @@ Une stratégie de gestion des erreurs robuste est essentielle pour la stabilité
         -   **Frontend:** Le contexte de l'erreur (ex: quel composant, quelle action utilisateur).
 
 -   **Specific Handling Patterns:**
+
     -   **External API Calls (Frontend vers Backend API):**
         -   Utiliser `try/catch` autour des `Workspace` ou des appels de librairie HTTP.
         -   Vérifier le statut de la réponse HTTP (ex: `response.ok`).
@@ -161,6 +164,7 @@ Une stratégie de gestion des erreurs robuste est essentielle pour la stabilité
 La sécurité est une préoccupation majeure à toutes les étapes du cycle de vie du projet. Les pratiques suivantes doivent être observées.
 
 -   **Input Sanitization/Validation:**
+
     -   **Backend (Spring Boot):**
         -   Valider systématiquement toutes les données entrantes provenant de sources non fiables (ex: payloads des requêtes API) en utilisant Bean Validation (`jakarta.validation.constraints.*`) sur les DTOs.
         -   Encoder les données sortantes de manière appropriée pour prévenir les attaques XSS si ces données devaient être interprétées par un navigateur (bien que pour le MVP, l'API retourne principalement des données de comptage et des confirmations).
@@ -169,6 +173,7 @@ La sécurité est une préoccupation majeure à toutes les étapes du cycle de v
         -   Toute donnée affichée provenant d'une API (même la nôtre) doit être traitée comme potentiellement dangereuse si elle n'est pas correctement encodée ou si elle est utilisée dans des contextes risqués.
 
 -   **Secrets Management:**
+
     -   **Référencer `docs/setup/environnement-vars.md` pour la liste complète des variables d'environnement et leur sensibilité.**
     -   **En Production (VPS):**
         -   Les secrets (clés API, mots de passe de base de données, etc.) ne doivent JAMAIS être codés en dur dans le code source ou les Dockerfiles.
@@ -182,34 +187,40 @@ La sécurité est une préoccupation majeure à toutes les étapes du cycle de v
         -   Utiliser les "Encrypted Secrets" de GitHub Actions pour stocker les secrets nécessaires au pipeline (ex: identifiants GHCR, clés SSH pour le déploiement).
 
 -   **Dependency Security:**
+
     -   **Analyse régulière des vulnérabilités:**
         -   Utiliser `pnpm audit` (frontend) et des outils d'analyse Maven (ex: OWASP Dependency-Check, Snyk via GitHub Actions) pour le backend afin d'identifier les dépendances avec des vulnérabilités connues.
         -   Intégrer l'analyse de vulnérabilités des images Docker avec Trivy dans le pipeline CI/CD (comme spécifié dans `architecture-principale.txt` et `prd-blog-bilingue.txt`).
     -   **Maintien à jour des dépendances:** Mettre en place une stratégie pour mettre à jour régulièrement les dépendances vers des versions sécurisées, après tests.
 
 -   **Authentication/Authorization Checks:**
+
     -   **API Backend (Spring Boot):**
         -   Pour le MVP, les endpoints de métriques sont publics.
         -   Post-MVP, si des fonctionnalités d'administration ou des endpoints protégés sont ajoutés, implémenter une authentification robuste (ex: Spring Security avec JWT ou OAuth2) et des vérifications d'autorisation granulaires.
     -   **Dashboard Traefik:** Si le dashboard Traefik est activé en production, il doit être sécurisé par une authentification (ex: Basic Auth), comme mentionné dans `architecture-principale.txt`.
 
 -   **Protection contre les vulnérabilités web courantes (OWASP Top 10):**
+
     -   **HTTPS Partout:** Traefik gère la terminaison SSL/TLS et redirige HTTP vers HTTPS.
     -   **Headers de Sécurité:** Configurer Traefik (ou l'application elle-même si nécessaire) pour ajouter des headers de sécurité HTTP importants (ex: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`).
     -   **CSRF Protection:** Non applicable directement pour les API de comptage du MVP qui sont idempotentes ou sans état de session utilisateur. Si des formulaires ou des actions modifiant l'état sont ajoutés post-MVP avec une gestion de session, une protection CSRF sera nécessaire.
     -   **Rate Limiting:** Envisager une limitation de débit sur les endpoints API (via Traefik ou Spring Boot) post-MVP pour prévenir les abus et les attaques par déni de service de base.
 
 -   **Principe de moindre privilège:**
+
     -   **Conteneurs Docker:** Configurer les conteneurs pour qu'ils s'exécutent avec des utilisateurs non-root (spécifié dans les `Dockerfile`).
     -   **Accès Base de Données:** L'utilisateur de la base de données configuré pour l'application Spring Boot doit avoir uniquement les permissions nécessaires sur le schéma et les tables qu'il gère.
 
 -   **Sécurité de l'Infrastructure (VPS):**
+
     -   Maintenir le système d'exploitation Debian et les paquets (Docker, Traefik) à jour (`unattended-upgrades` recommandé).
     -   Configurer le pare-feu du VPS (`iptables-nft`) de manière restrictive (politiques `DROP`, exceptions explicites pour SSH, HTTP, HTTPS) et utiliser `iptables-persistent` pour la sauvegarde des règles.
     -   Sécuriser l'accès SSH (clé uniquement, `PasswordAuthentication no`, `PermitRootLogin no`, `fail2ban` actif sur `sshd`). L'option 2FA TOTP peut être envisagée.
     -   Voir `docs/specs/epic1/story1.md` et `docs/operations/runbook.md` pour les détails de configuration.
 
 -   **Configuration Spécifique à Traefik:**
+
     -   **Fichiers de Configuration YAML:** Les fichiers de configuration de Traefik (ex: `traefik.yml`) doivent être clairs, bien structurés et commentés pour expliquer les choix de configuration non triviaux.
     -   **Durcissement TLS:** Configurer Traefik pour utiliser des versions TLS modernes (TLS 1.2 minimum, TLS 1.3 recommandé) et des suites de chiffrement robustes. Suivre les recommandations de l'industrie pour le durcissement TLS.
     -   **Sécurité du Dashboard:** Si le dashboard Traefik est activé en production, il doit être sécurisé par une authentification robuste. L'utilisation de `Forward Auth` avec un fournisseur d'identité est fortement recommandée par rapport à une simple `Basic Auth`.
@@ -221,5 +232,31 @@ La sécurité est une préoccupation majeure à toutes les étapes du cycle de v
 
 | Change        | Date       | Version | Description                                                                                                    | Author                            |
 | ------------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Initial draft | 2025-05-11 | 0.1     | Initial draft des normes de codage et patterns.                                                                 | 3 - Architecte (IA) & Utilisateur |
+| Initial draft | 2025-05-11 | 0.1     | Initial draft des normes de codage et patterns.                                                                | 3 - Architecte (IA) & Utilisateur |
 | Update        | 2025-05-12 | 0.2     | Mise à jour de la section Sécurité Infrastructure VPS pour refléter `story1.md` (iptables-nft, SSH, fail2ban). | Gemini & Utilisateur              |
+
+-   **Plugin `@tailwindcss/typography` :**
+    -   Sera utilisé avec `@tailwindcss/vite` et personnalisé via les imports CSS (dans `src/styles/global.css`) pour styliser le contenu MDX, en s'assurant que les styles générés (couleurs de liens, styles de blockquotes, etc.) s'alignent avec la palette de couleurs définie pour les modes clair et sombre. (Conforme Rapport UI/UX, Section 5.1.1)
+
+## Approche CSS-first avec TailwindCSS v4 et DaisyUI v5
+
+Conformément aux évolutions récentes des standards CSS et à l'approche adoptée dans TailwindCSS v4 et DaisyUI v5, le projet utilise une approche "CSS-first" pour la configuration et la personnalisation du design system.
+
+-   **Configuration Centralisée en CSS :**
+
+    -   L'import et la configuration des plugins se font directement dans le fichier CSS principal (`src/styles/global.css`) via des directives comme `@import "tailwindcss"`, `@plugin "daisyui"` et `@plugin "@tailwindcss/typography"`.
+    -   Les thèmes DaisyUI sont définis directement en CSS avec une syntaxe proche de JSON, en utilisant les valeurs HSL définies dans les spécifications UI/UX.
+    -   Les polices et autres jetons de design sont configurés via la directive `@theme` en CSS.
+
+-   **Utilisation des Variables CSS Natives :**
+
+    -   Les surcharges pour le plugin `@tailwindcss/typography` utilisent directement les variables CSS du thème DaisyUI actif (par exemple, `var(--primary)`, `var(--base-content)`), garantissant l'adaptation automatique aux changements de thème.
+    -   Cette approche tire parti des fonctionnalités CSS modernes (variables personnalisées, fonctions comme `color-mix()`) pour une personnalisation plus intuitive.
+
+-   **Avantages :**
+    -   Suppression ou simplification extrême du fichier `tailwind.config.js`, centralisant la configuration du design system directement en CSS.
+    -   Meilleure performance et réduction de la dépendance à JavaScript pour la configuration et la compilation.
+    -   Approche plus intuitive pour les développeurs front-end habitués à travailler directement avec le CSS.
+    -   Source unique de vérité pour les jetons de design (couleurs, typographie) dans le CSS.
+
+Cette approche est documentée en détail dans `docs/specs/epic1/story7.md` et reflète l'évolution des meilleures pratiques pour l'utilisation de TailwindCSS v4 et DaisyUI v5.
