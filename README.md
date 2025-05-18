@@ -15,7 +15,7 @@ Ce projet vise à créer une plateforme de contenu technique de haute qualité d
 
 -   Maîtriser Tauri, Javascript, Typescript, Java, Spring
 -   L'IA au service du développeur
--   Excellence en UX Desktop
+-   Excellence en UX
 -   Fondations en ingénierie logicielle
 
 Le site est conçu pour combler le manque de ressources techniques bilingues de qualité, particulièrement pour la communauté francophone.
