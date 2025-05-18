@@ -1,11 +1,9 @@
-<a href="https://gitmoji.dev">
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/sebc-dev/blog?utm_source=oss&utm_medium=github&utm_campaign=sebc-dev%2Fblog&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews) <a href="https://gitmoji.dev">
   <img
     src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=flat-square"
     alt="Gitmoji"
   />
 </a>
-
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/sebc-dev/blog?utm_source=oss&utm_medium=github&utm_campaign=sebc-dev%2Fblog&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 # Blog Technique Bilingue
 
