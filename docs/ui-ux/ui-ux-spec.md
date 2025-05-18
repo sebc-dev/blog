@@ -39,9 +39,9 @@ _(Les spécifications suivantes sont basées sur le document "Description des É
 
 ### 4.1. Palette de Couleurs (Basée sur HSL)
 
-Le thème s'adapte aux préférences de l'utilisateur pour un mode clair ou sombre.
+Le thème s'adapte aux préférences de l'utilisateur pour un mode clair ou sombre. Avec TailwindCSS v4 et DaisyUI v5, ces couleurs sont maintenant configurées directement dans le fichier CSS principal via une approche "CSS-first".
 
-#### 4.1.1. Mode Clair
+#### 4.1.1. Mode Clair (Thème "customLight")
 
 -   **Arrière-plan principal (`--b1` ou équivalent DaisyUI) :** Blanc pur (HSL: 0 0% 100%)
 -   **Texte standard (`--bc` ou équivalent) :** Noir profond légèrement adouci (HSL: 0 0% 3.9%)
@@ -59,7 +59,7 @@ Le thème s'adapte aux préférences de l'utilisateur pour un mode clair ou somb
 -   **État Focus (anneau) :** Noir adouci (HSL: 0 0% 3.9%)
 -   **Éléments Actifs Navigation Latérale (fond) :** Presque noir teinté de bleu (HSL: 240 5.9% 10%)
 
-#### 4.1.2. Mode Sombre
+#### 4.1.2. Mode Sombre (Thème "customDark")
 
 -   **Arrière-plan principal (`--b1`) :** Quasi-noir (HSL: 0 0% 3.9%)
 -   **Texte standard (`--bc`) :** Blanc cassé (HSL: 0 0% 98%)
@@ -77,7 +77,49 @@ Le thème s'adapte aux préférences de l'utilisateur pour un mode clair ou somb
 -   **État Focus (anneau) :** Gris très clair (HSL: 0 0% 83.1%)
 -   **Éléments Actifs Navigation Latérale (fond) :** Bleu moyen vif (HSL: 224.3 76.3% 48%)
 
-#### 4.1.3. Couleurs pour Visualisations de Données
+#### 4.1.3. Implémentation CSS-first avec DaisyUI v5
+
+Avec TailwindCSS v4 et DaisyUI v5, la configuration des thèmes se fait directement dans le fichier CSS principal via la directive `@plugin "daisyui"`. Voici un exemple d'implémentation :
+
+```css
+@plugin "daisyui" {
+  themes: [
+    {
+      customLight: {
+        "primary": "hsl(0 0% 9%)",      // Noir adouci (boutons primaires)
+        "primary-content": "hsl(0 0% 98%)", // Texte sur primaire (blanc cassé)
+        "secondary": "hsl(0 0% 96.1%)", // Gris très clair (boutons secondaires)
+        "secondary-content": "hsl(0 0% 3.9%)",// Texte sur secondaire (noir adouci)
+        "accent": "hsl(0 0% 96.1%)",    // Également gris très clair pour accent
+        "neutral": "hsl(0 0% 26.1%)",   // Gris-bleu foncé (texte nav latérale)
+        "base-100": "hsl(0 0% 100%)",  // Arrière-plan principal (blanc pur)
+        "base-content": "hsl(0 0% 3.9%)", // Texte standard (noir profond adouci)
+        // ... autres variables DaisyUI (info, success, warning, error) en HSL
+        "--rounded-btn": "6px",        // Bordure des boutons
+        "color-scheme": "light",      // Indique le schéma de couleur au navigateur
+      },
+    },
+    {
+      customDark: {
+        "primary": "hsl(0 0% 98%)",    // Blanc cassé (boutons primaires)
+        "primary-content": "hsl(0 0% 3.9%)", // Texte sur primaire (noir adouci)
+        "secondary": "hsl(0 0% 14.9%)",// Gris très foncé (boutons secondaires)
+        "secondary-content": "hsl(0 0% 98%)",// Texte sur secondaire (blanc cassé)
+        "accent": "hsl(0 0% 14.9%)",
+        "neutral": "hsl(240 4.8% 95.9%)",// Gris-bleu très clair (texte nav latérale)
+        "base-100": "hsl(0 0% 3.9%)",  // Arrière-plan principal (quasi-noir)
+        "base-content": "hsl(0 0% 98%)", // Texte standard (blanc cassé)
+        // ... autres variables DaisyUI en HSL
+        "--rounded-btn": "6px",
+        "color-scheme": "dark",       // Indique le schéma de couleur au navigateur
+      },
+    },
+  ],
+  darkTheme: "customDark", // Thème utilisé avec prefers-color-scheme: dark
+}
+```
+
+#### 4.1.4. Couleurs pour Visualisations de Données
 
 Des palettes distinctes sont définies pour assurer la clarté des graphiques et visualisations.
 
@@ -94,40 +136,97 @@ Des palettes distinctes sont définies pour assurer la clarté des graphiques et
     -   Données quaternaires : Violet (HSL: 280 65% 60%)
     -   Données quintes : Rose-rouge (HSL: 340 75% 55%)
 
-**Note sur l'implémentation DaisyUI :** Ces valeurs HSL seront utilisées pour personnaliser un ou plusieurs thèmes DaisyUI (par exemple, un thème "customLight" et "customDark"). Les variables CSS correspondantes de DaisyUI (ex: `--p`, `--s`, `--a`, `--n`, `--b1`, `--bc`, etc.) seront surchargées. Un audit de contraste WCAG 2.1 AA sera impératif après application de ces couleurs.
-
 ### 4.2. Typographie
 
-La typographie est conçue pour une lisibilité maximale du contenu technique.
+La typographie est conçue pour une lisibilité maximale du contenu technique. Avec TailwindCSS v4, la configuration des polices se fait directement dans le fichier CSS principal via la directive `@theme`.
 
 -   **Polices de Caractères :**
     -   **Corps du Texte (et titres généraux) :**
-        -   Police **Inter** (Sans-Serif). (Source : Document Thème)
-        -   Cette police offre une excellente lisibilité et un bon support multilingue. Elle sera importée (ex: via Fontsource ou @font-face) et configurée via `@theme` dans le fichier CSS principal.
+        -   Police **Inter** (Sans-Serif).
+        -   Cette police offre une excellente lisibilité et un bon support multilingue. Elle est importée via `@font-face` avec les fichiers situés dans `frontend/public/fonts/`.
     -   **Blocs de Code :**
-        -   Police **JetBrains Mono** (Monospace). (Source : Document Thème)
+        -   Police **JetBrains Mono** (Monospace).
         -   Appréciée pour sa clarté dans les environnements de développement. Configurée via `@theme` dans le fichier CSS principal.
+-   **Configuration CSS-first des polices :**
+
+    ```css
+    @font-face {
+        font-family: "Inter";
+        src: url("/fonts/Inter-Regular.woff2") format("woff2");
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: "Inter";
+        src: url("/fonts/Inter-Bold.woff2") format("woff2");
+        font-weight: bold;
+        font-style: normal;
+        font-display: swap;
+    }
+    /* ... autres variantes Inter et JetBrains Mono ... */
+
+    @theme {
+        --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+            "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+            Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    ```
+
 -   **Taille des Polices :**
-    -   Corps du texte : Base de `16px` (`1rem`), avec une échelle typographique proportionnelle (utilisant les utilitaires de taille de texte de TailwindCSS, ex: `text-base`, `text-lg`, `text-xl`, etc.). (Conforme Rapport UI/UX, Section 3.2.1)
-    -   Hiérarchisation claire pour les titres H1-H6, avec des variations de taille et de graisse. (Source : Document Thème & Rapport UI/UX, Section 3.2.2)
+    -   Corps du texte : Base de `16px` (`1rem`), avec une échelle typographique proportionnelle (utilisant les utilitaires de taille de texte de TailwindCSS, ex: `text-base`, `text-lg`, `text-xl`, etc.).
+    -   Hiérarchisation claire pour les titres H1-H6, avec des variations de taille et de graisse.
         -   Mode clair : Différents niveaux de noir pour la hiérarchisation.
         -   Mode sombre : Différents niveaux de blanc pour la hiérarchisation.
 -   **Hauteur de Ligne (Interligne) :**
-    -   Corps du texte : Environ `1.6` à `1.7` (ex: `leading-relaxed` ou `leading-loose` de TailwindCSS) pour un confort de lecture optimal. (Conforme Rapport UI/UX, Section 3.3.1)
+    -   Corps du texte : Environ `1.6` à `1.7` (ex: `leading-relaxed` ou `leading-loose` de TailwindCSS) pour un confort de lecture optimal.
 -   **Longueur de Ligne :**
-    -   Utilisation de la classe `max-w-prose` de TailwindCSS (qui limite à `65ch`) pour le conteneur principal des articles de blog pour une lisibilité optimale. (Conforme Rapport UI/UX, Section 5.1.2)
-    -   Texte aligné à gauche (éviter le justifié). (Rapport UI/UX, Section 3.3.3)
+    -   Utilisation de la classe `max-w-prose` de TailwindCSS (qui limite à `65ch`) pour le conteneur principal des articles de blog pour une lisibilité optimale.
+    -   Texte aligné à gauche (éviter le justifié).
 -   **Plugin `@tailwindcss/typography` :**
-    -   Sera utilisé et personnalisé via des surcharges CSS (approche "CSS-first") pour styliser le contenu MDX (classe `prose`), en s'assurant que les styles générés (couleurs de liens, styles de blockquotes, etc.) s'alignent avec la palette de couleurs définie pour les modes clair et sombre. (Conforme Rapport UI/UX, Section 5.1.1)
 
-### 4.3. Iconographie (MVP)
+    -   Intégré via la directive `@plugin "@tailwindcss/typography"` dans le CSS principal.
+    -   Personnalisé via des surcharges CSS directes utilisant les variables DaisyUI :
+
+    ```css
+    @plugin "@tailwindcss/typography";
+
+    /* Surcharges pour @tailwindcss/typography */
+    .prose {
+        color: var(
+            --base-content
+        ); /* Utilise la couleur de texte du thème actif */
+    }
+
+    .prose :where(a):not(:where([class~="not-prose"] *)) {
+        color: var(
+            --primary
+        ); /* Utilise la couleur primaire du thème pour les liens */
+    }
+
+    /* ... autres surcharges pour les titres, le code, les blockquotes, etc. */
+    ```
+
+### 4.3. Sélecteur de Thème
+
+Un sélecteur de thème est implémenté pour permettre aux utilisateurs de basculer entre le mode clair et le mode sombre selon leurs préférences :
+
+-   **Composant :** `ThemeSwitcher.astro` dans `src/components/common/`.
+-   **Fonctionnement :** Utilise la classe `theme-controller` de DaisyUI v5 pour basculer entre les thèmes définis.
+-   **Persistance :** La préférence est stockée dans `localStorage` et est appliquée dès le chargement initial de la page via un script anti-FOUC (Flash Of Unstyled Content).
+-   **Positionnement :** Dans le header global, à côté du sélecteur de langue.
+-   **Design :** Utilise des icônes soleil/lune avec un toggle adaptatif aux modes clair/sombre.
+
+### 4.4. Iconographie (MVP)
 
 -   **Style :** Linéaire, minimaliste, moderne. Utilisation de SVG.
 -   **Sources :** Heroicons, Feather Icons, ou Remix Icon. (Conforme Rapport UI/UX, Section 4.3)
 -   **Utilisation :** Pour les boutons de partage, indicateurs de liens externes, sélecteur de langue (optionnel), bouton "copier code", etc.
 -   **Accessibilité :** `aria-hidden="true"` pour les icônes décoratives ; `aria-label` ou texte alternatif pour les icônes interactives.
 
-### 4.4. Animations et Transitions
+### 4.5. Animations et Transitions
 
 -   **Subtilité et Fluidité :** Les animations et transitions seront utilisées avec parcimonie pour améliorer l'expérience sans distraire. (Source : Document Thème)
 -   **Durée :** Transitions rapides mais visibles, typiquement `0.2s` (ex: `transition-all duration-200 ease-in-out`).
@@ -136,7 +235,7 @@ La typographie est conçue pour une lisibilité maximale du contenu technique.
     -   Ouverture/fermeture des accordéons (si utilisés).
     -   Apparition des menus déroulants/popovers.
 
-### 4.5. Espacement et Layout Général
+### 4.6. Espacement et Layout Général
 
 -   **Conteneur Principal :** Centré automatiquement, avec une largeur maximale (ex: `1400px` du document thème, mais `max-w-prose` sera utilisé pour le contenu textuel principal des articles).
 -   **Rembourrage (Padding) :** Un rembourrage standard généreux (ex: `2rem` / `32px`, soit `p-8` de Tailwind) sera utilisé autour des blocs de contenu principaux pour aérer la page. (Source : Document Thème)

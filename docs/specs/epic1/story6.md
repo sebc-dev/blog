@@ -16,15 +16,15 @@ Initialiser un projet Astro (version spécifiée dans `docs/teck-stack.md`) dans
 
 -   AC1: Un projet Astro (version spécifiée, ex: 5.7.12) est créé et fonctionnel dans le répertoire `frontend/`.
 -   AC2: TypeScript est configuré et utilisable dans le projet Astro.
--   AC3: TailwindCSS est installé et configuré (`tailwind.config.cjs`, `postcss.config.cjs`, CSS global importé). Les classes utilitaires Tailwind sont fonctionnelles.
+-   AC3: TailwindCSS est installé et configuré via le plugin Vite pour TailwindCSS. Les classes utilitaires Tailwind sont fonctionnelles.
 -   AC4: DaisyUI est installé comme plugin TailwindCSS et ses composants de base sont utilisables.
 -   AC5: PNPM est utilisé pour la gestion des dépendances (`pnpm-lock.yaml` est présent).
 -   AC6: Une page d'accueil Astro basique (ex: `src/pages/index.astro`) peut être rendue avec succès par le serveur de développement Astro (`pnpm dev`).
--   AC7: Le plugin `@tailwindcss/typography` est installé.
+-   AC7: Le plugin `@tailwindcss/typography` est installé et configuré pour le rendu des articles MDX.
 
 ## Technical Implementation Context
 
-**Guidance:** Utiliser les commandes d'initialisation Astro et les guides d'intégration pour TailwindCSS et DaisyUI.
+**Guidance:** Utiliser les commandes d'initialisation Astro et les guides d'intégration pour TailwindCSS v4 et DaisyUI v5.
 
 -   **Relevant Files:**
 
@@ -33,9 +33,7 @@ Initialiser un projet Astro (version spécifiée dans `docs/teck-stack.md`) dans
         -   `pnpm-lock.yaml` (géré par PNPM)
         -   `astro.config.ts`
         -   `tsconfig.json`
-        -   `tailwind.config.cjs`
-        -   `postcss.config.cjs`
-        -   `src/styles/global.css` (ou un nom similaire pour importer Tailwind)
+        -   `src/styles/global.css` (pour importer Tailwind et configurer les plugins)
         -   `src/pages/index.astro` (page d'exemple)
         -   `src/env.d.ts`
     -   _(Hint: Voir `docs/project-structure.md` pour la structure cible du répertoire `frontend/` et `docs/ui-ux/ui-ux-spec.md` pour les attentes concernant le thème)_
@@ -49,6 +47,7 @@ Initialiser un projet Astro (version spécifiée dans `docs/teck-stack.md`) dans
     -   PNPM
     -   Node.js (version 22 LTS pour l'environnement de build/dev)
     -   `@tailwindcss/typography`
+    -   `@tailwindcss/vite`
     -   _(Hint: Voir `docs/teck-stack.md`)_
 
 -   **API Interactions / SDK Usage:**
@@ -71,6 +70,7 @@ Initialiser un projet Astro (version spécifiée dans `docs/teck-stack.md`) dans
 -   **Coding Standards Notes:**
     -   Suivre les conventions Astro et TypeScript.
     -   Organiser les fichiers de configuration proprement.
+    -   Utiliser l'approche "CSS-first" pour la configuration de TailwindCSS v4.
     -   _(Hint: Voir `docs/normes-codage.md`)_
 
 ## Tasks / Subtasks
@@ -150,3 +150,4 @@ Initialiser un projet Astro (version spécifiée dans `docs/teck-stack.md`) dans
 -   **Completion Notes:** {Any notes about implementation choices, difficulties, or follow-up needed}
 -   **Change Log:**
     -   Initial Draft
+    -   2025-05-17: Mise à jour pour refléter l'utilisation du plugin Vite pour TailwindCSS v4 et l'approche CSS-first

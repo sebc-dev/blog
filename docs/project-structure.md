@@ -92,13 +92,14 @@ blog-technique-bilingue/
 ├── project-structure.md        # Structure du projet
 ├── frontend/                   # Code source de l'application frontend Astro
 │   ├── public/                 # Fichiers statiques (favicon, robots.txt, images globales)
-│   │   └── assets/
-│   │       └── images/
+│   │   ├── favicon.svg        # Favicon SVG avec coloration basée sur le schéma de couleur
+│   │   └── fonts/             # Polices de caractères (Inter, JetBrains Mono)
 │   │   ├── src/
 │   │   │   ├── assets/             # Assets spécifiques au build (CSS global non Tailwind, polices locales)
 │   │   │   ├── components/         # Composants Astro/UI réutilisables
 │   │   │   │   ├── common/         # Composants très génériques (boutons, cartes)
-│   │   │   │   │   └── LanguageSwitcher.astro
+│   │   │   │   │   ├── LanguageSwitcher.astro
+│   │   │   │   │   └── ThemeSwitcher.astro # Sélecteur de thème clair/sombre
 │   │   │   │   └── article/        # Composants spécifiques aux articles
 │   │   │   │       ├── ArticleToc.astro
 │   │   │   │       ├── CodeBlock.astro
@@ -112,7 +113,7 @@ blog-technique-bilingue/
 │   │   │   │   │   └── config.ts       # Configuration des collections Astro (schemas, etc.)
 │   │   │   │   ├── env.d.ts            # Définitions de types pour les variables d'environnement
 │   │   │   │   ├── layouts/            # Composants de layout Astro
-│   │   │   │   │   └── BaseLayout.astro
+│   │   │   │   │   └── BaseLayout.astro # Layout de base avec méta-tags et gestionnaire de thème
 │   │   │   │   ├── lib/                # Fonctions utilitaires, clients API
 │   │   │   │   │   ├── apiService.ts   # Fonctions pour appeler le backend
 │   │   │   │   │   └── i18nUtils.ts    # Utilitaires pour l'internationalisation
@@ -129,11 +130,11 @@ blog-technique-bilingue/
 │   │   │   │   │   │   │   └── index.astro
 │   │   │   │   │   │   └── 404.astro
 │   │   │   │   │   └── index.astro     # Page d'accueil principale (pourrait rediriger ou être une landing)
-│   │   └── styles/             # Styles globaux (si nécessaire en plus de Tailwind)
+│   │   └── styles/             # Styles globaux
 │   │       └── global.css      # Fichier CSS principal avec imports et config TailwindCSS v4 et DaisyUI v5
 │   ├── test/                  # Tests pour le frontend
 │   │   └── unit/              # Tests unitaires avec Vitest
-│   │       └── basic.test.ts
+│   │       └── basic.test.ts  # Tests basiques pour Vitest
 │   ├── astro.config.ts        # Configuration d'Astro avec plugin tailwindcss/vite
 │   ├── package.json            # Dépendances et scripts PNPM pour le frontend
 │   ├── pnpm-lock.yaml          # Fichier de lock PNPM
@@ -184,17 +185,20 @@ blog-technique-bilingue/
     -   `ui-ux/`: Spécifications et guidelines pour l'interface et l'expérience utilisateur.
 -   **`frontend/`**: Projet Astro (PNPM).
     -   `public/`: Fichiers statiques copiés tels quels dans le build final (ex: `favicon.ico`, `robots.txt`).
+    -   `fonts/`: Polices de caractère locales (Inter, JetBrains Mono).
     -   `src/`: Code source principal du site Astro.
         -   `assets/`: Fichiers traités par le build d'Astro (images optimisées, CSS global).
         -   `components/`: Composants Astro réutilisables (`.astro`, `.tsx`, `.jsx`).
+            -   `common/`: Composants génériques comme ThemeSwitcher pour le changement de thème.
         -   `content/`: Collections de contenu, principalement les articles de blog en format MDX, organisés par langue.
             -   `config.ts`: Définition des schémas pour les collections de contenu Astro.
         -   `layouts/`: Mises en page globales pour les pages Astro.
         -   `lib/`: Code TypeScript/JavaScript utilitaire (ex: appels API, helpers i18n).
         -   `pages/`: Fichiers qui définissent les routes du site, organisés par langue.
-        -   `styles/`: Fichiers CSS globaux ou feuilles de style non gérées par Tailwind directement.
+        -   `styles/`: Fichiers CSS globaux ou feuilles de style.
+            -   `global.css`: Fichier CSS principal avec imports et configuration pour TailwindCSS v4 et DaisyUI v5 via une approche "CSS-first".
     -   `test/`:
-        -   `unit/`: Tests unitaires (Vitest).
+        -   `unit/`: Tests unitaires avec Vitest.
     -   `astro.config.ts`: Fichier de configuration principal d'Astro avec plugin tailwindcss/vite.
     -   `package.json`: Manifeste du projet Node.js, gère les dépendances frontend avec PNPM.
     -   `pnpm-lock.yaml`: Fichier de lock pour des builds déterministes avec PNPM.
@@ -255,9 +259,10 @@ Cette structure vise à offrir une bonne séparation des préoccupations tout en
 
 ## Change Log
 
-|               |            |     |                                                                                       |                                   |
-| ------------- | ---------- | --- | ------------------------------------------------------------------------------------- | --------------------------------- |
-| Initial draft | 2025-05-11 | 0.1 | Création initiale de la structure du projet.                                          | 3 - Architecte (IA)               |
-| Update        | 2025-05-11 | 0.2 | Modification du package racine backend pour `fr.kalifazzia.blogtechnique`.            | 3 - Architecte (IA) & Utilisateur |
-| Update        | 2023-11-04 | 0.3 | Mise à jour de la structure du dossier docs pour refléter l'organisation actuelle.    | Utilisateur                       |
-| Update        | 2025-05-15 | 0.4 | Ajout de la structure de déploiement VPS avec PostgreSQL dans `/srv/docker/postgre/`. | Architecte (IA)                   |
+|               |            |     |                                                                                                  |                                   |
+| ------------- | ---------- | --- | ------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Initial draft | 2025-05-11 | 0.1 | Création initiale de la structure du projet.                                                     | 3 - Architecte (IA)               |
+| Update        | 2025-05-11 | 0.2 | Modification du package racine backend pour `fr.kalifazzia.blogtechnique`.                       | 3 - Architecte (IA) & Utilisateur |
+| Update        | 2023-11-04 | 0.3 | Mise à jour de la structure du dossier docs pour refléter l'organisation actuelle.               | Utilisateur                       |
+| Update        | 2025-05-15 | 0.4 | Ajout de la structure de déploiement VPS avec PostgreSQL dans `/srv/docker/postgre/`.            | Architecte (IA)                   |
+| Update        | 2025-05-17 | 0.5 | Mise à jour de la structure frontend: astro.config.ts, TailwindCSS v4, DaisyUI v5, tests Vitest. | Architecte (IA)                   |

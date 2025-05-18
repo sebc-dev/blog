@@ -1,6 +1,6 @@
 # Story 1.7.1: Configuration Thème DaisyUI de Base (Couleurs, Typo) avec Astro, TailwindCSS v4 et DaisyUI v5
 
-**Status:** Draft
+**Status:** Mise à jour - Utilisation de l'approche CSS-first
 
 ## 1. Goal & Context
 
@@ -18,30 +18,27 @@ L'approche "CSS-first" simplifie la définition des thèmes et des polices en ce
 
 ## 3. Acceptance Criteria (ACs)
 
--   AC1: Deux thèmes DaisyUI v5 (par exemple, "customLight", "customDark") sont configurés dans le fichier CSS principal (ex: `frontend/src/styles/global.css`) via la directive `@plugin "daisyui"`. [cite: 15] Ces thèmes appliquent correctement les palettes de couleurs HSL (arrière-plans, textes, accents, primaires, etc.) telles que définies dans `docs/ui-ux/ui-ux-spec.md` (Section 4.1). [cite: 16] Un des thèmes est désigné comme thème sombre par défaut pour la media query `prefers-color-scheme: dark`, conformément aux mécanismes de DaisyUI v5. [cite: 17]
+-   AC1: Deux thèmes DaisyUI v5 ("lightTheme", "darkTheme") sont configurés dans le fichier CSS principal (ex: `frontend/src/styles/global.css`) via les directives `@plugin "daisyui"` et `@plugin "daisyui/theme"`. [cite: 15] Ces thèmes appliquent correctement les palettes de couleurs OKLCH (arrière-plans, textes, accents, primaires, etc.) telles que définies dans `docs/ui-ux/ui-ux-spec.md` (Section 4.1). [cite: 16] Le thème "darkTheme" est désigné comme thème par défaut et "lightTheme" comme thème préféré pour la media query `prefers-color-scheme: light`, conformément aux mécanismes de DaisyUI v5. [cite: 17]
 -   AC2: Les polices de caractères "Inter" (pour le corps du texte et les titres) et "JetBrains Mono" (pour les blocs de code) sont configurées au sein du bloc `@theme` dans le fichier CSS principal. [cite: 17] Elles sont correctement importées (soit via des déclarations `@font-face` dans le CSS global, soit via des imports de paquets Fontsource dans les layouts Astro) et appliquées de manière effective sur l'ensemble du site. [cite: 18]
 -   AC3: Le plugin `@tailwindcss/typography` (utilisé via la classe `prose`) est configuré dans le fichier CSS principal par la directive `@plugin "@tailwindcss/typography"`. [cite: 19] Ses styles de base, notamment la couleur du texte, des liens, et des titres, sont surchargés à l'aide de règles CSS additionnelles. [cite: 20] Ces surcharges utilisent les variables de couleur des thèmes DaisyUI (par exemple, `var(--base-content)`, `var(--primary)`, `var(--secondary)`) afin que le contenu `prose` s'adapte dynamiquement aux thèmes clair et sombre activés. [cite: 21]
--   AC4: Un sélecteur de thème, sous forme de bouton ou d'interrupteur, est présent (par exemple, dans le composant Header). [cite: 22] Il permet à l'utilisateur de basculer de manière fonctionnelle entre le thème clair et le thème sombre. [cite: 23] La préférence de thème de l'utilisateur est persistée grâce à `localStorage`. [cite: 24] Cette préférence est appliquée à l'attribut `data-theme` de la balise `<html>` dès le chargement initial de la page, afin d'éviter tout effet de "Flash Of Unstyled Content" (FOUC). [cite: 25]
+-   AC4: Un sélecteur de thème, sous forme de bouton ou d'interrupteur, est présent (par exemple, dans le composant Header). [cite: 22] Il utilise la classe `theme-controller` de DaisyUI v5 pour basculer de manière fonctionnelle entre le thème clair et le thème sombre. [cite: 23] La préférence de thème de l'utilisateur est automatiquement persistée dans `localStorage` par le mécanisme intégré de DaisyUI. [cite: 24] Cette préférence est appliquée à l'attribut `data-theme` de la balise `<html>` dès le chargement initial de la page, ce qui évite tout effet de "Flash Of Unstyled Content" (FOUC). [cite: 25]
 
 _La réussite du critère d'acceptation AC3, qui concerne l'adaptation dynamique du contenu `prose`, est intrinsèquement liée à la mise en place correcte des variables CSS par DaisyUI (AC1) et à la capacité de surcharger les styles de `prose` en utilisant ces variables._ [cite: 26] _Le passage à TailwindCSS v4 et DaisyUI v5 rend cette approche plus naturelle, car l'ensemble du système de thématiques est géré par des variables CSS._ [cite: 27] _Lorsque le thème est modifié par le sélecteur (AC4), l'attribut `data-theme` de la balise `<html>` est mis à jour._ [cite: 28] _En réponse, DaisyUI actualise les valeurs de ses variables CSS (telles que `--p` pour la couleur primaire, `--s` pour la secondaire, `--bc` pour la couleur du contenu de base). [cite: 29] Si les styles du plugin `@tailwindcss/typography` sont configurés pour utiliser ces variables (par exemple, `color: var(--bc);` pour le texte et `color: var(--p);` pour les liens, comme stipulé dans AC3), alors les éléments `prose` hériteront automatiquement des nouvelles couleurs du thème actif._ [cite: 29] _Ce mécanisme ne nécessite aucune logique JavaScript supplémentaire pour re-thématiser le contenu `prose`, ce qui constitue une amélioration notable par rapport aux approches antérieures qui pouvaient nécessiter la manipulation de classes spécifiques (comme `dark:prose-invert`) ou des configurations JavaScript complexes._ [cite: 30]
 
 ## 4. Technical Implementation Context
 
 **Guidance:**
-La modification principale interviendra dans le fichier CSS global (par exemple, `frontend/src/styles/global.css`). [cite: 31] Ce fichier centralisera la configuration de TailwindCSS v4 (via `@theme` pour les polices et potentiellement d'autres jetons de design), l'import et la configuration de DaisyUI v5 (via `@plugin "daisyui" { themes: [...] }`), ainsi que l'import du plugin `@tailwindcss/typography` (via `@plugin "@tailwindcss/typography"`). [cite: 32] Des règles CSS spécifiques devront être ajoutées pour surcharger les styles de la classe `prose` afin qu'ils utilisent les variables de couleur des thèmes DaisyUI. [cite: 33] Un composant Astro sera créé ou mis à jour pour le sélecteur de thème. [cite: 34] Ce composant inclura un script côté client pour gérer la logique de basculement entre les thèmes et la persistance de la préférence utilisateur. [cite: 35]
+La modification principale interviendra dans le fichier CSS global (par exemple, `frontend/src/styles/global.css`). [cite: 31] Ce fichier centralisera la configuration de TailwindCSS v4 (via `@theme` pour les polices et potentiellement d'autres jetons de design), l'import et la configuration de DaisyUI v5 (via `@plugin "daisyui" { themes: [...] }`), ainsi que l'import du plugin `@tailwindcss/typography` (via `@plugin "@tailwindcss/typography"`). [cite: 32] Des règles CSS spécifiques devront être ajoutées pour surcharger les styles de la classe `prose` afin qu'ils utilisent les variables de couleur des thèmes DaisyUI. [cite: 33] Un composant Astro sera créé ou mis à jour pour le sélecteur de thème utilisant la classe `theme-controller` de DaisyUI. [cite: 34] En utilisant cette classe native de DaisyUI, aucun script JavaScript personnalisé n'est nécessaire pour la gestion du thème, car DaisyUI prend en charge automatiquement la persistance des préférences et l'application du thème approprié dès le chargement initial de la page. [cite: 35]
 
 _Bien que la configuration JavaScript soit réduite, la complexité peut se déplacer vers le fichier CSS principal, qui pourrait devenir volumineux._ [cite: 36] _Une organisation rigoureuse, incluant des commentaires et une structuration claire par sections, sera essentielle pour maintenir la lisibilité et la maintenabilité._ [cite: 37] _Néanmoins, pour de nombreux développeurs front-end, la manipulation directe du CSS est souvent perçue comme plus directe et intuitive que la navigation dans des fichiers de configuration JavaScript complexes. [cite: 38] TailwindCSS v4 encourage cette configuration en CSS, et DaisyUI v5 s'aligne sur cette approche. [cite: 38] Les polices, les thèmes et les plugins comme Typography sont tous configurés ou importés dans le CSS, ce qui signifie que le fichier `tailwind.config.js` devient minimaliste, voire disparaît pour la plupart des cas d'usage courants. [cite: 38] La "source unique de vérité" pour le système de design de base (couleurs, typographie) tend ainsi à devenir le CSS._ [cite: 38]
 
 -   **Relevant Files:**
 
     -   Files to Modify:
-        -   `frontend/src/styles/global.css`: Ce sera le fichier principal pour l'instruction `@import "tailwindcss"`, la configuration `@theme` de Tailwind, l'import et la configuration de `@plugin "daisyui"`, l'import de `@plugin "@tailwindcss/typography"`, les surcharges CSS pour la classe `prose`, et potentiellement les imports `@font-face` pour les polices locales. [cite: 39]
-        -   Un layout global ou un composant d'en-tête (par exemple, `frontend/src/components/common/Header.astro` ou `frontend/src/layouts/BaseLayout.astro`): Nécessaire pour intégrer le sélecteur de thème et, de manière cruciale, le script anti-FOUC dans la section `<head>` du document HTML. [cite: 40]
+        -   `frontend/src/styles/global.css`: Ce sera le fichier principal pour l'instruction `@import "tailwindcss"`, la configuration `@theme` de Tailwind, l'import et la configuration de `@plugin "daisyui"` (incluant l'option `darkTheme`), l'import de `@plugin "@tailwindcss/typography"`, les surcharges CSS pour la classe `prose`, et potentiellement les imports `@font-face` pour les polices locales. [cite: 39]
+        -   Un layout global ou un composant d'en-tête (par exemple, `frontend/src/components/common/Header.astro` ou `frontend/src/layouts/BaseLayout.astro`): Nécessaire pour intégrer le sélecteur de thème dans l'interface utilisateur. [cite: 40]
     -   Files to Create:
-        -   Potentiellement un nouveau composant Astro dédié au sélecteur de thème (par exemple, `frontend/src/components/common/ThemeSwitcher.astro`). [cite: 41]
-        -   Un script JavaScript, qui peut être inclus de manière inline dans `ThemeSwitcher.astro` pour la logique d'interaction, et une partie dans `BaseLayout.astro` (pour le script anti-FOUC dans `<head>`), pour gérer la logique du sélecteur de thème et la persistance des préférences. [cite: 42]
-    -   Files to Delete or Minimize:
-        -   `frontend/tailwind.config.cjs`: Ce fichier sera soit supprimé, soit considérablement réduit. [cite: 43] TailwindCSS v4 vise une approche "zéro configuration" pour les scénarios d'utilisation courants. [cite: 44] Si des options de configuration très spécifiques, non gérables via la directive `@config` en CSS, s'avéraient nécessaires (ce qui est peu probable pour les besoins de cette story), le fichier pourrait subsister. [cite: 45] Des sources indiquent la possibilité d'utiliser `@config "./tailwind.config.js"` pour des cas avancés comme la configuration fine du plugin Typography, mais pour la gestion des couleurs, les variables CSS devraient être suffisantes. [cite: 46]
+        -   Un composant Astro dédié au sélecteur de thème (par exemple, `frontend/src/components/common/ThemeSwitcher.astro`) utilisant la classe `theme-controller` de DaisyUI. [cite: 41] Cette approche simplifiée ne nécessite aucun script JavaScript personnalisé puisque le comportement est entièrement géré par DaisyUI. [cite: 42]
 
 -   **Tableau Comparatif des Approches de Configuration:** [cite: 47]
     | Caractéristique | Ancienne Approche (Tailwind v3 / DaisyUI <v5) | Nouvelle Approche (Tailwind v4 / DaisyUI v5) | Fichier Principal Affecté |
@@ -185,11 +182,7 @@ _Bien que la configuration JavaScript soit réduite, la complexité peut se dép
               },
             },
           ],
-          // darkTheme: "customDark", // Peut être géré par le script ou `prefers-color-scheme`
-          // styled: true, // default [cite: 78]
-          // utils: true,  // default [cite: 78]
-          // prefix: "",   // default [cite: 78, 79]
-          // logs: true,   // pour débogage [cite: 79]
+          darkTheme: "customDark", // Thème utilisé avec prefers-color-scheme: dark
         }
         ```
 
@@ -380,35 +373,11 @@ _Bien que la configuration JavaScript soit réduite, la complexité peut se dép
         const sunIcon = `<svg class="swap-on fill-current w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">...</svg>`; /* [cite: 126] */ // (contenu SVG du soleil)
         const moonIcon = `<svg class="swap-off fill-current w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">...</svg>`; /* [cite: 127] */ // (contenu SVG de la lune)
         ---
-        <label class="swap swap-rotate btn btn-ghost btn-circle" title="Changer de thème"> /* [cite: 128] */
-          <input type="checkbox" id="theme-toggle-checkbox" aria-label="Changer de thème" /> /* [cite: 128] */
-          <Fragment set:html={sunIcon} /> /* [cite: 128] */
-          <Fragment set:html={moonIcon} /> /* [cite: 128] */
+        <label class="toggle text-base-content">
+          <input type="checkbox" value="lightTheme" class="theme-controller" />
+          <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 16 16"><path fill="currentColor" d="M6 .278a.77.77 0 0 1 .08.858a7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316a.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71C0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 16 16"><path fill="currentColor" d="M8 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"></path></svg>
         </label>
-
-        <script define:vars={{ themesAvailable: themes, lightTheme: themes[0], darkTheme: themes[1] }}> /* [cite: 128] */
-          const toggle = document.getElementById('theme-toggle-checkbox'); /* [cite: 128, 129] */
-          const htmlElement = document.documentElement; /* [cite: 129] */
-
-          function applyTheme(theme) { /* [cite: 129] */
-            if (themesAvailable.includes(theme)) { /* [cite: 129] */
-              htmlElement.setAttribute('data-theme', theme); /* [cite: 129] */
-              try { localStorage.setItem('theme', theme); } catch (e) { console.warn('localStorage not accessible.'); } /* [cite: 130, 131] */
-              if (toggle) { toggle.checked = (theme === darkTheme); } /* [cite: 132, 133] */
-            } else { console.warn(`Invalid theme: ${theme}`); } /* [cite: 133, 134] */
-          }
-
-          const currentAppliedTheme = htmlElement.getAttribute('data-theme'); /* [cite: 134] */
-          if (toggle && currentAppliedTheme) { toggle.checked = (currentAppliedTheme === darkTheme); } /* [cite: 135, 136] */
-
-          if (toggle) { /* [cite: 136] */
-            toggle.addEventListener('change', function() { /* [cite: 136] */
-              const newTheme = this.checked ? darkTheme : lightTheme; /* [cite: 136] */
-              applyTheme(newTheme); /* [cite: 136] */
-            });
-          }
-          // Optionnel: Écouter changements de préférence système [cite: 137, 138]
-        </script>
         ```
 
         _Ce script initialise le toggle et gère les changements de thème et la persistance._ [cite: 139] _Cohérence des noms de thèmes essentielle._ [cite: 140]
@@ -417,11 +386,6 @@ _Bien que la configuration JavaScript soit réduite, la complexité peut se dép
 
     -   Vérifier visuellement et avec les outils de dev que les polices Inter et JetBrains Mono sont appliquées. [cite: 142]
     -   S'assurer que les couleurs des thèmes correspondent aux spécifications HSL pour tous les éléments clés (fonds, textes, boutons, `prose`). [cite: 143]
-
--   **Tâche 7: Tester le fonctionnement du sélecteur de thème et la persistance.** [cite: 144]
-    -   Confirmer que le sélecteur modifie `data-theme` sur `<html>`. [cite: 145]
-    -   Vérifier sauvegarde dans `localStorage` et application au rechargement sans FOUC. [cite: 146]
-    -   Valider adaptation dynamique des styles `prose` aux changements de thème. [cite: 147]
 
 ## 6. Testing Requirements
 
@@ -446,6 +410,21 @@ _Bien que la configuration JavaScript soit réduite, la complexité peut se dép
     | Bloc de code `<pre>` `.prose` (fond) | `var(--neutral)` | `hsl(0 0% 26.1%)` | `hsl(240 4.8% 95.9%)` | ☐ | ☐ |
     | Bloc de code `<pre>` `.prose` (texte) | `var(--neutral-content)` | `hsl(0 0% 98%)` | `hsl(0 0% 3.9%)` | ☐ | ☐ |
     _Cette checklist assure que les critères AC1 et AC3 sont remplis en vérifiant l'implémentation des couleurs._ [cite: 155] _Elle établit un lien direct entre les éléments UI, les variables CSS et les valeurs HSL cibles._ [cite: 156]
+
+-   **Tableau : Checklist de Vérification des Couleurs par Thème** [cite: 153]
+    | Élément UI | Variable DaisyUI/CSS Attendue | Couleur OKLCH (lightTheme) | Couleur OKLCH (darkTheme) | Vérifié (Light) | Vérifié (Dark) |
+    | ---------------------------------------- | ---------------------------------- | ----------------------------------- | ---------------------------------- | --------------- | -------------- |
+    | Fond principal (`<body data-theme="">`) | `var(--b1)` / `--color-base-100` | `oklch(98% 0.03 240)` | `oklch(10% 0.02 195)` | ☐ | ☐ |
+    | Texte standard (paragraphe) | `var(--bc)` / `--color-base-content` | `oklch(25% 0.05 240)` | `oklch(90% 0.02 220)` | ☐ | ☐ |
+    | Bouton primaire (fond) | `var(--p)` / `--color-primary` | `oklch(65% 0.2 260)` | `oklch(65% 0.2 260)` | ☐ | ☐ |
+    | Bouton primaire (texte) | `var(--pc)` / `--color-primary-content` | `oklch(99% 0.01 0)` | `oklch(99% 0.01 0)` | ☐ | ☐ |
+    | Lien dans `.prose` | `var(--primary)` | `oklch(65% 0.2 260)` | `oklch(65% 0.2 260)` | ☐ | ☐ |
+    | Titre H1 dans `.prose` | `var(--base-content)` | `oklch(25% 0.05 240)` | `oklch(90% 0.02 220)` | ☐ | ☐ |
+    | Code inline `.prose` (fond) | `var(--secondary)` | `oklch(75% 0.18 160)` | `oklch(75% 0.18 160)` | ☐ | ☐ |
+    | Code inline `.prose` (texte) | `var(--secondary-content)` | `oklch(99% 0.01 0)` | `oklch(99% 0.01 0)` | ☐ | ☐ |
+    | Bloc de code `<pre>` `.prose` (fond) | `var(--neutral)` | `oklch(90% 0.02 240)` | `oklch(20% 0.03 195)` | ☐ | ☐ |
+    | Bloc de code `<pre>` `.prose` (texte) | `var(--neutral-content)` | `oklch(50% 0.05 240)` | `oklch(70% 0.03 220)` | ☐ | ☐ |
+    _Cette checklist assure que les critères AC1 et AC3 sont remplis en vérifiant l'implémentation des couleurs._ [cite: 155] _Elle établit un lien direct entre les éléments UI, les variables CSS et les valeurs OKLCH cibles, conformes au nouveau format de couleur utilisé._ [cite: 156]
 
 ## 7. Story Wrap Up (Agent Populates After Execution)
 

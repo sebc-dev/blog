@@ -203,3 +203,47 @@ Pour les développeurs, ces changements impliquent :
 -   Un workflow simplifié pour la modification des thèmes (modifications directement dans le CSS)
 -   Une transition des configurations JavaScript vers les directives CSS
 -   Une approche plus cohérente avec les standards web actuels
+
+### 5. Mise à jour des polices et ressources statiques
+
+Dans le cadre de cette mise à jour :
+
+-   Ajout des polices Inter et JetBrains Mono au format WOFF2 dans `frontend/public/fonts/`
+-   Création d'un favicon SVG adaptatif qui change de couleur selon le mode clair/sombre
+-   Implémentation du composant `ThemeSwitcher.astro` pour permettre le changement de thème
+-   Script anti-FOUC (Flash Of Unstyled Content) pour appliquer le thème dès le chargement initial
+
+### 6. Précisions sur la structure du projet
+
+La structure de fichiers suivante a été mise en place pour la gestion des thèmes et des styles :
+
+```
+frontend/
+├── public/
+│   ├── favicon.svg                # Favicon adaptatif (change de couleur selon le thème)
+│   └── fonts/                     # Polices au format WOFF2
+│       ├── Inter-Bold.woff2
+│       ├── Inter-Regular.woff2
+│       ├── JetBrainsMono-*.woff2  # Différents styles/poids
+├── src/
+│   ├── components/
+│   │   └── common/
+│   │       └── ThemeSwitcher.astro # Composant de sélection de thème
+│   ├── layouts/
+│   │   └── BaseLayout.astro       # Layout avec script anti-FOUC
+│   └── styles/
+│       └── global.css             # Configuration CSS-first
+```
+
+Ces modifications respectent les principes établis dans le document `docs/ui-ux/ui-ux-spec.md` concernant l'identité visuelle et les préférences utilisateur.
+
+## Changements cumulatifs
+
+Le passage à TailwindCSS v4 et DaisyUI v5 avec une approche CSS-first représente une évolution significative dans la façon dont le projet gère les styles et les thèmes. Les modifications apportées par les branches story6 et story7 permettent une meilleure séparation des préoccupations, avec :
+
+1. Une configuration simplifiée dans `astro.config.ts` via le plugin Vite de TailwindCSS
+2. Une personnalisation complète des thèmes et des polices dans le CSS
+3. Une infrastructure de tests moderne avec Vitest
+4. Une gestion des préférences utilisateur (thème clair/sombre) plus intuitive
+
+L'ensemble de ces modifications a été documenté dans les spécifications correspondantes et reflété dans la structure du projet mise à jour.
