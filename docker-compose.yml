@@ -94,7 +94,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev # Utiliser le Dockerfile spécifique pour le développement
+      dockerfile: Dockerfile # Utiliser le Dockerfile spécifique pour le développement
     container_name: astro_frontend_app
     command: pnpm dev --host # Pour rendre accessible sur le réseau Docker et HMR
     # Le port est exposé via Traefik. Pour un accès direct en dev, utiliser docker-compose.override.yml
