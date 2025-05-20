@@ -1,0 +1,135 @@
+services:
+  traefik:
+    image: traefik:v3.4.0 # Vérifier la version exacte dans teck-stack.md (ex: v3.4.x ou v3.3.y)
+    container_name: traefik_proxy
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Configuration pour le File Provider (certificats auto-signés)
+      - "--providers.file.directory=/etc/traefik/dynamic_conf" # Chemin vers la configuration dynamique
+      - "--providers.file.watch=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      # PAS de port 8080 exposé directement pour le dashboard ici
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro" # Lecture seule est crucial
+      - "./dev-certs:/etc/traefik/certs:ro" # Volume pour les certificats auto-signés
+      - "./traefik_dynamic_conf:/etc/traefik/dynamic_conf:ro" # Volume pour la conf dynamique
+    networks:
+      - webproxy_net
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # Routeur pour le dashboard Traefik, sécurisé
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${TRAEFIK_SUBDOMAIN}.${MY_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls=true" # Activer TLS
+      # Pas de certresolver Let's Encrypt, Traefik utilisera les certificats du file provider pour localhost
+      - "traefik.http.routers.traefik-dashboard.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_USER}:${TRAEFIK_DASHBOARD_HASHED_PASSWORD}" # Définir ces vars dans .env
+
+  db:
+    image: postgres:16.8-alpine # Vérifier la version exacte dans teck-stack.md (ex: 17.x-alpine ou 16.y-alpine)
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Le port peut être exposé via docker-compose.override.yml pour un accès direct en dev
+    # ports:
+    #   - "${POSTGRES_PORT_HOST:-5432}:5432"
+    networks:
+      - internal_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile # S'assurer que ce Dockerfile utilise un user non-root et une image minimale
+    container_name: spring_backend_app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_HOST: db
+      DB_PORT: 5432
+      # Autres variables d'environnement pour le backend
+    volumes:
+      - ./backend/src:/app/src # Pour hot-reloading avec Spring Boot DevTools
+    depends_on:
+      db:
+        condition: service_healthy # Attend que la DB soit saine
+    networks:
+      - internal_net
+      - webproxy_net
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-app.rule=Host(`${BACKEND_HOST:-backend}.${MY_DOMAIN:-localhost}`) || PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-app.entrypoints=websecure"
+      - "traefik.http.routers.backend-app.service=backend-app-svc"
+      - "traefik.http.services.backend-app-svc.loadbalancer.server.port=8080" # Port interne du conteneur backend
+      - "traefik.http.routers.backend-app.tls=true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"] # Adapter si Actuator est sur un autre port ou chemin
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 45s # Laisser le temps à Spring Boot de démarrer
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev # Utiliser le Dockerfile spécifique pour le développement
+    container_name: astro_frontend_app
+    command: pnpm dev --host # Pour rendre accessible sur le réseau Docker et HMR
+    # Le port est exposé via Traefik. Pour un accès direct en dev, utiliser docker-compose.override.yml
+    ports:
+      - "${ASTRO_PORT:-4321}:4321"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Éviter d'écraser node_modules de l'image
+    environment:
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-/api/v1}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-[https://www.localhost](https://www.localhost)} # Utiliser HTTPS avec Traefik
+      # Autres variables PUBLIC_* pour Astro
+    networks:
+      - webproxy_net
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-app.rule=Host(`${FRONTEND_HOST:-www}.${MY_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.frontend-app.entrypoints=websecure"
+      - "traefik.http.routers.frontend-app.service=frontend-app-svc"
+      - "traefik.http.services.frontend-app-svc.loadbalancer.server.port=4321" # Port du serveur de dev Astro
+      - "traefik.http.routers.frontend-app.tls=true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4321"] # Adapter si le serveur de dev Astro a un healthcheck dédié
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data: # Volume nommé pour la persistance de PostgreSQL
+
+networks:
+  webproxy_net:
+    name: webproxy_network
+  internal_net:
+    name: internal_network
+    internal: true # Renforce la sécurité
