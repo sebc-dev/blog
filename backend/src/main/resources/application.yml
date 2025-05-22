@@ -3,8 +3,8 @@ spring:
     name: sebc-dev-blog-backend
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:blog_db} # db est le nom du service Docker de PostgreSQL
-    username: bloguser
-    password: blogpassword
+    username: admin_user
+    password: admin_password_secure
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

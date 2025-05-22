@@ -37,3 +37,4 @@ frontend/pnpm-debug.log
 # Add specific Maven exclusions if necessary beyond target/
 
 .obsidian/
+dev-certs/
