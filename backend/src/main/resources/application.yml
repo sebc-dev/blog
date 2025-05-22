@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: sebc-dev-blog-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:blog_db} # db est le nom du service Docker de PostgreSQL
+    username: ${DB_USER:admin_user}
+    password: ${DB_PASSWORD:admin_password_secure}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate # Liquibase gérera le schéma
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc.time_zone: UTC # Recommandé pour OffsetDateTime
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true # S'assurer que Liquibase est activé
+
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    fr.kalifazzia: ${LOGGING_LEVEL_FR_KALIFAZZIA:INFO} # Package de l'application
+
+# Configuration de base pour Actuator (health endpoint)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      show-details: never # en prod, ne pas exposer les détails (à mettre dans application-prod.yml)

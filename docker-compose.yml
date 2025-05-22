@@ -1,0 +1,109 @@
+services:
+  traefik:
+    image: traefik:v3.4.0
+    container_name: traefik_proxy
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true" # Pour accès HTTP au dashboard
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=DEBUG"
+    ports:
+      - "80:80"
+      - "8080:8080" # Pour le dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - webproxy_net
+  db:
+    image: postgres:16.8-alpine # Vérifier la version exacte dans teck-stack.md (ex: 17.x-alpine ou 16.y-alpine)
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Le port peut être exposé via docker-compose.override.yml pour un accès direct en dev
+    # ports:
+    #   - "${POSTGRES_PORT_HOST:-5432}:5432"
+    networks:
+      - internal_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile # S'assurer que ce Dockerfile utilise un user non-root et une image minimale
+    container_name: spring_backend_app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_HOST: db
+      DB_PORT: 5432
+      # Autres variables d'environnement pour le backend
+    volumes:
+      - ./backend/src:/app/src # Pour hot-reloading avec Spring Boot DevTools
+    depends_on:
+      db:
+        condition: service_healthy # Attend que la DB soit saine
+    networks:
+      - internal_net
+      - webproxy_net
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-app.rule=Host(`${BACKEND_HOST:-backend}.${MY_DOMAIN:-localhost}`) || PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-app.entrypoints=web"
+      - "traefik.http.routers.backend-app.service=backend-app-svc"
+      - "traefik.http.services.backend-app-svc.loadbalancer.server.port=8080" # Port interne du conteneur backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"] # Adapter si Actuator est sur un autre port ou chemin
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 45s # Laisser le temps à Spring Boot de démarrer
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile # Utiliser le Dockerfile spécifique pour le développement
+    container_name: astro_frontend_app
+    command: pnpm dev --host # Pour rendre accessible sur le réseau Docker et HMR
+    volumes:
+      - ./frontend:/app:cached # Option cached pour améliorer les performances
+      - /app/node_modules # Éviter d'écraser node_modules de l'image
+    environment:
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-/api/v1}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://www.localhost} # Utiliser HTTPS avec Traefik
+      # Autres variables PUBLIC_* pour Astro
+      CHOKIDAR_USEPOLLING: "true" # Forcer le polling pour détecter les changements de fichiers
+      WATCHPACK_POLLING: "true" # Support alternatif pour le polling
+    networks:
+      - webproxy_net
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-app.rule=Host(`${FRONTEND_HOST:-www}.${MY_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.frontend-app.entrypoints=web"
+      - "traefik.http.routers.frontend-app.service=frontend-app-svc"
+      - "traefik.http.services.frontend-app-svc.loadbalancer.server.port=4321" # Port du serveur de dev Astro
+
+volumes:
+  postgres_data: # Volume nommé pour la persistance de PostgreSQL
+
+networks:
+  webproxy_net:
+    name: webproxy_network
+  internal_net:
+    name: internal_network
+    internal: true # Renforce la sécurité
