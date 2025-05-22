@@ -3,8 +3,8 @@ spring:
     name: sebc-dev-blog-backend
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:blog_db} # db est le nom du service Docker de PostgreSQL
-    username: admin_user
-    password: admin_password_secure
+    username: ${DB_USER:admin_user}
+    password: ${DB_PASSWORD:admin_password_secure}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -12,7 +12,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        #jdbc.time_zone: UTC # Recommandé pour OffsetDateTime
+        jdbc.time_zone: UTC # Recommandé pour OffsetDateTime
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     enabled: true # S'assurer que Liquibase est activé

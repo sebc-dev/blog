@@ -22,7 +22,7 @@ services:
 
   # Service backend Spring Boot
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: blog-technique-backend

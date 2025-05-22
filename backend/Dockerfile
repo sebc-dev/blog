@@ -55,7 +55,7 @@ LABEL org.opencontainers.image.title="blog-backend" \
       org.opencontainers.image.source="https://github.com/sebc-dev/blog" \
       org.opencontainers.image.revision="${GIT_COMMIT}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.vendor="<Votre Organisation - Placeholder>"
+      org.opencontainers.image.vendor="Kalifazzia"
 
 # Passage à l'utilisateur non-root créé précédemment
 USER ${APP_USER}

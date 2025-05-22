@@ -84,7 +84,7 @@ services:
       - /app/node_modules # Éviter d'écraser node_modules de l'image
     environment:
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-/api/v1}
-      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-[https://www.localhost](https://www.localhost)} # Utiliser HTTPS avec Traefik
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://www.localhost} # Utiliser HTTPS avec Traefik
       # Autres variables PUBLIC_* pour Astro
       CHOKIDAR_USEPOLLING: "true" # Forcer le polling pour détecter les changements de fichiers
       WATCHPACK_POLLING: "true" # Support alternatif pour le polling

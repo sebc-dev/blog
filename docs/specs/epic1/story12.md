@@ -1,7 +1,3 @@
-Parfait, merci pour ces précisions \! Je vais mettre à jour la story et le `Dockerfile` avec ces informations.
-
-Voici la version finale de la story, intégrant vos réponses :
-
 # Story 1.12: Dockerfile pour Backend Spring Boot (Finalisée)
 
 **Status:** Draft
@@ -28,8 +24,8 @@ Le Dockerfile devra inclure des métadonnées via les `LABEL`s standards OCI et 
     -   Un stage "builder" basé sur `maven:3.9.8-eclipse-temurin-21@sha256:6847cbbf21e159f97819f18336cf6bbc24a89f9eb6439317520d93f904e9a916` qui exécute `mvn -B clean package -Dmaven.test.skip=true -Dmaven.wagon.http.retryHandler.count=3` pour générer le JAR.
     -   Un stage "extractor" basé sur `eclipse-temurin:21-jdk-noble@sha256:92c2f5ad8d51ba7588b0cec663f89a724428f60c2c342a9183908df61903969c` pour décomposer le JAR en couches.
     -   Un stage "runner" basé sur `eclipse-temurin:21-jre-noble@sha256:303f85bdba0b770b2b7050af80128ac7175fce37a31f75ef1990a20d12a37cc6`.
--   AC3: Le stage "runner" copie les couches du JAR depuis le stage "extractor" en utilisant `COPY --chown`.
--   AC4: Un utilisateur non-root (ex: `appuser`) est créé avec UID/GID configurables via `ARG` (avec valeurs par défaut) et utilisé pour exécuter l'application. Les permissions des fichiers sont gérées avec `COPY --chown`.
+    -   AC3: Le stage "runner" copie les couches du JAR depuis le stage "extractor" en utilisant `COPY --chown`.
+    -   AC4: Un utilisateur non-root (ex: `appuser`) est créé avec UID/GID configurables via `ARG` (avec valeurs par défaut) et utilisé pour exécuter l'application. Les permissions des fichiers sont gérées avec `COPY --chown`.
 -   AC5: Le port de l'application Spring Boot (par défaut 8080) est exposé par le conteneur.
 -   AC6: L'image Docker peut être buildée avec succès (`docker build -t spring-backend-test ./backend`).
 -   AC7: Un conteneur lancé à partir de l'image buildée démarre l'application Spring Boot avec succès. L'endpoint `/actuator/health` doit être accessible et répondre positivement.
