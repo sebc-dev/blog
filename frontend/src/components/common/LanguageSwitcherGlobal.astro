@@ -1,0 +1,32 @@
+---
+import Config from '../../../astro.config.ts';
+import { getTranslatedPath } from '../../lib/i18nUtils';
+import fr_flag from '../../../public/assets/flags/fr.svg';
+import en_flag from '../../../public/assets/flags/en.svg';
+
+const currentLocale = Astro.currentLocale;
+const allLocales = Config.i18n?.locales || ['en', 'fr'];
+---
+
+<div class="flex space-x-2">
+  {
+    allLocales.map((locale) => {
+      const isActive = locale === currentLocale;
+      const translatedPath = isActive
+        ? Astro.url.pathname
+        : getTranslatedPath(locale, Astro.url.pathname, currentLocale);
+      const flag = locale === 'fr' ? '🇫🇷' : '🇬🇧'; // Ou utiliser des images SVG
+
+      return (
+        <a
+          href={translatedPath}
+          class:list={['btn btn-sm', isActive ? 'btn-active btn-disabled' : 'btn-ghost']}
+          aria-current={isActive ? 'page' : false}
+          aria-label={`Switch to ${locale === 'fr' ? 'French' : 'English'}`}
+        >
+          {flag} <span class="hidden sm:inline ml-1">{locale.toUpperCase()}</span>
+        </a>
+      );
+    })
+  }
+</div>
