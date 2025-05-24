@@ -1,5 +1,80 @@
-// frontend/src/lib/i18nUtils.ts
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { i18nConfig } from './config.ts';
+import enStrings from './locales/en';
+import frStrings from './locales/fr';
+
+export type Strings = typeof enStrings | typeof frStrings;
+export type StringKey = keyof Strings;
+
+/**
+ * Un enregistrement qui associe les codes de langue à leurs ressources de chaînes correspondantes.
+ *
+ * La variable `translations` est utilisée pour stocker une collection de ressources
+ * de chaînes spécifiques à chaque langue, où chaque clé représente un code de langue
+ * (par ex. "en" pour anglais, "fr" pour français), et la valeur représente les chaînes
+ * pour cette langue.
+ *
+ * - `en`: Ressources de chaînes en anglais.
+ * - `fr`: Ressources de chaînes en français.
+ */
+const translations: Record<string, typeof enStrings | typeof frStrings> = {
+  en: enStrings,
+  fr: frStrings,
+};
+
+/**
+ * Extrait l'identifiant de langue du chemin de l'URL donnée.
+ *
+ * @param {URL} url - L'objet URL duquel extraire l'identifiant de langue.
+ * @return {string} L'identifiant de langue extrait s'il existe et est valide ; sinon, renvoie une locale par défaut.
+ */
+export function getLangFromUrl(url: URL): string {
+  const cleanPath = url.pathname.replace(/\/+/g, '/').trim();
+  const segments = cleanPath.split('/').filter(Boolean);
+
+  const potentialLang = segments[0];
+
+  if (potentialLang && i18nConfig.locales.includes(potentialLang as never)) {
+    return potentialLang;
+  }
+
+  return i18nConfig.defaultLocale;
+}
+
+/**
+ * Récupère la chaîne de traduction pour la clé et la langue données. Si la clé n'est pas trouvée
+ * dans la langue spécifiée, utilise la locale par défaut. Si la clé n'est pas trouvée
+ * dans la locale de secours non plus, la clé elle-même est renvoyée.
+ *
+ * @param {StringKey} key - La clé pour la chaîne de traduction.
+ * @param {string} lang - Le code de langue pour récupérer la traduction.
+ * @return {string | undefined} La chaîne traduite, la clé elle-même comme solution de repli, ou undefined si aucune traduction n'est disponible.
+ */
+export function t(key: StringKey, lang: string): string | undefined {
+  const langStrings = translations[lang];
+  if (langStrings && typeof langStrings[key] === 'string') {
+    return langStrings[key];
+  }
+
+  const fallbackStrings = translations[i18nConfig.defaultLocale];
+  if (fallbackStrings && typeof fallbackStrings[key] === 'string') {
+    console.warn(`Translation key '${key}' not found for lang '${lang}', using fallback.`);
+    return fallbackStrings[key];
+  }
+
+  console.error(`Translation key '${key}' not found for lang '${lang}' and no fallback available.`);
+  return key;
+}
+
+/**
+ * Fournit une fonction de traduction adaptée pour une langue spécifique.
+ *
+ * @param {string} lang - Le code de langue à utiliser pour les traductions.
+ * @return {function(StringKey): string} Une fonction qui prend une clé de traduction et renvoie la chaîne traduite correspondante. Si aucune traduction n'est trouvée, la clé est renvoyée.
+ */
+export function useTranslations(lang: string): (arg0: StringKey) => string {
+  return (key: StringKey): string => t(key, lang) || key;
+}
 
 /**
  * Représente le lien vers un article traduit dans une langue spécifique.
@@ -80,10 +155,12 @@ export function getTranslatedPath(
   if (specificPageTranslations[currentPathWithSlash]?.[localeToSwitchTo]) {
     return specificPageTranslations[currentPathWithSlash][localeToSwitchTo];
   }
+
   const pathSegments = currentPathname.split('/').filter(Boolean);
   if (pathSegments[0] === currentLocale) {
     pathSegments[0] = localeToSwitchTo;
     return `/${pathSegments.join('/')}${currentPathname.endsWith('/') ? '/' : ''}`;
   }
+
   return `/${localeToSwitchTo}/`;
 }

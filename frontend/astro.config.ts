@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import { i18nConfig } from './src/lib/i18n/config.ts';
 
 import mdx from '@astrojs/mdx';
 
@@ -18,11 +19,5 @@ export default defineConfig({
     },
   },
   integrations: [mdx()],
-  i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'fr'],
-    routing: {
-      prefixDefaultLocale: true,
-    },
-  },
+  i18n: i18nConfig
 });

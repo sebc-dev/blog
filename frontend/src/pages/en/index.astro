@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import '../../styles/global.css';
+const test =  import.meta.env.PUBLIC_DEFAULT_LOCALE
 ---
 
 <BaseLayout
@@ -8,6 +9,7 @@ import '../../styles/global.css';
   description="Page d'accueil du blog technique bilingue."
 >
   <h1 class="text-2xl font-bold">Welcome to the home page</h1>
-  <p>Welcome to the blog !</p>
+  <p>Welcome to the blog !  {console.log(test)}</p>
   <button class="btn btn-accent mt-4">Test Button</button>
+
 </BaseLayout>

@@ -1,11 +1,19 @@
 ---
-import Config from '../../../astro.config.ts';
-import { getTranslatedPath } from '../../lib/i18nUtils';
+import Config from '../../../astro.config';
+import { getTranslatedPath } from '../../lib/i18n/i18nUtils';
 import fr_flag from '../../../public/assets/flags/fr.svg';
 import en_flag from '../../../public/assets/flags/en.svg';
 
 const currentLocale = Astro.currentLocale;
 const allLocales = Config.i18n?.locales || ['en', 'fr'];
+
+const getFlag = (locale: string) => {
+  switch (locale) {
+    case 'fr': return fr_flag;
+    case 'en': return en_flag;
+    default: return null;
+  }
+};
 ---
 
 <div class="flex space-x-2">
@@ -15,16 +23,16 @@ const allLocales = Config.i18n?.locales || ['en', 'fr'];
       const translatedPath = isActive
         ? Astro.url.pathname
         : getTranslatedPath(locale, Astro.url.pathname, currentLocale);
-      const flag = locale === 'fr' ? '🇫🇷' : '🇬🇧'; // Ou utiliser des images SVG
+      const flag = getFlag(locale);
 
       return (
         <a
           href={translatedPath}
-          class:list={['btn btn-sm', isActive ? 'btn-active btn-disabled' : 'btn-ghost']}
+          class:list={['btn btn-xs', isActive ? 'btn-active btn-disabled' : 'btn-ghost']}
           aria-current={isActive ? 'page' : false}
           aria-label={`Switch to ${locale === 'fr' ? 'French' : 'English'}`}
         >
-          {flag} <span class="hidden sm:inline ml-1">{locale.toUpperCase()}</span>
+          {flag && <img src={flag.src} alt={`${locale} flag`} class="w-4 h-4" />}
         </a>
       );
     })

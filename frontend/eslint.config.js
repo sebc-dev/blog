@@ -3,6 +3,7 @@ import astroPlugin from 'eslint-plugin-astro';
 import tsParser from '@typescript-eslint/parser';
 import { defineConfig } from 'eslint/config';
 import prettierConfig from 'eslint-config-prettier';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 
 export default defineConfig([
   ...xoConfig,
@@ -49,5 +50,22 @@ export default defineConfig([
       },
     },
     rules: {},
+  },
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: './tsconfig.json',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      ...tsPlugin.configs.recommended.rules,
+    },
   },
 ]);

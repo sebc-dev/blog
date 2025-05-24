@@ -1,7 +1,8 @@
 ---
-const currentYear = new Date().getFullYear();
----
+import { getLangFromUrl, t } from '../../lib/i18n'; // Adapter le chemin
 
+const lang = getLangFromUrl(Astro.url);
+---
 <footer class="bg-base-200 p-4 mt-8 text-center">
-  <p>&copy; {currentYear} Blog Technique Bilingue. Placeholder.</p>
+  <p>{t('footer.copyright', lang)}</p>
 </footer>
