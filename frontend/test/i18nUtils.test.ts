@@ -7,11 +7,9 @@ import {
 } from '../src/lib/i18n/i18nUtils.ts';
 import { type CollectionEntry, getCollection } from 'astro:content';
 
-vi.mock('astro:content', () => {
-  return {
-    getCollection: vi.fn(),
-  };
-});
+vi.mock('astro:content', () => ({
+  getCollection: vi.fn(),
+}));
 
 vi.mock('../src/lib/i18n/locales/en', () => ({
   default: {
@@ -457,7 +455,6 @@ describe('i18nUtils', () => {
 
       warnSpy.mockRestore();
     });
-
-
+    
   });
 });
