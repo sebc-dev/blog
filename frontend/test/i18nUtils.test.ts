@@ -354,15 +354,12 @@ describe('i18nUtils', () => {
     });
 
     it('should return correct translation for English', () => {
-      // Arrange
       const key = 'article.readMore';
       const lang = 'en';
       const expectedTranslation = 'Read More';
 
-      // Act
       const result = t(key, lang);
 
-      // Assert
       expect(result).toBe(expectedTranslation);
     });
 
@@ -381,7 +378,7 @@ describe('i18nUtils', () => {
 
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      // @ts-expect-error
+      // @ts-expect-error clé de test non comprise dans le fichier de config de base : OK pour le test
       const result = t(key, lang);
 
       expect(result).toBe(expectedFallback);
@@ -398,7 +395,7 @@ describe('i18nUtils', () => {
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      // @ts-expect-error
+      // @ts-expect-error clé de test non comprise dans le fichier de config de base : OK pour le test
       const result = t(key, lang);
 
       expect(result).toBe(key);
@@ -408,5 +405,59 @@ describe('i18nUtils', () => {
 
       errorSpy.mockRestore();
     });
+
+    it("should return fallback translation when specified language is unknown", () => {
+      // Arrange
+      const key = "nav.home";
+      const lang = "xx";
+      const expectedFallback = "Home";
+
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const result = t(key, lang);
+
+      expect(result).toBe(expectedFallback);
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Translation key '${key}' not found for lang '${lang}', using fallback.`
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("should return key and log error when key is empty", () => {
+      const key = "";
+      const lang = "fr";
+
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      // @ts-expect-error clé de test non comprise dans le fichier de config de base : OK pour le test
+      const result = t(key, lang);
+
+      expect(result).toBe(key);
+      expect(errorSpy).toHaveBeenCalledWith(
+        `Translation key '${key}' not found for lang '${lang}' and no fallback available.`
+      );
+
+      errorSpy.mockRestore();
+    });
+
+    it("should return fallback translation and warn when language is empty string", () => {
+      const key = "nav.home";
+      const lang = "";
+      const expectedFallback = "Home";
+
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const result = t(key, lang);
+
+      expect(result).toBe(expectedFallback);
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Translation key '${key}' not found for lang '${lang}', using fallback.`
+      );
+
+      warnSpy.mockRestore();
+    });
+
+
   });
 });
