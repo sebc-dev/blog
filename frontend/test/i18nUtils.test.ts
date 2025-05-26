@@ -1,9 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  getLangFromUrl,
-  getTranslatedArticles,
-  getTranslatedPath,
-} from '../src/lib/i18n/i18nUtils.ts';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getTranslatedArticles, getTranslatedPath, t } from '../src/lib/i18n/i18nUtils.ts';
+const { getLangFromUrl } = await import('../src/lib/i18n/i18nUtils.ts');
 import { type CollectionEntry, getCollection } from 'astro:content';
 
 vi.mock('astro:content', () => {
@@ -11,6 +8,36 @@ vi.mock('astro:content', () => {
     getCollection: vi.fn(),
   };
 });
+
+vi.mock('../src/lib/i18n/locales/en', () => ({
+  default: {
+    'nav.home': 'Home',
+    'nav.blog': 'Blog',
+    'nav.about': 'About',
+    'article.readMore': 'Read More',
+    'footer.copyright': '© 2024 All rights reserved',
+  },
+}));
+
+vi.mock('../src/lib/i18n/locales/fr', () => ({
+  default: {
+    'nav.home': 'Accueil',
+    'nav.blog': 'Blog',
+    'nav.about': 'À propos',
+    'article.readMore': 'Lire la suite',
+    'footer.copyright': '© 2024 Tous droits réservés',
+  },
+}));
+
+vi.mock('../src/lib/i18n/config', () => ({
+  i18nConfig: {
+    defaultLocale: 'sw',
+    locales: ['en', 'fr', 'sw'],
+    routing: {
+      prefixDefaultLocale: true,
+    },
+  },
+}));
 
 describe('i18nUtils', () => {
   describe('getTranslatedArticles', () => {
@@ -135,6 +162,10 @@ describe('i18nUtils', () => {
 
   describe('getLangFromUrl', () => {
     beforeEach(() => {
+      vi.resetModules();
+    });
+
+    afterEach(() => {
       vi.clearAllMocks();
     });
     it('should return the language identifier from the URL path', () => {
@@ -144,33 +175,15 @@ describe('i18nUtils', () => {
     });
 
     it('should return the default locale if language identifier is missing in the URL', () => {
-      vi.mock('../src/lib/i18n/config', () => ({
-        i18nConfig: {
-          defaultLocale: 'it',
-          locales: ['en', 'fr', 'it'],
-          routing: {
-            prefixDefaultLocale: true,
-          },
-        },
-      }));
       const url = new URL('https://example.com/some-path');
       const result = getLangFromUrl(url);
-      expect(result).toBe('it');
+      expect(result).toBe('sw');
     });
 
     it('should return the default locale from the environment if defined', () => {
-      vi.mock('../src/lib/i18n/config', () => ({
-        i18nConfig: {
-          defaultLocale: 'es', // Valeur mockée
-          locales: ['en', 'fr', 'es'],
-          routing: {
-            prefixDefaultLocale: true,
-          },
-        },
-      }));
       const url = new URL('https://example.com');
       const result = getLangFromUrl(url);
-      expect(result).toBe('es');
+      expect(result).toBe('sw');
     });
 
     it('should return the language identifier even with additional path segments', () => {
@@ -186,18 +199,9 @@ describe('i18nUtils', () => {
     });
 
     it('should handle an empty path in the URL and return default locale', () => {
-      vi.mock('../src/lib/i18n/config', () => ({
-        i18nConfig: {
-          defaultLocale: 'sw',
-          locales: ['en', 'fr', 'sw'],
-          routing: {
-            prefixDefaultLocale: true,
-          },
-        },
-      }));
       const url = new URL('https://example.com/');
       const result = getLangFromUrl(url);
-      expect(result).toBe('en'); // Default locale
+      expect(result).toBe('sw');
     });
   });
 
@@ -326,6 +330,48 @@ describe('i18nUtils', () => {
 
       const result = getTranslatedPath(localeToSwitchTo, currentPathname, currentLocale);
       expect(result).toBe('/fr');
+    });
+  });
+
+  describe('Function t - Translation success cases', () => {
+    beforeEach(() => {
+      // Reset des mocks de console si nécessaire
+      vi.clearAllMocks();
+    });
+
+    it('should return correct translation when key and language exist', () => {
+      // Arrange
+      const key = 'nav.home';
+      const lang = 'fr';
+      const expectedTranslation = 'Accueil';
+
+      // Act
+      const result = t(key, lang);
+
+      // Assert
+      expect(result).toBe(expectedTranslation);
+    });
+
+    it('should return correct translation for English', () => {
+      // Arrange
+      const key = 'article.readMore';
+      const lang = 'en';
+      const expectedTranslation = 'Read More';
+
+      // Act
+      const result = t(key, lang);
+
+      // Assert
+      expect(result).toBe(expectedTranslation);
+    });
+
+    it('should return correct translation for multiple different keys', () => {
+      // Test avec plusieurs clés pour s'assurer de la cohérence
+      expect(t('nav.home', 'en')).toBe('Home');
+      expect(t('nav.home', 'fr')).toBe('Accueil');
+      expect(t('nav.about', 'en')).toBe('About');
+      expect(t('nav.about', 'fr')).toBe('À propos');
+      expect(t('footer.copyright', 'fr')).toBe('© 2024 Tous droits réservés');
     });
   });
 });
