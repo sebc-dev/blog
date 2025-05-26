@@ -37,6 +37,7 @@ export default defineConfig([
     },
     rules: {
       ...(astroPlugin.configs?.recommended?.rules || {}),
+      '@stylistic/curly-newline': 'off',
     },
   },
   {
@@ -49,7 +50,9 @@ export default defineConfig([
         project: './tsconfig.json',
       },
     },
-    rules: {},
+    rules: {
+      '@stylistic/curly-newline': 'off',
+    },
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -66,6 +69,7 @@ export default defineConfig([
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+      '@stylistic/curly-newline': 'off',
     },
   },
 ]);

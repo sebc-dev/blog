@@ -2,11 +2,9 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { type CollectionEntry } from 'astro:content';
 
 // Mock astro:content avec une factory function pour éviter le hoisting
-vi.mock('astro:content', () => {
-  return {
+vi.mock('astro:content', () => ({
     getCollection: vi.fn(),
-  };
-});
+  }));
 
 // Import après le mock
 import { getTranslatedArticles } from '../../src/lib/i18n/i18nUtils.ts';
@@ -31,7 +29,7 @@ const createMockBlogPost = (
     id: slug,
     collection: 'blog',
     render: async () => ({ Content: () => null, headings: [], remarkPluginFrontmatter: {} }),
-  } as CollectionEntry<'blog'>;
+  } as unknown as CollectionEntry<'blog'>;
 };
 
 describe('getTranslatedArticles', () => {
