@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getTranslatedArticles, getTranslatedPath, t } from '../src/lib/i18n/i18nUtils.ts';
-const { getLangFromUrl } = await import('../src/lib/i18n/i18nUtils.ts');
+import {
+  getTranslatedArticles,
+  getTranslatedPath,
+  t,
+  getLangFromUrl,
+} from '../src/lib/i18n/i18nUtils.ts';
 import { type CollectionEntry, getCollection } from 'astro:content';
 
 vi.mock('astro:content', () => {
@@ -16,6 +20,7 @@ vi.mock('../src/lib/i18n/locales/en', () => ({
     'nav.about': 'About',
     'article.readMore': 'Read More',
     'footer.copyright': '© 2024 All rights reserved',
+    'nav.contact': 'Contact',
   },
 }));
 
@@ -31,8 +36,8 @@ vi.mock('../src/lib/i18n/locales/fr', () => ({
 
 vi.mock('../src/lib/i18n/config', () => ({
   i18nConfig: {
-    defaultLocale: 'sw',
-    locales: ['en', 'fr', 'sw'],
+    defaultLocale: 'en',
+    locales: ['en', 'fr'],
     routing: {
       prefixDefaultLocale: true,
     },
@@ -177,13 +182,13 @@ describe('i18nUtils', () => {
     it('should return the default locale if language identifier is missing in the URL', () => {
       const url = new URL('https://example.com/some-path');
       const result = getLangFromUrl(url);
-      expect(result).toBe('sw');
+      expect(result).toBe('en');
     });
 
     it('should return the default locale from the environment if defined', () => {
       const url = new URL('https://example.com');
       const result = getLangFromUrl(url);
-      expect(result).toBe('sw');
+      expect(result).toBe('en');
     });
 
     it('should return the language identifier even with additional path segments', () => {
@@ -201,7 +206,7 @@ describe('i18nUtils', () => {
     it('should handle an empty path in the URL and return default locale', () => {
       const url = new URL('https://example.com/');
       const result = getLangFromUrl(url);
-      expect(result).toBe('sw');
+      expect(result).toBe('en');
     });
   });
 
@@ -335,20 +340,16 @@ describe('i18nUtils', () => {
 
   describe('Function t - Translation success cases', () => {
     beforeEach(() => {
-      // Reset des mocks de console si nécessaire
       vi.clearAllMocks();
     });
 
     it('should return correct translation when key and language exist', () => {
-      // Arrange
       const key = 'nav.home';
       const lang = 'fr';
       const expectedTranslation = 'Accueil';
 
-      // Act
       const result = t(key, lang);
 
-      // Assert
       expect(result).toBe(expectedTranslation);
     });
 
@@ -366,12 +367,46 @@ describe('i18nUtils', () => {
     });
 
     it('should return correct translation for multiple different keys', () => {
-      // Test avec plusieurs clés pour s'assurer de la cohérence
       expect(t('nav.home', 'en')).toBe('Home');
       expect(t('nav.home', 'fr')).toBe('Accueil');
       expect(t('nav.about', 'en')).toBe('About');
       expect(t('nav.about', 'fr')).toBe('À propos');
       expect(t('footer.copyright', 'fr')).toBe('© 2024 Tous droits réservés');
+    });
+
+    it('should return fallback translation and warn when key is missing in specified language', () => {
+      const key = 'nav.contact';
+      const lang = 'fr';
+      const expectedFallback = 'Contact';
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // @ts-expect-error
+      const result = t(key, lang);
+
+      expect(result).toBe(expectedFallback);
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Translation key '${key}' not found for lang '${lang}', using fallback.`
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should return key and log error when key is missing in both specified and fallback languages', () => {
+      const key = 'nav.unknown'; // Clé absente dans toutes les langues
+      const lang = 'fr';
+
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // @ts-expect-error
+      const result = t(key, lang);
+
+      expect(result).toBe(key);
+      expect(errorSpy).toHaveBeenCalledWith(
+        `Translation key '${key}' not found for lang '${lang}' and no fallback available.`
+      );
+
+      errorSpy.mockRestore();
     });
   });
 });

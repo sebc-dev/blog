@@ -17,7 +17,7 @@ export type StringKey = keyof Strings;
  * - `en`: Ressources de chaînes en anglais.
  * - `fr`: Ressources de chaînes en français.
  */
-const translations: Record<string, typeof enStrings | typeof frStrings> = {
+export const translations: Record<string, typeof enStrings | typeof frStrings> = {
   en: enStrings,
   fr: frStrings,
 };
@@ -73,7 +73,7 @@ export function t(key: StringKey, lang: string): string | undefined {
  * @return {function(StringKey): string} Une fonction qui prend une clé de traduction et renvoie la chaîne traduite correspondante. Si aucune traduction n'est trouvée, la clé est renvoyée.
  */
 export function useTranslations(lang: string): (arg0: StringKey) => string {
-  return (key: StringKey): string => t(key, lang) || key;
+  return (key: StringKey): string => t(key, lang) ?? key;
 }
 
 /**
