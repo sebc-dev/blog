@@ -9,12 +9,25 @@ interface Props {
 }
 
 const { currentPath, currentLang, alternates } = Astro.props;
-const siteUrl = import.meta.env.SITE || 'https://votresite.com'; // À configurer dans astro.config.ts
+
+// Construction de l'URL du site avec fallback pour développement
+const getSiteUrl = () => {
+  if (import.meta.env.SITE) {
+    return import.meta.env.SITE;
+  }
+  if (Astro.site) {
+    return Astro.site.href;
+  }
+  // Fallback pour développement
+  return 'http://localhost:4321';
+};
+
+const siteUrl = getSiteUrl().replace(/\/$/, ''); // Retirer le slash final
 
 // Générer les URLs alternatives
 const hreflangs = i18nConfig.locales.map(lang => {
   let href;
-  
+
   if (alternates && alternates[lang]) {
     // Utiliser les URLs spécifiques si fournies (pour les articles)
     href = alternates[lang];
@@ -22,7 +35,12 @@ const hreflangs = i18nConfig.locales.map(lang => {
     // Utiliser la logique de traduction standard
     href = getTranslatedPath(lang, currentPath, currentLang);
   }
-  
+
+  // S'assurer que le href commence par /
+  if (!href.startsWith('/')) {
+    href = '/' + href;
+  }
+
   return {
     lang,
     href: `${siteUrl}${href}`,
@@ -30,8 +48,13 @@ const hreflangs = i18nConfig.locales.map(lang => {
   };
 });
 
+// URL canonique pour la page courante
+const currentHreflang = hreflangs.find(h => h.isCurrent);
+const canonicalURL = currentHreflang?.href || `${siteUrl}${currentPath}`;
+
 // Ajouter x-default (version par défaut)
 const defaultHref = getTranslatedPath(i18nConfig.defaultLocale, currentPath, currentLang);
+const defaultCanonicalURL = `${siteUrl}${defaultHref.startsWith('/') ? defaultHref : '/' + defaultHref}`;
 ---
 
 <!-- Balises hreflang pour chaque langue -->
@@ -39,8 +62,8 @@ const defaultHref = getTranslatedPath(i18nConfig.defaultLocale, currentPath, cur
   <link rel="alternate" hreflang={lang} href={href} />
 ))}
 
-<!-- Version par défaut -->
-<link rel="alternate" hreflang="x-default" href={`${siteUrl}${defaultHref}`} />
+<!-- Version par défaut (x-default) -->
+<link rel="alternate" hreflang="x-default" href={defaultCanonicalURL} />
 
-<!-- Canonical URL pour la page courante -->
-<link rel="canonical" href={hreflangs.find(h => h.isCurrent)?.href} />
+<!-- Canonical URL pour la page courante (AC2 & AC3) -->
+<link rel="canonical" href={canonicalURL} />
