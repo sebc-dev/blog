@@ -154,25 +154,35 @@ export function getTranslatedPath(
       return currentPathname; // Déjà sur la bonne langue
     }
     // Ajouter le préfixe de langue
-
-    return currentPathname === '/'
-      ? `/${localeToSwitchTo}/`
-      : `/${localeToSwitchTo}${currentPathname}${currentPathname.endsWith('/') ? '' : '/'}`;
+    // MODIFICATION 1: Assurer un slash final pour les chemins construits ici
+    
+    const newBasePath = currentPathname === '/' ? '' : currentPathname;
+    const newFullPath = `/${localeToSwitchTo}${newBasePath}`;
+    return newFullPath.endsWith('/') ? newFullPath : `${newFullPath}/`;
   }
 
-  // Si on a un préfixe de langue dans l'URL
-  if (pathSegments[0] === currentLocale) {
+  // Cas: le chemin actuel a un préfixe de langue valide (ex: /en/blog ou /fr/about)
+  if (pathSegments.length > 0 && i18nConfig.locales.includes(pathSegments[0] as string) && pathSegments[0] === currentLocale) {
+    // Cas: on veut passer à la langue par défaut (ex: /fr/blog -> /blog)
     if (localeToSwitchTo === i18nConfig.defaultLocale) {
-      // Retirer le préfixe pour la langue par défaut
       const newPath = pathSegments.slice(1).join('/');
       return newPath ? `/${newPath}${currentPathname.endsWith('/') ? '/' : ''}` : '/';
     }
 
+    // Cas: on veut passer à une autre langue avec préfixe (ex: /en/blog -> /fr/blog)
+    pathSegments[0] = localeToSwitchTo;
+    const newConstructedPath = pathSegments.join('/');
 
-      pathSegments[0] = localeToSwitchTo;
-      return `/${pathSegments.join('/')}${currentPathname.endsWith('/') ? '/' : ''}`;
+    if (pathSegments.length === 1) { // Le chemin était juste un préfixe de langue, ex: /en transformé en /fr
+      return `/${newConstructedPath}/`; // Assurer un slash final, ex: /fr/
+    }
+    // Le chemin était plus long, ex: /en/blog transformé en /fr/blog
+
+    return `/${newConstructedPath}${currentPathname.endsWith('/') ? '/' : ''}`;
   }
 
-  // Fallback : aller à la racine de la langue cible
+  // Fallback: si aucune des conditions ci-dessus n'est remplie,
+  // aller à la racine de la langue cible.
+  // Ceci peut arriver si currentLocale est undefined et qu'il n'y a pas de traduction spécifique.
   return localeToSwitchTo === i18nConfig.defaultLocale ? '/' : `/${localeToSwitchTo}/`;
 }

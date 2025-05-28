@@ -89,4 +89,66 @@ describe('getTranslatedArticles', () => {
     ]);
     expect(mockGetCollection).toHaveBeenCalledWith('blog');
   });
+
+  it('devrait retourner plusieurs traductions et ignorer les posts non pertinents', async () => {
+    const currentPost = createMockBlogPost({
+      translationId: 'multi-trans-id',
+      lang: 'fr',
+      title: 'Article Actuel en Français',
+      slug: 'article-actuel-francais',
+    });
+
+    const englishTranslation1 = createMockBlogPost({
+      translationId: 'multi-trans-id',
+      lang: 'en',
+      title: 'First English Translation',
+      slug: 'first-english-translation',
+    });
+
+    const englishTranslation2 = createMockBlogPost({
+      translationId: 'multi-trans-id',
+      lang: 'en',
+      title: 'Second English Translation',
+      slug: 'second-english-translation',
+    });
+
+    const anotherFrenchPostWithSameId = createMockBlogPost({
+      translationId: 'multi-trans-id', // Même ID de traduction
+      lang: 'fr', // Même langue que currentPost
+      title: 'Autre Article Français',
+      slug: 'autre-article-francais',
+    });
+
+    const unrelatedPost = createMockBlogPost({
+      translationId: 'other-id', // ID de traduction différent
+      lang: 'en',
+      title: 'Unrelated English Post',
+      slug: 'unrelated-english-post',
+    });
+
+    mockGetCollection.mockResolvedValue([
+      currentPost,
+      englishTranslation1,
+      englishTranslation2,
+      anotherFrenchPostWithSameId,
+      unrelatedPost,
+    ]);
+
+    const result = await getTranslatedArticles(currentPost);
+
+    expect(result).toEqual([
+      {
+        lang: 'en',
+        slug: 'first-english-translation',
+        title: 'First English Translation',
+      },
+      {
+        lang: 'en',
+        slug: 'second-english-translation',
+        title: 'Second English Translation',
+      },
+    ]);
+    expect(result).toHaveLength(2);
+    expect(mockGetCollection).toHaveBeenCalledWith('blog');
+  });
 });
