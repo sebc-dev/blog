@@ -1,9 +1,70 @@
 ---
-import LanguageSwitcherGlobal from "./LanguageSwitcherGlobal.astro"
+import LanguageSwitch from "../LanguageSwitch.astro";
+import ThemeSwitcher from "./ThemeSwitcher.astro";
+import { useI18n } from "../../lib/i18n/i18nUtils";
+
+const { t, currentLang } = useI18n(Astro.locals);
+
+// Navigation items based on current language
+const navItems = [
+  { href: currentLang === 'en' ? '/' : '/fr/', label: t('nav.home') },
+  { href: currentLang === 'en' ? '/posts/' : '/fr/posts/', label: t('nav.blog') },
+  { href: currentLang === 'en' ? '/about/' : '/fr/a-propos/', label: t('nav.about') },
+  { href: currentLang === 'en' ? '/contact/' : '/fr/contact/', label: t('nav.contact') },
+];
 ---
-<header class="bg-base-200 p-4" role="banner">
-  <slot>
-    <p>Global Header Placeholder</p>
-  </slot>
-    <LanguageSwitcherGlobal />
+
+<header class="bg-base-200 shadow-sm" role="banner">
+  <div class="container mx-auto px-4">
+    <div class="navbar min-h-16">
+      <!-- Logo/Brand -->
+      <div class="navbar-start">
+        <a href={currentLang === 'en' ? '/' : '/fr/'} class="btn btn-ghost text-xl">
+          {currentLang === 'fr' ? 'Blog Tech' : 'Tech Blog'}
+        </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1">
+          {navItems.map((item) => (
+            <li>
+              <a href={item.href} class="hover:bg-base-300">
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Actions -->
+      <div class="navbar-end">
+        <div class="flex items-center gap-2">
+          <!-- Theme Switcher -->
+          <ThemeSwitcher />
+
+          <!-- Language Switch -->
+          <LanguageSwitch />
+
+          <!-- Mobile Menu Button -->
+          <div class="dropdown dropdown-end lg:hidden">
+            <div tabindex="0" role="button" class="btn btn-ghost">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </div>
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+              {navItems.map((item) => (
+                <li>
+                  <a href={item.href}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </header>

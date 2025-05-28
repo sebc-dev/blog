@@ -1,23 +1,34 @@
 ---
 import Header from '../components/common/Header.astro';
 import Footer from '../components/common/Footer.astro';
+import HreflangLinks from '../components/HreflangLinks.astro';
+import { useI18n } from '../lib/i18n/i18nUtils';
 
 /**
- * Base layout component for all pages
+ * Base layout component for all pages with i18n support
  */
 export interface Props {
-    /** Page title, defaults to 'Blog Technique Bilingue' */
+    /** Page title, defaults to blog title */
     title?: string;
-    /** Page description for meta tag, defaults to blog description */
+    /** Page description for meta tag */
     description?: string;
+    /** Specific URL alternates for articles with different slugs */
+    alternates?: Record<string, string>;
 }
 
-const {
-    title = 'Blog Technique Bilingue',
-    description = 'Un blog sur IA, UX, Ingénierie & Tauri',
-} = Astro.props;
+const { title, description, alternates } = Astro.props;
+const { t, currentLang } = useI18n(Astro.locals);
 
-const currentLang = Astro.currentLocale || 'en';
+// Construct page title
+const pageTitle = title
+  ? `${title} | ${currentLang === 'fr' ? 'Blog Technique Bilingue' : 'Bilingual Tech Blog'}`
+  : (currentLang === 'fr' ? 'Blog Technique Bilingue' : 'Bilingual Tech Blog');
+
+// Use description or default SEO description
+const pageDescription = description || t('seo.defaultDescription');
+
+const currentPath = Astro.url.pathname;
+
 import '../styles/global.css';
 ---
 <!DOCTYPE html>
@@ -26,8 +37,25 @@ import '../styles/global.css';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="description" content={description} />
-    <title>{title}</title>
+
+    <!-- SEO Meta Tags -->
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    <!-- Hreflang and Canonical Links -->
+    <HreflangLinks
+        currentPath={currentPath}
+        currentLang={currentLang}
+        alternates={alternates}
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:locale" content={currentLang === 'fr' ? 'fr_FR' : 'en_US'} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content="website" />
+
+    <!-- Theme Script -->
     <script is:inline>
       const savedTheme = localStorage.getItem('theme');
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -37,7 +65,7 @@ import '../styles/global.css';
 </head>
 <body class="font-sans bg-base-100 text-base-content min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-content">
-        Aller au contenu principal
+        {currentLang === 'fr' ? 'Aller au contenu principal' : 'Skip to main content'}
     </a>
 
     <Header />
@@ -49,4 +77,3 @@ import '../styles/global.css';
     <Footer />
 </body>
 </html>
-

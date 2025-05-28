@@ -2,8 +2,9 @@ export const i18nConfig = {
   defaultLocale: 'en',
   locales: ['en', 'fr'],
   routing: {
-    prefixDefaultLocale: true,
+    prefixDefaultLocale: false, // ✅ Changé : pas de préfixe pour l'anglais
   },
 };
 
-export type Locale = typeof i18nConfig.locales[number];
+export type Locale = 'en' | 'fr';
+export type DefaultLocale = 'en';

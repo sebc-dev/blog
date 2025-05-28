@@ -1,0 +1,44 @@
+---
+import { i18nConfig } from '../lib/i18n/config';
+import { getTranslatedPath } from '../lib/i18n/i18nUtils';
+
+const currentLang = Astro.locals.currentLang;
+const currentPath = Astro.url.pathname;
+
+// Générer les liens pour toutes les langues sauf la courante
+const languageLinks = i18nConfig.locales
+  .filter(lang => lang !== currentLang)
+  .map(lang => ({
+    lang,
+    url: getTranslatedPath(lang, currentPath, currentLang),
+    label: lang === 'fr' ? 'Français' : 'English'
+  }));
+---
+
+<div class="language-switch">
+  {languageLinks.map(({ lang, url, label }) => (
+    <a href={url} hreflang={lang} class="lang-link">
+      {label}
+    </a>
+  ))}
+</div>
+
+<style>
+  .language-switch {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .lang-link {
+    padding: 0.25rem 0.5rem;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+  }
+  
+  .lang-link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+</style>

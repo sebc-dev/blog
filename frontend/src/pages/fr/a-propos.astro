@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useI18n } from '../../lib/i18n/i18nUtils';
+
+const { t } = useI18n(Astro.locals);
+---
+
+<BaseLayout title={t('nav.about')} description="Apprenez-en plus sur notre blog technique bilingue et notre mission.">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8">{t('nav.about')}</h1>
+    
+    <div class="prose prose-lg max-w-none">
+      <p class="text-xl mb-6">
+        Bienvenue sur notre blog technique bilingue ! Nous sommes passionnés par le partage 
+        de connaissances et d'insights en français et en anglais.
+      </p>
+      
+      <h2>Notre Mission</h2>
+      <p>
+        Notre objectif est de créer un pont entre les communautés techniques francophones 
+        et anglophones. Nous croyons que la langue ne doit jamais être un obstacle pour 
+        accéder à du contenu technique de qualité.
+      </p>
+      
+      <h2>Ce Que Nous Couvrons</h2>
+      <ul>
+        <li>Développement Web (React, Vue, Angular, etc.)</li>
+        <li>Technologies Backend (Node.js, Python, Go, etc.)</li>
+        <li>DevOps et Technologies Cloud</li>
+        <li>Intelligence Artificielle et Machine Learning</li>
+        <li>Principes de Design UI/UX</li>
+        <li>Architecture Logicielle</li>
+      </ul>
+      
+      <h2>Pourquoi Bilingue ?</h2>
+      <p>
+        Dans le monde globalisé d'aujourd'hui, pouvoir accéder au contenu dans plusieurs 
+        langues enrichit notre compréhension et ouvre de nouvelles perspectives. Notre 
+        approche bilingue nous permet d'atteindre un public plus large et de favoriser 
+        le partage de connaissances interculturelles.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { useI18n } from '../lib/i18n/i18nUtils';
+
+const { t } = useI18n(Astro.locals);
+---
+
+<BaseLayout title={t('nav.about')} description="Learn more about our bilingual tech blog and our mission.">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8">{t('nav.about')}</h1>
+    
+    <div class="prose prose-lg max-w-none">
+      <p class="text-xl mb-6">
+        Welcome to our bilingual tech blog! We're passionate about sharing knowledge 
+        and insights in both English and French.
+      </p>
+      
+      <h2>Our Mission</h2>
+      <p>
+        Our goal is to create a bridge between English and French-speaking tech communities. 
+        We believe that language should never be a barrier to accessing quality technical content.
+      </p>
+      
+      <h2>What We Cover</h2>
+      <ul>
+        <li>Web Development (React, Vue, Angular, etc.)</li>
+        <li>Backend Technologies (Node.js, Python, Go, etc.)</li>
+        <li>DevOps and Cloud Technologies</li>
+        <li>Artificial Intelligence and Machine Learning</li>
+        <li>UI/UX Design Principles</li>
+        <li>Software Architecture</li>
+      </ul>
+      
+      <h2>Why Bilingual?</h2>
+      <p>
+        In today's globalized world, being able to access content in multiple languages 
+        enriches our understanding and opens new perspectives. Our bilingual approach 
+        allows us to reach a broader audience and foster cross-cultural knowledge sharing.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,46 @@
+---
+import { i18nConfig } from '../lib/i18n/config';
+import { getTranslatedPath } from '../lib/i18n/i18nUtils';
+
+interface Props {
+  currentPath: string;
+  currentLang: string;
+  alternates?: Record<string, string>; // Pour les cas spéciaux comme les articles
+}
+
+const { currentPath, currentLang, alternates } = Astro.props;
+const siteUrl = import.meta.env.SITE || 'https://votresite.com'; // À configurer dans astro.config.ts
+
+// Générer les URLs alternatives
+const hreflangs = i18nConfig.locales.map(lang => {
+  let href;
+  
+  if (alternates && alternates[lang]) {
+    // Utiliser les URLs spécifiques si fournies (pour les articles)
+    href = alternates[lang];
+  } else {
+    // Utiliser la logique de traduction standard
+    href = getTranslatedPath(lang, currentPath, currentLang);
+  }
+  
+  return {
+    lang,
+    href: `${siteUrl}${href}`,
+    isCurrent: lang === currentLang
+  };
+});
+
+// Ajouter x-default (version par défaut)
+const defaultHref = getTranslatedPath(i18nConfig.defaultLocale, currentPath, currentLang);
+---
+
+<!-- Balises hreflang pour chaque langue -->
+{hreflangs.map(({ lang, href }) => (
+  <link rel="alternate" hreflang={lang} href={href} />
+))}
+
+<!-- Version par défaut -->
+<link rel="alternate" hreflang="x-default" href={`${siteUrl}${defaultHref}`} />
+
+<!-- Canonical URL pour la page courante -->
+<link rel="canonical" href={hreflangs.find(h => h.isCurrent)?.href} />

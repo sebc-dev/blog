@@ -5,6 +5,7 @@ import { i18nConfig } from './src/lib/i18n/config.ts';
 import mdx from '@astrojs/mdx';
 
 export default defineConfig({
+  site: 'https://votresite.com', // ✅ Ajouté pour les URLs canoniques
   server: {
     host: '0.0.0.0',
     port: 4321,

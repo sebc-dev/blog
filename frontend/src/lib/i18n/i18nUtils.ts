@@ -6,16 +6,13 @@ import frStrings from './locales/fr';
 export type Strings = typeof enStrings | typeof frStrings;
 export type StringKey = keyof Strings;
 
+// Interface pour les locals Astro
+interface AstroLocals {
+  currentLang: string;
+}
+
 /**
  * Un enregistrement qui associe les codes de langue à leurs ressources de chaînes correspondantes.
- *
- * La variable `translations` est utilisée pour stocker une collection de ressources
- * de chaînes spécifiques à chaque langue, où chaque clé représente un code de langue
- * (par ex. "en" pour anglais, "fr" pour français), et la valeur représente les chaînes
- * pour cette langue.
- *
- * - `en`: Ressources de chaînes en anglais.
- * - `fr`: Ressources de chaînes en français.
  */
 export const translations: Record<string, typeof enStrings | typeof frStrings> = {
   en: enStrings,
@@ -24,31 +21,24 @@ export const translations: Record<string, typeof enStrings | typeof frStrings> =
 
 /**
  * Extrait l'identifiant de langue du chemin de l'URL donnée.
- *
- * @param {URL} url - L'objet URL duquel extraire l'identifiant de langue.
- * @return {string} L'identifiant de langue extrait s'il existe et est valide ; sinon, renvoie une locale par défaut.
+ * Version améliorée qui gère correctement les URLs sans préfixe pour la langue par défaut.
  */
 export function getLangFromUrl(url: URL): string {
   const cleanPath = url.pathname.replace(/\/+/g, '/').trim();
   const segments = cleanPath.split('/').filter(Boolean);
-
   const potentialLang = segments[0];
 
+  // Si le premier segment est une langue valide, c'est la langue courante
   if (potentialLang && i18nConfig.locales.includes(potentialLang as never)) {
     return potentialLang;
   }
 
+  // Sinon, c'est la langue par défaut (pas de préfixe)
   return i18nConfig.defaultLocale;
 }
 
 /**
- * Récupère la chaîne de traduction pour la clé et la langue données. Si la clé n'est pas trouvée
- * dans la langue spécifiée, utilise la locale par défaut. Si la clé n'est pas trouvée
- * dans la locale de secours non plus, la clé elle-même est renvoyée.
- *
- * @param {StringKey} key - La clé pour la chaîne de traduction.
- * @param {string} lang - Le code de langue pour récupérer la traduction.
- * @return {string | undefined} La chaîne traduite, la clé elle-même comme solution de repli, ou undefined si aucune traduction n'est disponible.
+ * Récupère la chaîne de traduction pour la clé et la langue données.
  */
 export function t(key: StringKey, lang: string): string | undefined {
   const langStrings = translations[lang];
@@ -68,25 +58,28 @@ export function t(key: StringKey, lang: string): string | undefined {
 
 /**
  * Fournit une fonction de traduction adaptée pour une langue spécifique.
- *
- * @param {string} lang - Le code de langue à utiliser pour les traductions.
- * @return {function(StringKey): string} Une fonction qui prend une clé de traduction et renvoie la chaîne traduite correspondante. Si aucune traduction n'est trouvée, la clé est renvoyée.
  */
 export function useTranslations(lang: string): (arg0: StringKey) => string {
   return (key: StringKey): string => t(key, lang) ?? key;
 }
 
 /**
- * Représente le lien vers un article traduit dans une langue spécifique.
- *
- * Cette interface est utilisée pour définir les propriétés associées à une traduction
- * d'article, incluant la langue de la traduction, l'identifiant unique de l'article
- * (ou slug), et son titre traduit.
- *
- * Propriétés :
- * - `lang` : Le code de langue ISO 639-1 représentant la langue de traduction (ex: 'en' pour anglais, 'fr' pour français)
- * - `slug` : Un slug ou identifiant unique pour l'article traduit utilisé dans les URLs
- * - `title` : Le titre de l'article traduit dans la langue respective
+ * Hook utilitaire pour les composants Astro
+ */
+export function useI18n(locals: AstroLocals) {
+  const { currentLang } = locals;
+  const t = useTranslations(currentLang);
+
+  return {
+    currentLang,
+    t,
+    isDefaultLang: currentLang === i18nConfig.defaultLocale,
+    otherLangs: i18nConfig.locales.filter(lang => lang !== currentLang)
+  };
+}
+
+/**
+ * Interface pour les liens d'articles traduits
  */
 export interface TranslatedArticleLink {
   lang: string;
@@ -95,25 +88,24 @@ export interface TranslatedArticleLink {
 }
 
 /**
- * Un objet contenant les traductions pour des chemins de pages spécifiques.
- * Chaque clé dans l'objet représente une chaîne de chemin de page, et sa valeur
- * est un objet associant des codes de langue à leurs chemins de pages traduits respectifs.
- *
- * Par exemple :
- * - Un chemin de page en français peut avoir un chemin de traduction équivalent en anglais mappé, et vice versa.
- *
- * Le but de cette structure est de permettre une recherche rapide d'un chemin traduit
- * pour une page spécifique dans une application multilingue.
+ * Traductions spécifiques pour les pages avec URLs différentes
  */
 export const specificPageTranslations: Record<string, Record<string, string>> = {
-  '/fr/a-propos/': { en: '/en/about/' },
-  '/en/about/': { fr: '/fr/a-propos/' },
+  // Pages avec URLs différentes
+  '/about/': { fr: '/fr/a-propos/' },
+  '/fr/a-propos/': { en: '/about/' },
+
+  // Pages avec URLs identiques
+  '/contact/': { fr: '/fr/contact/' },
+  '/fr/contact/': { en: '/contact/' },
+
+  // Pages de blog
+  '/posts/': { fr: '/fr/posts/' },
+  '/fr/posts/': { en: '/posts/' },
 };
 
 /**
  * Récupère les liens vers les versions traduites d'un article donné.
- * @param currentPost L'entrée de collection de l'article actuel.
- * @returns Un tableau d'objets TranslatedArticleLink pour chaque traduction disponible.
  */
 export async function getTranslatedArticles(
   currentPost: CollectionEntry<'blog'>
@@ -137,30 +129,50 @@ export async function getTranslatedArticles(
 }
 
 /**
- * Génère un chemin d'URL traduit en fonction de la locale cible, du chemin actuel et de la locale courante.
- *
- * @param {string} localeToSwitchTo - La locale cible vers laquelle traduire le chemin.
- * @param {string} currentPathname - Le chemin d'URL courant.
- * @param {string | undefined} currentLocale - La locale courante utilisée dans le chemin, si applicable.
- * @return {string} Le chemin d'URL traduit pour la locale spécifiée.
+ * Génère un chemin d'URL traduit - Version améliorée
  */
 export function getTranslatedPath(
   localeToSwitchTo: string,
   currentPathname: string,
   currentLocale: string | undefined
 ): string {
+  // Normaliser le chemin avec slash final pour la correspondance
   const currentPathWithSlash = currentPathname.endsWith('/')
     ? currentPathname
     : `${currentPathname}/`;
+
+  // Vérifier les traductions spécifiques de pages
   if (specificPageTranslations[currentPathWithSlash]?.[localeToSwitchTo]) {
     return specificPageTranslations[currentPathWithSlash][localeToSwitchTo];
   }
 
   const pathSegments = currentPathname.split('/').filter(Boolean);
-  if (pathSegments[0] === currentLocale) {
-    pathSegments[0] = localeToSwitchTo;
-    return `/${pathSegments.join('/')}${currentPathname.endsWith('/') ? '/' : ''}`;
+
+  // Si on est sur la langue par défaut (pas de préfixe)
+  if (currentLocale === i18nConfig.defaultLocale && pathSegments[0] !== currentLocale) {
+    if (localeToSwitchTo === i18nConfig.defaultLocale) {
+      return currentPathname; // Déjà sur la bonne langue
+    }
+    // Ajouter le préfixe de langue
+
+    return currentPathname === '/'
+      ? `/${localeToSwitchTo}/`
+      : `/${localeToSwitchTo}${currentPathname}${currentPathname.endsWith('/') ? '' : '/'}`;
   }
 
-  return `/${localeToSwitchTo}/`;
+  // Si on a un préfixe de langue dans l'URL
+  if (pathSegments[0] === currentLocale) {
+    if (localeToSwitchTo === i18nConfig.defaultLocale) {
+      // Retirer le préfixe pour la langue par défaut
+      const newPath = pathSegments.slice(1).join('/');
+      return newPath ? `/${newPath}${currentPathname.endsWith('/') ? '/' : ''}` : '/';
+    }
+
+
+      pathSegments[0] = localeToSwitchTo;
+      return `/${pathSegments.join('/')}${currentPathname.endsWith('/') ? '/' : ''}`;
+  }
+
+  // Fallback : aller à la racine de la langue cible
+  return localeToSwitchTo === i18nConfig.defaultLocale ? '/' : `/${localeToSwitchTo}/`;
 }

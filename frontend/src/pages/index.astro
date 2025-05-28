@@ -1,9 +1,50 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import "../styles/global.css";
+import { useI18n } from '../lib/i18n/i18nUtils';
+
+const { t } = useI18n(Astro.locals);
 ---
-<BaseLayout title="Accueil - Blog Technique" description="Page d'accueil du blog technique bilingue.">
-  <h1 class="text-2xl font-bold">Contenu de la Page d'Accueil </h1>
-  <p>Bienvenue sur le blog !</p>
-  <button class="btn btn-accent mt-4">Test Button</button>
+
+<BaseLayout title={t('nav.home')} description={t('seo.defaultDescription')}>
+  <div class="hero min-h-96 bg-base-200 rounded-lg mb-8">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h1 class="text-5xl font-bold">
+          {t('nav.home')}
+        </h1>
+        <p class="py-6">
+          {t('seo.defaultDescription')}
+        </p>
+        <a href="/posts/" class="btn btn-primary">
+          {t('nav.blog')}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <section class="grid md:grid-cols-2 gap-6">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Latest Posts</h2>
+        <p>Discover our recent articles on web development and technology.</p>
+        <div class="card-actions justify-end">
+          <a href="/posts/" class="btn btn-primary btn-sm">
+            {t('article.readMore')}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">{t('nav.about')}</h2>
+        <p>Learn more about our bilingual tech blog and our mission.</p>
+        <div class="card-actions justify-end">
+          <a href="/about/" class="btn btn-secondary btn-sm">
+            {t('nav.about')}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

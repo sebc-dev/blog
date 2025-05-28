@@ -1,0 +1,80 @@
+---
+import { useI18n } from '../lib/i18n/i18nUtils';
+
+interface Props {
+  availableTranslations: Array<{lang: string, slug: string, title: string}>;
+}
+
+const { availableTranslations } = Astro.props;
+const { t, currentLang } = useI18n(Astro.locals);
+---
+
+<div class="article-unavailable">
+  <div class="message">
+    <h2>{t('article.notAvailableTitle')}</h2>
+    <p>{t('article.notAvailableMessage')}</p>
+  </div>
+  
+  {availableTranslations.length > 0 && (
+    <div class="available-translations">
+      <h3>{t('article.availableIn')}</h3>
+      <ul>
+        {availableTranslations.map(({ lang, slug, title }) => (
+          <li>
+            <a href={`/${lang === 'en' ? '' : lang + '/'}posts/${slug}`}>
+              🌍 {title} ({lang.toUpperCase()})
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
+<style>
+  .article-unavailable {
+    padding: 2rem;
+    background: #f8f9fa;
+    border-left: 4px solid #007acc;
+    margin: 2rem 0;
+    border-radius: 0 8px 8px 0;
+  }
+  
+  .message h2 {
+    color: #007acc;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+  
+  .message p {
+    margin-bottom: 1.5rem;
+    color: #555;
+  }
+  
+  .available-translations h3 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .available-translations ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .available-translations li {
+    margin: 0.5rem 0;
+  }
+  
+  .available-translations a {
+    color: #007acc;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    transition: background-color 0.2s;
+  }
+  
+  .available-translations a:hover {
+    background-color: rgba(0, 122, 204, 0.1);
+  }
+</style>
