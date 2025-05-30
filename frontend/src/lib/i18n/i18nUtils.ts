@@ -1,7 +1,8 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { i18nConfig } from './config.ts';
+import { i18nConfig, type Locale } from './config.ts';
 import enStrings from './locales/en';
 import frStrings from './locales/fr';
+import { specificPageTranslations } from './pageTranslations.ts';
 
 export type Strings = typeof enStrings | typeof frStrings;
 export type StringKey = keyof Strings;
@@ -9,6 +10,13 @@ export type StringKey = keyof Strings;
 // Interface pour les locals Astro
 interface AstroLocals {
   currentLang: string;
+}
+
+/**
+ * Type guard pour vérifier si une chaîne est une locale valide
+ */
+function isValidLocale(lang: string): lang is Locale {
+  return i18nConfig.locales.includes(lang as Locale);
 }
 
 /**
@@ -29,7 +37,7 @@ export function getLangFromUrl(url: URL): string {
   const potentialLang = segments[0];
 
   // Si le premier segment est une langue valide, c'est la langue courante
-  if (potentialLang && i18nConfig.locales.includes(potentialLang as never)) {
+  if (potentialLang && isValidLocale(potentialLang)) {
     return potentialLang;
   }
 
@@ -88,23 +96,6 @@ export interface TranslatedArticleLink {
 }
 
 /**
- * Traductions spécifiques pour les pages avec URLs différentes
- */
-export const specificPageTranslations: Record<string, Record<string, string>> = {
-  // Pages avec URLs différentes
-  '/about/': { fr: '/fr/a-propos/' },
-  '/fr/a-propos/': { en: '/about/' },
-
-  // Pages avec URLs identiques
-  '/contact/': { fr: '/fr/contact/' },
-  '/fr/contact/': { en: '/contact/' },
-
-  // Pages de blog
-  '/posts/': { fr: '/fr/posts/' },
-  '/fr/posts/': { en: '/posts/' },
-};
-
-/**
  * Récupère les liens vers les versions traduites d'un article donné.
  */
 export async function getTranslatedArticles(
@@ -129,6 +120,62 @@ export async function getTranslatedArticles(
 }
 
 /**
+ * Normalise un chemin en s'assurant qu'il se termine par un slash
+ */
+function normalizePathWithTrailingSlash(pathname: string): string {
+  return pathname.endsWith('/') ? pathname : `${pathname}/`;
+}
+
+/**
+ * Gère le passage de la locale par défaut vers une autre locale
+ */
+function handleDefaultToLocaleSwitch(
+  currentPathname: string,
+  localeToSwitchTo: string,
+  currentLocale: string
+): string {
+  if (localeToSwitchTo === currentLocale) {
+    return currentPathname; // Déjà sur la bonne langue
+  }
+  
+  // Ajouter le préfixe de langue
+  const newBasePath = currentPathname === '/' ? '' : currentPathname;
+  const newFullPath = `/${localeToSwitchTo}${newBasePath}`;
+  return newFullPath.endsWith('/') ? newFullPath : `${newFullPath}/`;
+}
+
+/**
+ * Gère le passage d'un chemin avec préfixe de locale vers la locale par défaut
+ */
+function handleLocaleToDefaultSwitch(
+  pathSegments: string[],
+  currentPathname: string
+): string {
+  const newPath = pathSegments.slice(1).join('/');
+  return newPath ? `/${newPath}${currentPathname.endsWith('/') ? '/' : ''}` : '/';
+}
+
+/**
+ * Gère le passage entre chemins avec préfixes de locale
+ */
+function handleLocalePrefixedSwitch(
+  pathSegments: string[],
+  localeToSwitchTo: string,
+  currentPathname: string
+): string {
+  pathSegments[0] = localeToSwitchTo;
+  const newConstructedPath = pathSegments.join('/');
+
+  if (pathSegments.length === 1) {
+    // Le chemin était juste un préfixe de langue, ex: /en transformé en /fr
+    return `/${newConstructedPath}/`; // Assurer un slash final, ex: /fr/
+  }
+  
+  // Le chemin était plus long, ex: /en/blog transformé en /fr/blog
+  return `/${newConstructedPath}${currentPathname.endsWith('/') ? '/' : ''}`;
+}
+
+/**
  * Génère un chemin d'URL traduit - Version améliorée
  */
 export function getTranslatedPath(
@@ -137,9 +184,7 @@ export function getTranslatedPath(
   currentLocale: string | undefined
 ): string {
   // Normaliser le chemin avec slash final pour la correspondance
-  const currentPathWithSlash = currentPathname.endsWith('/')
-    ? currentPathname
-    : `${currentPathname}/`;
+  const currentPathWithSlash = normalizePathWithTrailingSlash(currentPathname);
 
   // Vérifier les traductions spécifiques de pages
   if (specificPageTranslations[currentPathWithSlash]?.[localeToSwitchTo]) {
@@ -150,35 +195,18 @@ export function getTranslatedPath(
 
   // Si on est sur la langue par défaut (pas de préfixe)
   if (currentLocale === i18nConfig.defaultLocale && pathSegments[0] !== currentLocale) {
-    if (localeToSwitchTo === i18nConfig.defaultLocale) {
-      return currentPathname; // Déjà sur la bonne langue
-    }
-    // Ajouter le préfixe de langue
-    // MODIFICATION 1: Assurer un slash final pour les chemins construits ici
-    
-    const newBasePath = currentPathname === '/' ? '' : currentPathname;
-    const newFullPath = `/${localeToSwitchTo}${newBasePath}`;
-    return newFullPath.endsWith('/') ? newFullPath : `${newFullPath}/`;
+    return handleDefaultToLocaleSwitch(currentPathname, localeToSwitchTo, currentLocale);
   }
 
   // Cas: le chemin actuel a un préfixe de langue valide (ex: /en/blog ou /fr/about)
-  if (pathSegments.length > 0 && i18nConfig.locales.includes(pathSegments[0] as string) && pathSegments[0] === currentLocale) {
+  if (pathSegments.length > 0 && isValidLocale(pathSegments[0]) && pathSegments[0] === currentLocale) {
     // Cas: on veut passer à la langue par défaut (ex: /fr/blog -> /blog)
     if (localeToSwitchTo === i18nConfig.defaultLocale) {
-      const newPath = pathSegments.slice(1).join('/');
-      return newPath ? `/${newPath}${currentPathname.endsWith('/') ? '/' : ''}` : '/';
+      return handleLocaleToDefaultSwitch(pathSegments, currentPathname);
     }
 
     // Cas: on veut passer à une autre langue avec préfixe (ex: /en/blog -> /fr/blog)
-    pathSegments[0] = localeToSwitchTo;
-    const newConstructedPath = pathSegments.join('/');
-
-    if (pathSegments.length === 1) { // Le chemin était juste un préfixe de langue, ex: /en transformé en /fr
-      return `/${newConstructedPath}/`; // Assurer un slash final, ex: /fr/
-    }
-    // Le chemin était plus long, ex: /en/blog transformé en /fr/blog
-
-    return `/${newConstructedPath}${currentPathname.endsWith('/') ? '/' : ''}`;
+    return handleLocalePrefixedSwitch([...pathSegments], localeToSwitchTo, currentPathname);
   }
 
   // Fallback: si aucune des conditions ci-dessus n'est remplie,

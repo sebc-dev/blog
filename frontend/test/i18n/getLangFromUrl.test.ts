@@ -84,4 +84,10 @@ describe('getLangFromUrl', () => {
     const result = getLangFromUrl(url);
     expect(result).toBe('en'); // FR n'est pas dans les locales supportées (en lowercase)
   });
+
+  it('devrait supporter les codes de langue en minuscules', () => {
+    const url = new URL('https://example.com/fr/some-path');
+    const result = getLangFromUrl(url);
+    expect(result).toBe('fr'); // Fr est dans les locales supportées (en lowercase)
+  });
 });

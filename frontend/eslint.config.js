@@ -5,6 +5,11 @@ import { defineConfig } from 'eslint/config';
 import prettierConfig from 'eslint-config-prettier';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 
+// Configuration partagée pour les règles communes
+const sharedRules = {
+  '@stylistic/curly-newline': 'off',
+};
+
 export default defineConfig([
   ...xoConfig,
   prettierConfig,
@@ -37,7 +42,7 @@ export default defineConfig([
     },
     rules: {
       ...(astroPlugin.configs?.recommended?.rules || {}),
-      '@stylistic/curly-newline': 'off',
+      ...sharedRules,
     },
   },
   {
@@ -51,7 +56,7 @@ export default defineConfig([
       },
     },
     rules: {
-      '@stylistic/curly-newline': 'off',
+      ...sharedRules,
     },
   },
   {
@@ -69,7 +74,7 @@ export default defineConfig([
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      '@stylistic/curly-newline': 'off',
+      ...sharedRules,
     },
   },
 ]);

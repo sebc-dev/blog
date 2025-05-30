@@ -7,11 +7,16 @@ export default {
 
   // Articles
   'article.readMore': 'Lire la suite',
+  'article.readIn': 'Lire en',
   'article.notAvailableTitle': 'Article Non Disponible',
   'article.notAvailableMessage': 'Cet article n\'est pas encore disponible en français.',
   'article.availableIn': 'Disponible dans d\'autres langues :',
   'article.publishedOn': 'Publié le',
   'article.updatedOn': 'Mis à jour le',
+
+  // Language names
+  'language.french': 'Français',
+  'language.english': 'Anglais',
 
   // Footer
   'footer.copyright': `© ${new Date().getFullYear()} Blog Technique Bilingue. Tous droits réservés.`,

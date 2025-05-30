@@ -1,9 +1,10 @@
 ---
-// frontend/src/components/article/ArticleLanguageSwitcher.astro
 import type { CollectionEntry } from 'astro:content';
-import { getTranslatedArticles, type TranslatedArticleLink } from '../../lib/i18n/i18nUtils';
-import fr_flag from '../../../public/assets/flags/fr.svg';
-import en_flag from '../../../public/assets/flags/en.svg';
+import {
+  getTranslatedArticles,
+  type TranslatedArticleLink,
+  useI18n,
+} from '../../lib/i18n/i18nUtils';
 
 export interface Props {
   post: CollectionEntry<'blog'>;
@@ -11,58 +12,63 @@ export interface Props {
 
 const { post } = Astro.props;
 const translations: TranslatedArticleLink[] = await getTranslatedArticles(post);
+const { t } = useI18n(Astro.locals);
+
+// Mapping des drapeaux - chemins relatifs au répertoire public
+const flagMapping = {
+  fr: '/assets/flags/fr.svg',
+  en: '/assets/flags/en.svg',
+} as const;
 
 // Fonction helper pour obtenir le drapeau
 const getFlag = (locale: string) => {
-  switch (locale) {
-    case 'fr': return fr_flag;
-    case 'en': return en_flag;
-    default: return null;
-  }
+  return flagMapping[locale as keyof typeof flagMapping] || null;
 };
 
-// Labels pour les langues (à traduire selon vos besoins)
+// Labels pour les langues (utilise les traductions i18n)
 const getLanguageLabel = (locale: string) => {
   switch (locale) {
-    case 'fr': return 'Français';
-    case 'en': return 'English';
-    default: return locale.toUpperCase();
+    case 'fr':
+      return t('language.french');
+    case 'en':
+      return t('language.english');
+    default:
+      return locale.toUpperCase();
   }
 };
 ---
 
-{translations && translations.length > 0 && (
-<div class="article-language-switcher my-4 p-2 border rounded">
-  <p class="font-semibold text-sm mb-1">Lire cet article en :</p> {/* TODO: Traduire cette chaîne UI */}
-  <ul class="flex space-x-2">
-    {translations.map(translation => {
-      // Construire l'URL: on assume que le slug du frontmatter (data.slug) est prioritaire
-        // et que le routing d'Astro gère le reste pour les collections
-        const targetSlug = post.collection === 'blog' ? (translation.slug) : translation.slug;
-      const targetUrl = `/${translation.lang}/blog/${targetSlug}/`;
-      const flag = getFlag(translation.lang);
-      const languageLabel = getLanguageLabel(translation.lang);
+{
+  translations && translations.length > 0 && (
+    <div class="article-language-switcher my-4 p-2 border rounded">
+      <p class="font-semibold text-sm mb-1">Lire cet article en :</p>{' '}
+      {/* TODO: Traduire cette chaîne UI */}
+      <ul class="flex space-x-2">
+        {translations.map((translation) => {
+          // Construire l'URL: on assume que le slug du frontmatter (data.slug) est prioritaire
+          // et que le routing d'Astro gère le reste pour les collections
+          const targetSlug = post.collection === 'blog' ? translation.slug : translation.slug;
+          const targetUrl = `/${translation.lang}/blog/${targetSlug}/`;
+          const flag = getFlag(translation.lang);
+          const languageLabel = getLanguageLabel(translation.lang);
 
-      return (
-        <li>
-          <a
-            href={targetUrl}
-            class="link link-hover text-sm flex items-center gap-1"
-            aria-label={`Lire en ${languageLabel}`}
-          >
-            {flag && (
-              <img
-                src={flag.src}
-                alt={`Drapeau ${languageLabel}`}
-                class="w-4 h-4 inline-block"
-              />
-            )}
-            <span>{translation.title}</span>
-            <span class="text-xs opacity-70">({translation.lang.toUpperCase()})</span>
-          </a>
-        </li>
-      );
-    })}
-  </ul>
-</div>
-  )}
+          return (
+            <li>
+              <a
+                href={targetUrl}
+                class="link link-hover text-sm flex items-center gap-1"
+                aria-label={`${t('article.readIn')} ${languageLabel}`}
+              >
+                {flag && (
+                  <img src={flag} alt={`Drapeau ${languageLabel}`} class="w-4 h-4 inline-block" />
+                )}
+                <span>{translation.title}</span>
+                <span class="text-xs opacity-70">({translation.lang.toUpperCase()})</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )
+}

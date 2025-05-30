@@ -1,11 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getTranslatedPath } from '../../src/lib/i18n/i18nUtils.ts';
 
+// Import des fonctions d'aide pour les tester individuellement
+// Note: Ces fonctions ne sont pas exportées, donc nous les testons indirectement via getTranslatedPath
+// Mais nous pouvons ajouter des tests spécifiques pour valider leur comportement
+
 // Mock de la configuration i18n pour ce test
 vi.mock('../../src/lib/i18n/config', () => ({
   i18nConfig: {
     defaultLocale: 'en',
-    locales: ['en', 'fr'], // Assurez-vous que 'de' n'est pas utilisé si non défini ici
+    locales: ['en', 'fr', 'es'], // Assurez-vous que 'de' n'est pas utilisé si non défini ici
     routing: {
       prefixDefaultLocale: false, // ✅ Changé ici
     },
@@ -15,6 +19,96 @@ vi.mock('../../src/lib/i18n/config', () => ({
 }));
 
 describe('getTranslatedPath', () => {
+  describe('Helper functions behavior validation', () => {
+    describe('normalizePathWithTrailingSlash behavior', () => {
+      it('should add trailing slash when missing', () => {
+        // Test via getTranslatedPath pour valider le comportement de normalizePathWithTrailingSlash
+        const result = getTranslatedPath('fr', '/about', 'en');
+        expect(result).toBe('/fr/a-propos/'); // Vérifie que la normalisation fonctionne
+      });
+
+      it('should preserve trailing slash when present', () => {
+        const result = getTranslatedPath('fr', '/about/', 'en');
+        expect(result).toBe('/fr/a-propos/'); // Vérifie que le slash final est préservé
+      });
+    });
+
+    describe('handleDefaultToLocaleSwitch behavior', () => {
+      it('should return same path when switching to same locale', () => {
+        const result = getTranslatedPath('en', '/blog/', 'en');
+        expect(result).toBe('/blog/'); // Déjà sur la bonne langue
+      });
+
+      it('should add locale prefix when switching from default to another locale', () => {
+        const result = getTranslatedPath('fr', '/blog/', 'en');
+        expect(result).toBe('/fr/blog/'); // Ajoute le préfixe de langue
+      });
+
+      it('should handle root path correctly when switching from default', () => {
+        const result = getTranslatedPath('fr', '/', 'en');
+        expect(result).toBe('/fr/'); // / -> /fr/
+      });
+
+      it('should ensure trailing slash for constructed paths', () => {
+        const result = getTranslatedPath('fr', '/blog', 'en');
+        expect(result).toBe('/fr/blog/'); // Assure un slash final
+      });
+    });
+
+    describe('handleLocaleToDefaultSwitch behavior', () => {
+      it('should remove locale prefix when switching to default locale', () => {
+        const result = getTranslatedPath('en', '/fr/blog/', 'fr');
+        expect(result).toBe('/blog/'); // Supprime le préfixe
+      });
+
+      it('should preserve trailing slash when removing prefix', () => {
+        const result = getTranslatedPath('en', '/fr/blog/', 'fr');
+        expect(result).toBe('/blog/'); // Préserve le slash final
+      });
+
+      it('should handle paths without trailing slash', () => {
+        const result = getTranslatedPath('en', '/fr/blog', 'fr');
+        expect(result).toBe('/blog'); // Pas de slash final dans l'original
+      });
+
+      it('should return root when removing locale-only prefix', () => {
+        const result = getTranslatedPath('en', '/fr/', 'fr');
+        expect(result).toBe('/'); // /fr/ -> /
+      });
+    });
+
+    describe('handleLocalePrefixedSwitch behavior', () => {
+      it('should switch between locale prefixes', () => {
+        const result = getTranslatedPath('es', '/fr/blog/', 'fr');
+        expect(result).toBe('/es/blog/'); // /fr/blog/ -> /es/blog/
+      });
+
+      it('should handle locale-only paths with trailing slash', () => {
+        const result = getTranslatedPath('es', '/fr/', 'fr');
+        expect(result).toBe('/es/'); // /fr/ -> /es/
+      });
+
+      it('should preserve trailing slash in longer paths', () => {
+        const result = getTranslatedPath('es', '/fr/blog/post/', 'fr');
+        expect(result).toBe('/es/blog/post/'); // Préserve la structure
+      });
+
+      it('should handle paths without trailing slash', () => {
+        const result = getTranslatedPath('es', '/fr/blog', 'fr');
+        expect(result).toBe('/es/blog'); // Pas de slash final ajouté
+      });
+
+      it('should not mutate original path segments', () => {
+        // Test indirect pour vérifier que [...pathSegments] fonctionne
+        const result1 = getTranslatedPath('es', '/fr/blog/', 'fr');
+        const result2 = getTranslatedPath('es', '/fr/different/', 'fr'); // Utiliser 'es' qui est dans les locales mockées
+        expect(result1).toBe('/es/blog/');
+        // Le deuxième appel devrait fonctionner correctement, pas être affecté par le premier
+        expect(result2).toBe('/es/different/'); // Changement de préfixe de locale
+      });
+    });
+  });
+
   describe('Basic path translation (legacy prefix scenarios and specific pages)', () => {
     it('should replace locale prefix if current path has one (e.g., /en/blog to /fr/blog)', () => {
       const result = getTranslatedPath('fr', '/en/blog/', 'en');
@@ -113,6 +207,44 @@ describe('getTranslatedPath', () => {
     it('should correctly handle specific page path with or without trailing slash in input', () => {
       expect(getTranslatedPath('fr', '/about', 'en')).toBe('/fr/a-propos/'); // /about (en) -> /fr/a-propos/
       expect(getTranslatedPath('en', '/fr/a-propos', 'fr')).toBe('/about/');   // /fr/a-propos (fr) -> /about/
+    });
+  });
+
+  describe('Refactoring validation - ensuring no regression', () => {
+    it('should maintain exact same behavior as before refactoring for complex scenarios', () => {
+      // Tests de régression pour s'assurer que la refactorisation n'a pas cassé la logique
+      
+      // Scénarios complexes avec chemins profonds
+      expect(getTranslatedPath('fr', '/en/blog/2024/article-title/', 'en'))
+        .toBe('/fr/blog/2024/article-title/');
+      
+      // Scénarios avec locale undefined
+      expect(getTranslatedPath('fr', '/some/path/', undefined))
+        .toBe('/fr/');
+      
+      // Scénarios avec chemins vides ou racine
+      expect(getTranslatedPath('fr', '', 'en')).toBe('/fr/');
+      expect(getTranslatedPath('en', '/fr/', 'fr')).toBe('/');
+      
+      // Scénarios avec traductions spécifiques
+      expect(getTranslatedPath('fr', '/about/', 'en')).toBe('/fr/a-propos/');
+      expect(getTranslatedPath('en', '/fr/a-propos/', 'fr')).toBe('/about/');
+    });
+
+    it('should handle edge cases consistently after refactoring', () => {
+      // Tests pour les cas limites
+      
+      // Chemins avec plusieurs slashes - la fonction normalise les chemins
+      expect(getTranslatedPath('fr', '/en/blog/', 'en'))
+        .toBe('/fr/blog/'); // La fonction normalise les chemins
+      
+      // Chemins très courts
+      expect(getTranslatedPath('fr', '/en', 'en')).toBe('/fr/');
+      expect(getTranslatedPath('en', '/fr', 'fr')).toBe('/');
+      
+      // Locale cible identique à la locale courante
+      expect(getTranslatedPath('en', '/blog/', 'en')).toBe('/blog/');
+      expect(getTranslatedPath('fr', '/fr/blog/', 'fr')).toBe('/fr/blog/');
     });
   });
 });

@@ -91,6 +91,166 @@ describe('Middleware i18n', () => {
       expect(mocks.next).toHaveBeenCalledOnce();
       expect(getLangFromUrl).not.toHaveBeenCalled();
     });
+
+    it('should bypass processing for favicon.ico', async () => {
+      // Arrange
+      const { context, next, mocks } = createTestContext({
+        url: 'https://example.com/favicon.ico'
+      });
+
+      // Act
+      await onRequest(context as any, next);
+
+      // Assert
+      expect(mocks.next).toHaveBeenCalledOnce();
+      expect(context.locals).toEqual({});
+      expect(getLangFromUrl).not.toHaveBeenCalled();
+    });
+
+    it('should bypass processing for robots.txt', async () => {
+      // Arrange
+      const { context, next, mocks } = createTestContext({
+        url: 'https://example.com/robots.txt'
+      });
+
+      // Act
+      await onRequest(context as any, next);
+
+      // Assert
+      expect(mocks.next).toHaveBeenCalledOnce();
+      expect(context.locals).toEqual({});
+      expect(getLangFromUrl).not.toHaveBeenCalled();
+    });
+
+    it('should bypass processing for CSS files', async () => {
+      // Arrange
+      const { context, next, mocks } = createTestContext({
+        url: 'https://example.com/styles/main.css'
+      });
+
+      // Act
+      await onRequest(context as any, next);
+
+      // Assert
+      expect(mocks.next).toHaveBeenCalledOnce();
+      expect(context.locals).toEqual({});
+      expect(getLangFromUrl).not.toHaveBeenCalled();
+    });
+
+    it('should bypass processing for JavaScript files', async () => {
+      // Arrange
+      const { context, next, mocks } = createTestContext({
+        url: 'https://example.com/scripts/app.js'
+      });
+
+      // Act
+      await onRequest(context as any, next);
+
+      // Assert
+      expect(mocks.next).toHaveBeenCalledOnce();
+      expect(context.locals).toEqual({});
+      expect(getLangFromUrl).not.toHaveBeenCalled();
+    });
+
+    it('should bypass processing for image files', async () => {
+      // Arrange
+      const testCases = [
+        { url: 'https://example.com/images/logo.png', name: 'PNG' },
+        { url: 'https://example.com/photos/hero.jpg', name: 'JPG' },
+        { url: 'https://example.com/icons/star.svg', name: 'SVG' },
+        { url: 'https://example.com/gallery/photo.jpeg', name: 'JPEG' },
+        { url: 'https://example.com/assets/banner.gif', name: 'GIF' },
+        { url: 'https://example.com/media/thumbnail.webp', name: 'WEBP' },
+        { url: 'https://example.com/images/avatar.avif', name: 'AVIF' }
+      ];
+
+      // Act & Assert
+      const promises = testCases.map(async ({ url }) => {
+        const { context, next, mocks } = createTestContext({ url });
+        await onRequest(context as any, next);
+        
+        expect(mocks.next).toHaveBeenCalled();
+        expect(context.locals).toEqual({});
+        expect(getLangFromUrl).not.toHaveBeenCalled();
+      });
+
+      await Promise.all(promises);
+    });
+
+    it('should bypass processing for font files', async () => {
+      // Arrange
+      const testCases = [
+        { url: 'https://example.com/fonts/roboto.woff', name: 'WOFF' },
+        { url: 'https://example.com/fonts/opensans.woff2', name: 'WOFF2' },
+        { url: 'https://example.com/assets/fonts/arial.ttf', name: 'TTF' },
+        { url: 'https://example.com/typography/custom.eot', name: 'EOT' }
+      ];
+
+      // Act & Assert
+      const promises = testCases.map(async ({ url }) => {
+        const { context, next, mocks } = createTestContext({ url });
+        await onRequest(context as any, next);
+        
+        expect(mocks.next).toHaveBeenCalled();
+        expect(context.locals).toEqual({});
+        expect(getLangFromUrl).not.toHaveBeenCalled();
+      });
+
+      await Promise.all(promises);
+    });
+
+    it('should bypass processing for icon files', async () => {
+      // Arrange
+      const { context, next, mocks } = createTestContext({
+        url: 'https://example.com/icons/app-icon.ico'
+      });
+
+      // Act
+      await onRequest(context as any, next);
+
+      // Assert
+      expect(mocks.next).toHaveBeenCalledOnce();
+      expect(context.locals).toEqual({});
+      expect(getLangFromUrl).not.toHaveBeenCalled();
+    });
+
+    it('should handle case-insensitive file extensions', async () => {
+      // Arrange
+      const testCases = [
+        { url: 'https://example.com/image.PNG', name: 'PNG uppercase' },
+        { url: 'https://example.com/script.JS', name: 'JS uppercase' },
+        { url: 'https://example.com/style.CSS', name: 'CSS uppercase' },
+        { url: 'https://example.com/font.WOFF2', name: 'WOFF2 uppercase' }
+      ];
+
+      // Act & Assert
+      const promises = testCases.map(async ({ url }) => {
+        const { context, next, mocks } = createTestContext({ url });
+        await onRequest(context as any, next);
+        
+        expect(mocks.next).toHaveBeenCalled();
+        expect(context.locals).toEqual({});
+        expect(getLangFromUrl).not.toHaveBeenCalled();
+      });
+
+      await Promise.all(promises);
+    });
+
+    it('should NOT bypass processing for regular pages that contain static file names', async () => {
+      // Arrange
+      const { context, next, mocks } = createTestContext({
+        url: 'https://example.com/fr/blog/my-css-tutorial'
+      });
+      getLangFromUrl.mockReturnValue('fr');
+
+      // Act
+      await onRequest(context as any, next);
+
+      // Assert
+      expect(mocks.next).toHaveBeenCalledOnce();
+      expect(getLangFromUrl).toHaveBeenCalled();
+      expect(context.locals.currentLang).toBe('fr');
+    });
   });
 
   describe('Language detection and storage', () => {

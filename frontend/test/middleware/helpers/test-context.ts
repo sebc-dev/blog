@@ -4,7 +4,6 @@ export interface TestContextOptions {
   url: string;
   cookies?: Record<string, string>;
   headers?: Record<string, string>;
-  prefixDefaultLocale?: boolean;
 }
 
 export const createTestContext = (options: TestContextOptions) => {
