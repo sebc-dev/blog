@@ -23,7 +23,7 @@ src/
     │       ├── un-slug-darticle.mdx
     │       └── un-autre-slug-darticle.mdx
     └── config.ts               # Configuration des collections Astro
-````
+```
 
 Cette approche s'aligne avec les fonctionnalités de routage i18n d'Astro et simplifie la gestion des fichiers. (Source : Rapport Astro Blog Bilingue, Section III.A)
 
@@ -72,61 +72,52 @@ Cette configuration est cruciale pour la validation des métadonnées de chaque 
 
 Chaque article de blog, qu'il soit en français ou en anglais, doit contenir un bloc frontmatter au début du fichier MDX. Ce bloc définit les métadonnées cruciales pour la gestion, l'affichage et le référencement de l'article. Voici les champs définis dans notre schéma (`src/content/config.ts`) et les conventions associées :
 
-- **`title`** (string, requis)
-    
-    - **Description :** Le titre principal de l'article.
-    - **Convention :** Doit être localisé dans la langue de l'article. Par exemple, "Understanding Astro Islands" pour un article en anglais, et "Comprendre les Îles Astro" pour sa traduction française.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C)_
-- **`description`** (string, optionnel)
-    
-    - **Description :** Une courte description (1-2 phrases) du contenu de l'article. Utilisée pour les méta-descriptions SEO et les aperçus.
-    - **Convention :** Doit être localisée. Si absente, un extrait pourrait être généré, mais il est préférable de la fournir pour un meilleur contrôle SEO.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C)_
-- **`pubDate`** (date, requis)
-    
-    - **Description :** La date de publication originale de l'article.
-    - **Convention :** Peut être une chaîne de date (ex: `YYYY-MM-DD`) que Zod convertira (`z.coerce.date()`). Il est recommandé de synchroniser cette date entre les traductions pour représenter la date de publication initiale du _contenu conceptuel_. Cependant, si les traductions sont publiées à des moments très différents et que cela a une importance éditoriale, elles peuvent être distinctes. Pour le MVP, nous visons la synchronisation.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C, adapté)_
-- **`updatedDate`** (date, optionnel)
-    
-    - **Description :** La date de la dernière mise à jour significative de _cette version linguistique_ de l'article.
-    - **Convention :** À utiliser si l'article est modifié après sa publication initiale. Permet d'indiquer aux lecteurs et aux moteurs de recherche que le contenu est à jour.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C)_
-- **`tags`** (array de strings, optionnel)
-    
-    - **Description :** Une liste de mots-clés ou d'étiquettes décrivant les sujets principaux de l'article.
-    - **Convention :** Les tags doivent être localisés si leur signification change ou s'ils sont destinés à être affichés et filtrés dans une langue spécifique. (Ex: `["performance", "islands"]` vs `["performance", "îles"]`).
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C)_
-- **`lang`** (enum: `'en'` | `'fr'`, requis)
-    
-    - **Description :** La langue du contenu de ce fichier MDX spécifique.
-    - **Convention :** Doit être soit `en` pour l'anglais, soit `fr` pour le français. Ce champ est crucial pour le filtrage, le routage et l'affichage conditionnel.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C)_
-- **`translationId`** (string, requis)
-    
-    - **Description :** Un identifiant unique et stable partagé entre toutes les traductions d'un même article conceptuel.
-    - **Convention :**
-        - Cet identifiant **est l'`articleCanonicalSlug`** utilisé par le backend pour les métriques (partages, feedback).
-        - Il doit être unique pour un ensemble de traductions et ne pas changer une fois défini.
-        - Utiliser un format lisible par l'humain, en minuscules, avec des tirets pour séparer les mots (kebab-case).
-        - Exemple : `understanding-astro-islands-2025` (inclure l'année peut aider à l'unicité si le sujet est revisité).
-        - Toutes les versions linguistiques d'un même article doivent avoir **exactement le même `translationId`**.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C, et clarification précédente)_
-- **`slug`** (string, optionnel)
-    
-    - **Description :** Le segment d'URL spécifiques à la langue pour cet article.
-    - **Convention :**
-        - S'il est fourni, il sera utilisé pour construire l'URL finale (ex: `/fr/{slug}`).
-        - Doit être en minuscules, avec des tirets pour séparer les mots (kebab-case).
-        - Doit être unique au sein de sa langue.
-        - Fortement recommandé pour avoir des URLs sémantiques et localisées (ex: `les-iles-astro-en-profondeur` pour la version française, `astro-islands-deep-dive` pour l'anglaise).
-        - Si ce champ n'est pas fourni, Astro générera automatiquement un slug à partir du nom de fichier. Il est préférable de le définir explicitement pour un meilleur contrôle.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.C)_
-- **`isDraft`** (boolean, optionnel, défaut: `false`)
-    
-    - **Description :** Indique si l'article est un brouillon et ne doit pas être publié.
-    - **Convention :** Mettre à `true` pour les articles en cours de rédaction ou de révision. Les articles avec `isDraft: true` seront exclus des listings publics et des sitemaps.
-    - _(Source : Rapport Astro Blog Bilingue, Section III.B)_
+-   **`title`** (string, requis)
+    -   **Description :** Le titre principal de l'article.
+    -   **Convention :** Doit être localisé dans la langue de l'article. Par exemple, "Understanding Astro Islands" pour un article en anglais, et "Comprendre les Îles Astro" pour sa traduction française.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C)_
+-   **`description`** (string, optionnel)
+    -   **Description :** Une courte description (1-2 phrases) du contenu de l'article. Utilisée pour les méta-descriptions SEO et les aperçus.
+    -   **Convention :** Doit être localisée. Si absente, un extrait pourrait être généré, mais il est préférable de la fournir pour un meilleur contrôle SEO.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C)_
+-   **`pubDate`** (date, requis)
+    -   **Description :** La date de publication originale de l'article.
+    -   **Convention :** Peut être une chaîne de date (ex: `YYYY-MM-DD`) que Zod convertira (`z.coerce.date()`). Il est recommandé de synchroniser cette date entre les traductions pour représenter la date de publication initiale du _contenu conceptuel_. Cependant, si les traductions sont publiées à des moments très différents et que cela a une importance éditoriale, elles peuvent être distinctes. Pour le MVP, nous visons la synchronisation.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C, adapté)_
+-   **`updatedDate`** (date, optionnel)
+    -   **Description :** La date de la dernière mise à jour significative de _cette version linguistique_ de l'article.
+    -   **Convention :** À utiliser si l'article est modifié après sa publication initiale. Permet d'indiquer aux lecteurs et aux moteurs de recherche que le contenu est à jour.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C)_
+-   **`tags`** (array de strings, optionnel)
+    -   **Description :** Une liste de mots-clés ou d'étiquettes décrivant les sujets principaux de l'article.
+    -   **Convention :** Les tags doivent être localisés si leur signification change ou s'ils sont destinés à être affichés et filtrés dans une langue spécifique. (Ex: `["performance", "islands"]` vs `["performance", "îles"]`).
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C)_
+-   **`lang`** (enum: `'en'` | `'fr'`, requis)
+    -   **Description :** La langue du contenu de ce fichier MDX spécifique.
+    -   **Convention :** Doit être soit `en` pour l'anglais, soit `fr` pour le français. Ce champ est crucial pour le filtrage, le routage et l'affichage conditionnel.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C)_
+-   **`translationId`** (string, requis)
+    -   **Description :** Un identifiant unique et stable partagé entre toutes les traductions d'un même article conceptuel.
+    -   **Convention :**
+        -   Cet identifiant **est l'`articleCanonicalSlug`** utilisé par le backend pour les métriques (partages, feedback).
+        -   Il doit être unique pour un ensemble de traductions et ne pas changer une fois défini.
+        -   Utiliser un format lisible par l'humain, en minuscules, avec des tirets pour séparer les mots (kebab-case).
+        -   Exemple : `understanding-astro-islands-2025` (inclure l'année peut aider à l'unicité si le sujet est revisité).
+        -   Toutes les versions linguistiques d'un même article doivent avoir **exactement le même `translationId`**.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C, et clarification précédente)_
+-   **`slug`** (string, optionnel)
+    -   **Description :** Le segment d'URL spécifiques à la langue pour cet article.
+    -   **Convention :**
+        -   S'il est fourni, il sera utilisé pour construire l'URL finale (ex: `/fr/{slug}`).
+        -   Doit être en minuscules, avec des tirets pour séparer les mots (kebab-case).
+        -   Doit être unique au sein de sa langue.
+        -   Fortement recommandé pour avoir des URLs sémantiques et localisées (ex: `les-iles-astro-en-profondeur` pour la version française, `astro-islands-deep-dive` pour l'anglaise).
+        -   Si ce champ n'est pas fourni, Astro générera automatiquement un slug à partir du nom de fichier. Il est préférable de le définir explicitement pour un meilleur contrôle.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.C)_
+-   **`isDraft`** (boolean, optionnel, défaut: `false`)
+    -   **Description :** Indique si l'article est un brouillon et ne doit pas être publié.
+    -   **Convention :** Mettre à `true` pour les articles en cours de rédaction ou de révision. Les articles avec `isDraft: true` seront exclus des listings publics et des sitemaps.
+    -   _(Source : Rapport Astro Blog Bilingue, Section III.B)_
 
 ### Exemple de Frontmatter Combiné
 
@@ -222,14 +213,14 @@ La **traduction manuelle et de haute qualité, assistée par des outils d'IA si 
 
 ### 3.3. Maintien de la Cohérence
 
-- **Glossaires et Guides de Style :** Il est recommandé de maintenir un glossaire bilingue des termes techniques fréquemment utilisés et un guide de style pour assurer la cohérence terminologique et tonale entre les versions françaises et anglaises. Ce glossaire sera également utile pour guider l'IA lors de la traduction. (Source : Rapport Astro Blog Bilingue, Section IV.A)
-- **Mises à Jour de Contenu :** Si un article source est mis à jour de manière significative, la version traduite doit également être mise à jour pour refléter les changements. Le champ `updatedDate` de chaque version linguistique doit être actualisé en conséquence. Le même processus de traduction assistée par IA puis de validation humaine s'applique.
+-   **Glossaires et Guides de Style :** Il est recommandé de maintenir un glossaire bilingue des termes techniques fréquemment utilisés et un guide de style pour assurer la cohérence terminologique et tonale entre les versions françaises et anglaises. Ce glossaire sera également utile pour guider l'IA lors de la traduction. (Source : Rapport Astro Blog Bilingue, Section IV.A)
+-   **Mises à Jour de Contenu :** Si un article source est mis à jour de manière significative, la version traduite doit également être mise à jour pour refléter les changements. Le champ `updatedDate` de chaque version linguistique doit être actualisé en conséquence. Le même processus de traduction assistée par IA puis de validation humaine s'applique.
 
 ### 3.4. Outils d'IA pour la Traduction (Assistance)
 
-- L'utilisation d'outils d'IA avancés comme **Claude** (ou d'autres modèles similaires tels que DeepL, Google Translate) est encouragée pour **assister** dans le processus de traduction et fournir une première ébauche. Cela peut considérablement accélérer le workflow.
-- Cependant, il est **impératif et non négociable** qu'une **révision, une correction et une validation humaines approfondies** soient effectuées sur toute traduction générée par une IA. Le contenu technique exige une grande précision, une terminologie correcte, et une adaptation des nuances que seule une expertise humaine peut garantir pour maintenir la haute qualité visée par le blog.
-- Des outils CMS comme "Front Matter CMS" peuvent s'intégrer à des services de traduction automatique, mais la supervision humaine reste la clé. (Source : Rapport Astro Blog Bilingue, Section IV.A)
+-   L'utilisation d'outils d'IA avancés comme **Claude** (ou d'autres modèles similaires tels que DeepL, Google Translate) est encouragée pour **assister** dans le processus de traduction et fournir une première ébauche. Cela peut considérablement accélérer le workflow.
+-   Cependant, il est **impératif et non négociable** qu'une **révision, une correction et une validation humaines approfondies** soient effectuées sur toute traduction générée par une IA. Le contenu technique exige une grande précision, une terminologie correcte, et une adaptation des nuances que seule une expertise humaine peut garantir pour maintenir la haute qualité visée par le blog.
+-   Des outils CMS comme "Front Matter CMS" peuvent s'intégrer à des services de traduction automatique, mais la supervision humaine reste la clé. (Source : Rapport Astro Blog Bilingue, Section IV.A)
 
 ## 4. Liaison des Articles Traduits et Sélecteur de Langue
 
@@ -381,12 +372,12 @@ Ce composant doit être placé dans le layout utilisé pour afficher les article
 
 Pour les pages qui ne sont pas des articles de blog (ex: À propos, page d'accueil du blog), un sélecteur de langue global est nécessaire.
 
-- **Positionnement :** Typiquement dans l'en-tête (`header`) ou le pied de page (`footer`) du site, présent sur toutes les pages.
-- **Logique :**
-    - Il doit lister les langues disponibles (ex: "Français", "English").
-    - Chaque lien doit pointer vers la version correspondante de la page actuelle dans l'autre langue.
-    - La fonction `getRelativeLocaleUrl(lang, Astro.url.pathname, true)` peut être utile ici, où le troisième argument `true` (ou une logique personnalisée) aiderait à reconstruire le chemin en changeant uniquement le préfixe de langue.
-    - Si les chemins sont traduits (ex: `/fr/a-propos` vs `/en/about`), une correspondance des routes doit être maintenue (par exemple, dans `src/lib/i18n/index.ts` ou un fichier dédié).
+-   **Positionnement :** Typiquement dans l'en-tête (`header`) ou le pied de page (`footer`) du site, présent sur toutes les pages.
+-   **Logique :**
+    -   Il doit lister les langues disponibles (ex: "Français", "English").
+    -   Chaque lien doit pointer vers la version correspondante de la page actuelle dans l'autre langue.
+    -   La fonction `getRelativeLocaleUrl(lang, Astro.url.pathname, true)` peut être utile ici, où le troisième argument `true` (ou une logique personnalisée) aiderait à reconstruire le chemin en changeant uniquement le préfixe de langue.
+    -   Si les chemins sont traduits (ex: `/fr/a-propos` vs `/en/about`), une correspondance des routes doit être maintenue (par exemple, dans `src/lib/i18n/index.ts` ou un fichier dédié).
 
 TypeScript
 
@@ -452,7 +443,7 @@ export const translationsEn = {
   // Autres...
   'search.placeholder': 'Search articles...',
   'pageNotFound.title': 'Page Not Found',
-  'pageNotFound.message': 'Sorry, we couldn’t find the page you’re looking for.',
+  'pageNotFound.message': 'Sorry, we couldn't find the page you're looking for.',
 } as const;
 
 export type UITranslationKey = keyof typeof translationsEn;
@@ -487,7 +478,7 @@ export const translationsFr: Record<UITranslationKey, string> = {
   // Autres...
   'search.placeholder': 'Rechercher des articles...',
   'pageNotFound.title': 'Page Non Trouvée',
-  'pageNotFound.message': 'Désolé, nous n’avons pas pu trouver la page que vous recherchez.',
+  'pageNotFound.message': 'Désolé, nous n'avons pas pu trouver la page que vous recherchez.',
 };
 ```
 
@@ -623,111 +614,153 @@ const currentLocale = Astro.currentLocale;
 
 (Source : Rapport Astro Blog Bilingue, Section V.B, adapté [80-81])
 
-### 6.2. Détection et Persistance de la Préférence Linguistique
+### 6.2. Gestion Statique de la Langue et Utilitaires i18n
 
-**Stratégie :**
+**Approche :** Le projet adopte une approche entièrement statique pour la gestion des langues, privilégiant la simplicité, les performances et la prévisibilité. La langue est déterminée uniquement par l'URL sans aucune redirection automatique, cookie ou localStorage.
 
-1. **Visite Initiale - Détection côté Serveur (Middleware `src/middleware.ts`) :**
-    - Vérifie un cookie de préférence (`preferred_language_v2`).
-    - Sinon, analyse l'en-tête `Accept-Language`.
-    - Redirige vers la locale appropriée (ou `defaultLang`) si nécessaire, en respectant `prefixDefaultLocale`. (Source : Rapport Astro Blog Bilingue, Sections V.C [83-86, 89])
-2. **Choix Manuel de l'Utilisateur :**
-    - Le choix via sélecteur de langue stocke la préférence dans `localStorage` (`preferred_language_v2_user_choice`) et met à jour le cookie. (Source : Rapport Astro Blog Bilingue, Sections V.C [84, 91, 95-98])
+**Architecture :**
 
-**Exemple conceptuel de `src/middleware.ts`:**
+1. **Middleware Minimal (`src/middleware.ts`) :**
 
-TypeScript
+    - Détecte la langue à partir de l'URL à l'aide de la fonction `getLangFromUrl()`
+    - Stocke la langue courante dans `locals.currentLang` pour les composants
+    - Aucune logique de redirection ou de persistance
 
+2. **Configuration i18n Centralisée (`src/lib/i18n/config.ts`) :**
+
+    - Configuration partagée entre Astro et les utilitaires custom
+    - Définit les langues supportées et la langue par défaut
+    - `prefixDefaultLocale: false` (l'anglais n'a pas de préfixe)
+
+3. **Utilitaires i18n Complets (`src/lib/i18n/i18nUtils.ts`) :**
+    - Fonctions de détection de langue
+    - Système de traduction typé
+    - Génération de chemins traduits
+    - Gestion des articles traduits
+
+**Implémentation :**
+
+**Configuration (`src/lib/i18n/config.ts`) :**
+
+```typescript
+export const i18nConfig = {
+    defaultLocale: "en",
+    locales: ["en", "fr"],
+    routing: {
+        prefixDefaultLocale: false, // Pas de préfixe pour l'anglais
+    },
+};
+
+export type Locale = "en" | "fr";
+export type DefaultLocale = "en";
 ```
-// src/middleware.ts
-import { defineMiddleware } from 'astro:middleware';
-import { getLocale, getRelativeLocaleUrl, locales, defaultLocale } from 'astro:i18n';
 
-const PREFERRED_LANG_COOKIE_KEY = 'preferred_language_v2';
+**Middleware (`src/middleware.ts`) :**
+
+```typescript
+import { defineMiddleware } from "astro:middleware";
+import { getLangFromUrl } from "./lib/i18n";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const currentPathname = context.url.pathname;
-  const currentLocaleFromPath = getLocale(currentPathname);
-  const preferredLangCookie = context.cookies.get(PREFERRED_LANG_COOKIE_KEY)?.value;
-  let targetLang: string | undefined = undefined;
+    const { request, locals } = context;
+    const url = new URL(request.url);
 
-  if (preferredLangCookie && locales.includes(preferredLangCookie)) {
-    targetLang = preferredLangCookie;
-  } else {
-    const acceptLanguageHeader = context.request.headers.get('accept-language');
-    if (acceptLanguageHeader) {
-      const browserLangs = acceptLanguageHeader.split(',').map(lang => lang.split(';')[0].trim().toLowerCase().split('-')[0]);
-      targetLang = browserLangs.find(lang => locales.includes(lang));
+    // Éviter le traitement pour les assets ou les fichiers API
+    if (
+        url.pathname.startsWith("/assets/") ||
+        url.pathname.startsWith("/api/")
+    ) {
+        return next();
     }
-  }
-  if (!targetLang) {
-    targetLang = defaultLocale;
-  }
 
-  const i18nConfig = context.site?.i18n;
-  const prefixDefault = i18nConfig?.routing?.prefixDefaultLocale ?? false;
+    // Utiliser la fonction existante pour déterminer la langue
+    locals.currentLang = getLangFromUrl(url);
 
-  // Condition pour rediriger :
-  // 1. La langue cible est différente de la langue actuelle de l'URL OU
-  // 2. L'URL n'a pas de préfixe de langue ET la langue cible n'est pas la langue par défaut (ou si on doit préfixer la langue par défaut)
-  const needsRedirect = targetLang !== currentLocaleFromPath && 
-                        (currentLocaleFromPath !== targetLang || (prefixDefault && currentLocaleFromPath !== targetLang));
-  
-  if (needsRedirect) {
-    // Construction du nouveau chemin sans le préfixe de langue actuel (s'il existe)
-    let basePath = currentPathname;
-    if (currentLocaleFromPath) {
-      const prefixToRemove = `/${currentLocaleFromPath}`;
-      if (basePath.startsWith(prefixToRemove)) {
-        basePath = basePath.substring(prefixToRemove.length) || '/';
-      }
-    }
-    const newPath = getRelativeLocaleUrl(targetLang, basePath);
-
-    if (newPath && newPath !== currentPathname) {
-      return context.redirect(newPath, 307); // 307 Temporary Redirect
-    }
-  }
-  return next();
+    return next();
 });
 ```
 
-**Script Côté Client pour `localStorage` et cookie (dans `BaseLayout.astro`):**
+**Utilitaires i18n principaux :**
 
-HTML
+```typescript
+/**
+ * Extrait l'identifiant de langue du chemin de l'URL donnée.
+ * Version statique qui gère les URLs sans préfixe pour la langue par défaut.
+ */
+export function getLangFromUrl(url: URL): string {
+    const cleanPath = url.pathname.replace(/\/+/g, "/").trim();
+    const segments = cleanPath.split("/").filter(Boolean);
+    const potentialLang = segments[0];
 
+    // Si le premier segment est une langue valide, c'est la langue courante
+    if (potentialLang && i18nConfig.locales.includes(potentialLang as never)) {
+        return potentialLang;
+    }
+
+    // Sinon, c'est la langue par défaut (pas de préfixe)
+    return i18nConfig.defaultLocale;
+}
+
+/**
+ * Génère un chemin d'URL traduit
+ */
+export function getTranslatedPath(
+    localeToSwitchTo: string,
+    currentPathname: string,
+    currentLocale: string | undefined
+): string {
+    // Logique pour générer les chemins traduits...
+    // (voir implémentation complète dans le fichier)
+}
+
+/**
+ * Hook utilitaire pour les composants Astro
+ */
+export function useI18n(locals: AstroLocals) {
+    const { currentLang } = locals;
+    const t = useTranslations(currentLang);
+
+    return {
+        currentLang,
+        t,
+        isDefaultLang: currentLang === i18nConfig.defaultLocale,
+        otherLangs: i18nConfig.locales.filter((lang) => lang !== currentLang),
+    };
+}
 ```
-<script is:inline>
-  const PREFERRED_LANG_COOKIE_KEY = 'preferred_language_v2';
-  const PREFERRED_LANG_LOCALSTORAGE_KEY = 'preferred_language_v2_user_choice';
 
-  function setLanguagePreference(lang) {
-    try {
-      localStorage.setItem(PREFERRED_LANG_LOCALSTORAGE_KEY, lang);
-      const d = new Date();
-      d.setTime(d.getTime() + (365*24*60*60*1000));
-      document.cookie = PREFERRED_LANG_COOKIE_KEY + "=" + lang + ";expires="+ d.toUTCString() + ";path=/;SameSite=Lax";
-    } catch (e) { console.warn('Could not save language preference:', e); }
-  }
+**Configuration Astro (`astro.config.ts`) :**
 
-  // Logique pour attacher aux sélecteurs de langue:
-  // document.addEventListener('DOMContentLoaded', () => {
-  //   document.querySelectorAll('a[data-lang-switcher]').forEach(link => { // Ajoutez data-lang-switcher à vos liens de sélecteur
-  //     link.addEventListener('click', function() {
-  //       const selectedLang = this.getAttribute('hreflang');
-  //       if (selectedLang) setLanguagePreference(selectedLang);
-  //     });
-  //   });
-  // });
-</script>
+```typescript
+import { defineConfig } from "astro/config";
+import { i18nConfig } from "./src/lib/i18n/config.ts";
+
+export default defineConfig({
+    site: "https://votresite.com",
+    i18n: i18nConfig,
+    // ... autres configurations
+});
 ```
 
-(Source : Adapté des concepts des Sections V.C [92-103] du Rapport Astro Blog Bilingue)
+**Avantages de cette approche :**
 
-### 6.3. Maintien du Contexte lors du Changement de Langue
+-   **Simplicité :** Pas de logique complexe de cookies ou redirections
+-   **Performance :** Aucune redirection côté serveur, navigation directe
+-   **Prévisibilité :** L'utilisateur sait exactement où il va
+-   **SEO :** URLs claires et statiques, parfaites pour l'indexation
+-   **Maintenabilité :** Code simple et facilement débogable
 
-- Pour les articles, le sélecteur doit lier à la traduction directe via `translationId`.
-- Pour les pages générales, le sélecteur doit mapper vers la route équivalente dans l'autre langue.
+**Navigation entre langues :**
+
+-   Les utilisateurs naviguent explicitement via les sélecteurs de langue
+-   Pas de "magie" cachée ou de redirections automatiques
+-   Les URLs sont toujours prévisibles :
+    -   `/` → Version anglaise (langue par défaut)
+    -   `/fr/` → Version française
+    -   `/about/` → Page "À propos" en anglais
+    -   `/fr/a-propos/` → Page "À propos" en français
+
+Cette approche s'aligne parfaitement avec la philosophie d'Astro de privilégier la simplicité et les performances tout en offrant une expérience utilisateur claire et intuitive.
 
 ## 7. Optimisation pour les Moteurs de Recherche (SEO International)
 
@@ -854,7 +887,7 @@ La mise en place d'une gestion de contenu bilingue efficace pour le "Blog Techni
 1. **Structure de Contenu Claire :** Utilisation des collections Astro, organisation par langue, et schéma de frontmatter précis avec `lang` et `translationId` (qui sert d'`articleCanonicalSlug` pour le backend).
 2. **Processus de Traduction Maîtrisé :** Priorité à la qualité via une traduction humaine, potentiellement assistée par des outils IA comme Claude, mais toujours avec une validation rigoureuse. Maintien de glossaires.
 3. **Liaison et Navigation Intuitives :** Sélecteurs de langue clairs pour les articles (via `translationId`) et pour la navigation globale, supportés par des URLs localisées.
-4. **Expérience Utilisateur Cohérente :** Définition de l'attribut `lang` sur `<html>`, détection et persistance des préférences linguistiques.
+4. **Expérience Utilisateur Cohérente :** Définition de l'attribut `lang` sur `<html>`, gestion statique de la langue basée sur l'URL uniquement.
 5. **Traduction des Chaînes UI :** Approche simple et typée avec des fichiers de traduction par langue pour le MVP.
 6. **SEO International Optimisé :** Structure d'URL en sous-répertoires avec préfixe pour toutes les langues, implémentation méticuleuse des balises `hreflang` et `canonical`, sitemap XML multilingue, et utilisation de données structurées Schema.org avec `inLanguage`.
 
@@ -862,8 +895,8 @@ La collaboration entre les rédacteurs, traducteurs et développeurs, guidée pa
 
 ## 9. Change Log
 
-|   |   |   |   |
-|---|---|---|---|
-|**Date**|**Version**|**Description**|**Auteur**|
-|2025-05-11|0.1|Création initiale du document avec sections sur la structure, frontmatter, processus de traduction, liaison, traduction UI, UX navigation et SEO international.|3 - Architecte (IA) & Utilisateur|
-|2025-05-11|0.2|Clarification de l'utilisation de `translationId` comme `articleCanonicalSlug` pour le backend. Intégration de Claude dans le workflow de traduction. Précision sur `prefixDefaultLocale: true`. Séparation des fichiers de traduction UI.|3 - Architecte (IA) & Utilisateur|
+|            |             |                                                                                                                                                                                                                                            |                                   |
+| ---------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| **Date**   | **Version** | **Description**                                                                                                                                                                                                                            | **Auteur**                        |
+| 2025-05-11 | 0.1         | Création initiale du document avec sections sur la structure, frontmatter, processus de traduction, liaison, traduction UI, UX navigation et SEO international.                                                                            | 3 - Architecte (IA) & Utilisateur |
+| 2025-05-11 | 0.2         | Clarification de l'utilisation de `translationId` comme `articleCanonicalSlug` pour le backend. Intégration de Claude dans le workflow de traduction. Précision sur `prefixDefaultLocale: true`. Séparation des fichiers de traduction UI. | 3 - Architecte (IA) & Utilisateur |

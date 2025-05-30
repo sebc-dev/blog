@@ -320,9 +320,9 @@ graph TD
     A[Utilisateur sur Page X - Langue A] --> B[Voit Sélecteur de Langue]
     B --> C[Clique sur Langue B]
     C --> D{Traduction directe disponible?}
-    D -->|Oui| E[Redirection vers<br>Page X - Langue B]
-    D -->|Non| F[Redirection vers<br>Accueil - Langue B]
-    E --> G[Préférence Langue B<br>stockée dans localStorage]
+    D -->|Oui| E[Navigation vers<br>Page X - Langue B]
+    D -->|Non| F[Navigation vers<br>Accueil - Langue B]
+    E --> G[Utilisateur sur<br>Page traduite]
     F --> G
 
     classDef standard fill:#ddf,stroke:#33f,stroke-width:1px

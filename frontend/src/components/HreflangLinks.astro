@@ -1,0 +1,69 @@
+---
+import { i18nConfig } from '../lib/i18n/config';
+import { getTranslatedPath } from '../lib/i18n/i18nUtils';
+
+interface Props {
+  currentPath: string;
+  currentLang: string;
+  alternates?: Record<string, string>; // Pour les cas spéciaux comme les articles
+}
+
+const { currentPath, currentLang, alternates } = Astro.props;
+
+// Construction de l'URL du site avec fallback pour développement
+const getSiteUrl = () => {
+  if (import.meta.env.SITE) {
+    return import.meta.env.SITE;
+  }
+  if (Astro.site) {
+    return Astro.site.href;
+  }
+  // Fallback pour développement
+  return 'http://localhost:4321';
+};
+
+const siteUrl = getSiteUrl().replace(/\/$/, ''); // Retirer le slash final
+
+// Générer les URLs alternatives
+const hreflangs = i18nConfig.locales.map(lang => {
+  let href;
+
+  if (alternates && alternates[lang]) {
+    // Utiliser les URLs spécifiques si fournies (pour les articles)
+    href = alternates[lang];
+  } else {
+    // Utiliser la logique de traduction standard
+    href = getTranslatedPath(lang, currentPath, currentLang);
+  }
+
+  // S'assurer que le href commence par /
+  if (!href.startsWith('/')) {
+    href = '/' + href;
+  }
+
+  return {
+    lang,
+    href: `${siteUrl}${href}`,
+    isCurrent: lang === currentLang
+  };
+});
+
+// URL canonique pour la page courante
+const currentHreflang = hreflangs.find(h => h.isCurrent);
+const canonicalURL = currentHreflang?.href || `${siteUrl}${currentPath}`;
+
+// Ajouter x-default (version par défaut)
+const defaultHref = getTranslatedPath(i18nConfig.defaultLocale, currentPath, currentLang);
+const defaultCanonicalURL = `${siteUrl}${defaultHref.startsWith('/') ? defaultHref : '/' + defaultHref}`;
+---
+
+<!-- Balises hreflang pour chaque langue -->
+{hreflangs.map(({ lang, href }) => (
+  <link rel="alternate" hreflang={lang} href={href} />
+))}
+
+<!-- Version par défaut (x-default) -->
+<link rel="alternate" hreflang="x-default" href={defaultCanonicalURL} />
+
+<!-- Canonical URL pour la page courante (AC2 & AC3) -->
+<link rel="canonical" href={canonicalURL} />

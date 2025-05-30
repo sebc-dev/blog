@@ -1,6 +1,6 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { useI18n } from '../lib/i18n/i18nUtils';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useI18n } from '../../lib/i18n/i18nUtils';
 
 const { t } = useI18n(Astro.locals);
 ---
@@ -15,7 +15,7 @@ const { t } = useI18n(Astro.locals);
         <p class="py-6">
           {t('seo.defaultDescription')}
         </p>
-        <a href="/posts/" class="btn btn-primary">
+        <a href="/fr/posts/" class="btn btn-primary">
           {t('nav.blog')}
         </a>
       </div>
@@ -25,10 +25,10 @@ const { t } = useI18n(Astro.locals);
   <section class="grid md:grid-cols-2 gap-6">
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <h2 class="card-title">Latest Posts</h2>
-        <p>Discover our recent articles on web development and technology.</p>
+        <h2 class="card-title">Derniers Articles</h2>
+        <p>Découvrez nos articles récents sur le développement web et la technologie.</p>
         <div class="card-actions justify-end">
-          <a href="/posts/" class="btn btn-primary btn-sm">
+          <a href="/fr/posts/" class="btn btn-primary btn-sm">
             {t('article.readMore')}
           </a>
         </div>
@@ -38,9 +38,9 @@ const { t } = useI18n(Astro.locals);
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <h2 class="card-title">{t('nav.about')}</h2>
-        <p>Learn more about our bilingual tech blog and our mission.</p>
+        <p>Apprenez-en plus sur notre blog technique bilingue et notre mission.</p>
         <div class="card-actions justify-end">
-          <a href="/about/" class="btn btn-secondary btn-sm">
+          <a href="/fr/a-propos/" class="btn btn-secondary btn-sm">
             {t('nav.about')}
           </a>
         </div>
