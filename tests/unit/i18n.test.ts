@@ -215,30 +215,14 @@ describe('removeLocaleFromUrl', () => {
   });
 });
 
-describe('TypeScript types', () => {
-  it('should have correct TranslationKey type', () => {
-    // Test que les clés connues sont acceptées par le type
-    const validKeys: TranslationKey[] = [
-      'nav.home',
-      'nav.about', 
-      'nav.blog',
-      'home.title',
-      'blog.read-more',
-      'footer.copyright'
-    ];
-    
-    // Si le code compile, c'est que les types sont corrects
-    expect(validKeys).toBeDefined();
-  });
-
   it('should validate TranslationObject type structure', () => {
     // Vérifier que ui.fr satisfait le type TranslationObject
     const frTranslations: TranslationObject = ui.fr;
     expect(frTranslations).toBeDefined();
     
-    // Vérifier que toutes les clés requises sont présentes
-    expect(frTranslations['nav.home']).toBeDefined();
-    expect(frTranslations['nav.about']).toBeDefined();
-    expect(frTranslations['nav.blog']).toBeDefined();
+    // Vérifier que toutes les clés requises sont présentes et de type string
+    Object.keys(ui.en).forEach(key => {
+      expect(frTranslations[key as TranslationKey]).toBeDefined();
+      expect(typeof frTranslations[key as TranslationKey]).toBe('string');
+    });
   });
-}); 
