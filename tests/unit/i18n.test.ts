@@ -26,21 +26,21 @@ describe('i18n Configuration', () => {
   });
 
   it('should have consistent translations across all languages', () => {
-    const enKeys = Object.keys(ui.en);
-    const frKeys = Object.keys(ui.fr);
+    const enKeys = Object.keys(ui.en) as TranslationKey[];
+    const frKeys = Object.keys(ui.fr) as TranslationKey[];
     
     // Toutes les clés anglaises doivent être présentes en français
     enKeys.forEach(key => {
       expect(frKeys).toContain(key);
-      expect(ui.fr[key as TranslationKey]).toBeDefined();
-      expect(ui.fr[key as TranslationKey]).not.toBe('');
+      expect(ui.fr[key]).toBeDefined();
+      expect(ui.fr[key]).not.toBe('');
     });
     
     // Toutes les clés françaises doivent être présentes en anglais
     frKeys.forEach(key => {
       expect(enKeys).toContain(key);
-      expect(ui.en[key as TranslationKey]).toBeDefined();
-      expect(ui.en[key as TranslationKey]).not.toBe('');
+      expect(ui.en[key]).toBeDefined();
+      expect(ui.en[key]).not.toBe('');
     });
   });
 
