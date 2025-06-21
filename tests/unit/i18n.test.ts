@@ -30,14 +30,14 @@ describe("i18n Configuration", () => {
     const frKeys = Object.keys(ui.fr) as TranslationKey[];
 
     // Toutes les clés anglaises doivent être présentes en français
-    enKeys.forEach((key) => {
+    enKeys.forEach(key => {
       expect(frKeys).toContain(key);
       expect(ui.fr[key]).toBeDefined();
       expect(ui.fr[key]).not.toBe("");
     });
 
     // Toutes les clés françaises doivent être présentes en anglais
-    frKeys.forEach((key) => {
+    frKeys.forEach(key => {
       expect(enKeys).toContain(key);
       expect(ui.en[key]).toBeDefined();
       expect(ui.en[key]).not.toBe("");
@@ -45,12 +45,12 @@ describe("i18n Configuration", () => {
   });
 
   it("should have all translation values as non-empty strings", () => {
-    Object.values(ui.en).forEach((value) => {
+    Object.values(ui.en).forEach(value => {
       expect(typeof value).toBe("string");
       expect(value.trim()).not.toBe("");
     });
 
-    Object.values(ui.fr).forEach((value) => {
+    Object.values(ui.fr).forEach(value => {
       expect(typeof value).toBe("string");
       expect(value.trim()).not.toBe("");
     });
@@ -155,10 +155,10 @@ describe("useTranslations", () => {
 
     // Verify it's actually using the fallback (not found in French)
     expect(
-      testUi.fr["test.fallback" as keyof typeof testUi.fr],
+      testUi.fr["test.fallback" as keyof typeof testUi.fr]
     ).toBeUndefined();
     expect(testUi.en["test.fallback" as keyof typeof testUi.en]).toBe(
-      "Fallback Test",
+      "Fallback Test"
     );
   });
 
@@ -185,7 +185,7 @@ describe("useTranslations", () => {
       "lang.current",
     ];
 
-    testKeys.forEach((key) => {
+    testKeys.forEach(key => {
       const enResult = tEn(key);
       const frResult = tFr(key);
 
@@ -264,7 +264,7 @@ describe("TypeScript Types", () => {
     expect(frTranslations).toBeDefined();
 
     // Vérifier que toutes les clés requises sont présentes et de type string
-    Object.keys(ui.en).forEach((key) => {
+    Object.keys(ui.en).forEach(key => {
       expect(frTranslations[key as TranslationKey]).toBeDefined();
       expect(typeof frTranslations[key as TranslationKey]).toBe("string");
     });

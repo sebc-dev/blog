@@ -1,20 +1,27 @@
 ---
-import { getLangFromUrl, getLocalizedUrl, removeLocaleFromUrl, languages } from '../i18n';
+import {
+  getLangFromUrl,
+  getLocalizedUrl,
+  removeLocaleFromUrl,
+  languages,
+} from "../i18n";
 
 const lang = getLangFromUrl(Astro.url);
 const currentPath = removeLocaleFromUrl(Astro.url.pathname);
 ---
 
 <div class="language-picker">
-  {Object.entries(languages).map(([langCode, langName]) => (
-    <a 
-      href={getLocalizedUrl(currentPath, langCode)}
-      class={`lang-link ${lang === langCode ? 'active' : ''}`}
-      aria-label={`Switch to ${langName}`}
-    >
-      {langName}
-    </a>
-  ))}
+  {
+    Object.entries(languages).map(([langCode, langName]) => (
+      <a
+        href={getLocalizedUrl(currentPath, langCode)}
+        class={`lang-link ${lang === langCode ? "active" : ""}`}
+        aria-label={`Switch to ${langName}`}
+      >
+        {langName}
+      </a>
+    ))
+  }
 </div>
 
 <style>
@@ -22,20 +29,20 @@ const currentPath = removeLocaleFromUrl(Astro.url.pathname);
     display: flex;
     gap: 0.5rem;
   }
-  
+
   .lang-link {
     padding: 0.25rem 0.5rem;
     text-decoration: none;
     border-radius: 0.25rem;
     transition: background-color 0.2s;
   }
-  
+
   .lang-link:hover {
     background-color: rgba(var(--accent-light), 0.1);
   }
-  
+
   .lang-link.active {
     background-color: rgb(var(--accent));
     color: white;
   }
-</style> 
+</style>

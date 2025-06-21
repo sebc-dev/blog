@@ -51,8 +51,7 @@ export function Image(props: {
         height ? ` height="${escapeHtml(String(height))}"` : ""
       }${Object.entries(otherProps)
         .map(
-          ([key, value]) =>
-            ` ${escapeHtml(key)}="${escapeHtml(String(value))}"`,
+          ([key, value]) => ` ${escapeHtml(key)}="${escapeHtml(String(value))}"`
         )
         .join("")} />`;
     },

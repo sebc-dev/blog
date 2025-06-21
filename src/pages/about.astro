@@ -1,10 +1,10 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { Image } from 'astro:assets';
-import { getLangFromUrl, useTranslations } from '../i18n';
-import aboutImage from '../assets/blog-placeholder-about.jpg';
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { Image } from "astro:assets";
+import { getLangFromUrl, useTranslations } from "../i18n";
+import aboutImage from "../assets/blog-placeholder-about.jpg";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -12,99 +12,100 @@ const t = useTranslations(lang);
 
 <!doctype html>
 <html lang={lang}>
-	<head>
-		<BaseHead title={t('about.title')} description={t('about.description')} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					<Image
-						src={aboutImage}
-						width={1020}
-						height={510}
-						alt="About us - Team working on modern web development"
-						priority
-						fetchpriority="high"
-						loading="eager"
-						format="webp"
-						quality="high"
-					/>
-				</div>
-				<div class="prose">
-					<div class="title">
-						<h1>{t('about.title')}</h1>
-						<hr />
-					</div>
-					<p>
-						Welcome to our website! We are a passionate team of developers 
-						who create modern and performant web experiences with Astro.
-					</p>
+  <head>
+    <BaseHead title={t("about.title")} description={t("about.description")} />
+  </head>
+  <body>
+    <Header />
+    <main>
+      <article>
+        <div class="hero-image">
+          <Image
+            src={aboutImage}
+            width={1020}
+            height={510}
+            alt="About us - Team working on modern web development"
+            priority
+            fetchpriority="high"
+            loading="eager"
+            format="webp"
+            quality="high"
+          />
+        </div>
+        <div class="prose">
+          <div class="title">
+            <h1>{t("about.title")}</h1>
+            <hr />
+          </div>
+          <p>
+            Welcome to our website! We are a passionate team of developers who
+            create modern and performant web experiences with Astro.
+          </p>
 
-					<p>
-						Astro is a modern framework that allows us to create ultra-fast websites 
-						using the latest web technologies. We focus on performance, 
-						accessibility, and excellent user experience.
-					</p>
+          <p>
+            Astro is a modern framework that allows us to create ultra-fast
+            websites using the latest web technologies. We focus on performance,
+            accessibility, and excellent user experience.
+          </p>
 
-					<p>
-						This site uses internationalization to provide a multilingual experience, 
-						demonstrating how Astro can be used to create global websites.
-					</p>
+          <p>
+            This site uses internationalization to provide a multilingual
+            experience, demonstrating how Astro can be used to create global
+            websites.
+          </p>
 
-					<p>
-						Feel free to explore our blog to discover our latest articles 
-						and tutorials on modern web development.
-					</p>
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
+          <p>
+            Feel free to explore our blog to discover our latest articles and
+            tutorials on modern web development.
+          </p>
+        </div>
+      </article>
+    </main>
+    <Footer />
+  </body>
 </html>
 
 <style>
-	main {
-		width: calc(100% - 2rem);
-		max-width: 100%;
-		margin: 0;
-	}
-	.hero-image {
-		width: 100vw;
-		object-fit: cover;
-		object-position: center;
-		margin-left: 50%;
-		transform: translateX(-50%);
-		max-width: 100vw;
-	}
-	.hero-image img {
-		display: block;
-		margin: 0 auto;
-		border-radius: 12px;
-		box-shadow: var(--box-shadow);
-	}
-	.prose {
-		width: 720px;
-		max-width: calc(100% - 2em);
-		margin: auto;
-		padding: 1em;
-		color: rgb(var(--gray-dark));
-	}
-	.title {
-		margin-bottom: 1em;
-		padding: 1em 0;
-		text-align: center;
-		line-height: 1;
-	}
-	.title h1 {
-		margin: 0 0 0.5em 0;
-	}
-	.date {
-		margin-bottom: 0.5em;
-		color: rgb(var(--gray));
-	}
-	.last-updated-on {
-		font-style: italic;
-	}
+  main {
+    width: calc(100% - 2rem);
+    max-width: 100%;
+    margin: 0;
+  }
+  .hero-image {
+    width: 100vw;
+    object-fit: cover;
+    object-position: center;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    max-width: 100vw;
+  }
+  .hero-image img {
+    display: block;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: var(--box-shadow);
+  }
+  .prose {
+    width: 720px;
+    max-width: calc(100% - 2em);
+    margin: auto;
+    padding: 1em;
+    color: rgb(var(--gray-dark));
+  }
+  .title {
+    margin-bottom: 1em;
+    padding: 1em 0;
+    text-align: center;
+    line-height: 1;
+  }
+  .title h1 {
+    margin: 0 0 0.5em 0;
+  }
+  .date {
+    margin-bottom: 0.5em;
+    color: rgb(var(--gray));
+  }
+  .last-updated-on {
+    font-style: italic;
+  }
 </style>

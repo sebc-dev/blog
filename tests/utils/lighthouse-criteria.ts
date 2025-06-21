@@ -70,7 +70,7 @@ export class LighthouseCriteriaValidator {
 
       // ✅ Vérifier preload des fonts critiques
       const fontPreloads = doc.querySelectorAll(
-        'link[rel="preload"][as="font"]',
+        'link[rel="preload"][as="font"]'
       );
       if (fontPreloads.length === 0) {
         console.warn(`❌ LCP: Missing font preload in ${file}`);
@@ -82,7 +82,7 @@ export class LighthouseCriteriaValidator {
       const images = doc.querySelectorAll("img");
       if (images.length > 0 && priorityImages.length === 0) {
         console.warn(
-          `❌ LCP: Missing fetchpriority="high" for images in ${file}`,
+          `❌ LCP: Missing fetchpriority="high" for images in ${file}`
         );
         hasOptimizations = false;
       }
@@ -97,7 +97,7 @@ export class LighthouseCriteriaValidator {
       // ✅ Vérifier absence de render-blocking resources
 
       const blockingCSS = doc.querySelectorAll(
-        'link[rel="stylesheet"]:not([media])',
+        'link[rel="stylesheet"]:not([media])'
       );
       if (blockingCSS.length > 2) {
         // Tolérance pour 1-2 fichiers CSS
@@ -190,7 +190,7 @@ export class LighthouseCriteriaValidator {
 
       // ✅ Vérifier scripts optimisés (pas de long tasks)
       const scripts = doc.querySelectorAll(
-        'script:not([type="application/ld+json"])',
+        'script:not([type="application/ld+json"])'
       );
       for (const script of scripts) {
         const scriptContent = script.innerHTML;
@@ -201,7 +201,7 @@ export class LighthouseCriteriaValidator {
           !scriptContent.includes("requestAnimationFrame")
         ) {
           console.warn(
-            `❌ INP: Script without requestAnimationFrame optimization in ${file}`,
+            `❌ INP: Script without requestAnimationFrame optimization in ${file}`
           );
           hasOptimizations = false;
         }
@@ -220,7 +220,7 @@ export class LighthouseCriteriaValidator {
       const allElements = doc.querySelectorAll("*");
       if (allElements.length > 1500) {
         console.warn(
-          `❌ INP: DOM too complex (${allElements.length} elements) in ${file}`,
+          `❌ INP: DOM too complex (${allElements.length} elements) in ${file}`
         );
         hasOptimizations = false;
       }
@@ -257,7 +257,7 @@ export class LighthouseCriteriaValidator {
     const totalSizeKB = totalSize / 1024;
     if (totalSizeKB > 500) {
       console.warn(
-        `❌ Assets: Total size too large (${totalSizeKB.toFixed(2)}KB)`,
+        `❌ Assets: Total size too large (${totalSizeKB.toFixed(2)}KB)`
       );
       return false;
     }
@@ -319,7 +319,7 @@ export class LighthouseCriteriaValidator {
 
       // ✅ Vérifier preload des fonts
       const fontPreloads = doc.querySelectorAll(
-        'link[rel="preload"][as="font"]',
+        'link[rel="preload"][as="font"]'
       );
       if (fontPreloads.length === 0) {
         console.warn(`❌ Fonts: Missing font preload in ${file}`);
@@ -360,7 +360,7 @@ export class LighthouseCriteriaValidator {
 
       if (sizeKB > 100) {
         console.warn(
-          `❌ CSS: File too large (${sizeKB.toFixed(2)}KB): ${file}`,
+          `❌ CSS: File too large (${sizeKB.toFixed(2)}KB): ${file}`
         );
         hasOptimizations = false;
       }
@@ -463,7 +463,7 @@ export class LighthouseCriteriaValidator {
       // ✅ Vérifier Open Graph
       const ogTitle = doc.querySelector('meta[property="og:title"]');
       const ogDescription = doc.querySelector(
-        'meta[property="og:description"]',
+        'meta[property="og:description"]'
       );
 
       if (!ogTitle || !ogDescription) {

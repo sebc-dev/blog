@@ -2,7 +2,9 @@
 
 ## 🎯 Vue d'ensemble
 
-Refonte complète du composant `src/components/Header.astro` pour améliorer l'expérience utilisateur, la modernité du design ET atteindre un score Lighthouse 100/100 en utilisant **DaisyUI + TailwindCSS** avec optimisations performance avancées.
+Refonte complète du composant `src/components/Header.astro` pour améliorer l'expérience utilisateur,
+la modernité du design ET atteindre un score Lighthouse 100/100 en utilisant **DaisyUI +
+TailwindCSS** avec optimisations performance avancées.
 
 ## 📊 Contexte Performance Critique
 
@@ -76,8 +78,8 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
 ```astro
 ---
 // Si logo/image dans header
-import { Image } from 'astro:assets';
-import logo from '../assets/logo.svg';
+import { Image } from "astro:assets";
+import logo from "../assets/logo.svg";
 ---
 
 <!-- ✅ Logo optimisé si élément LCP -->
@@ -100,15 +102,16 @@ import logo from '../assets/logo.svg';
 ---
 // Font preload critique dans BaseHead.astro
 ---
+
 <head>
   <!-- ✅ Preload fonts header AVANT CSS -->
-  <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin />
 
   <!-- ✅ Font-display: swap pour éviter FOIT/FOUT -->
   <style>
     @font-face {
-      font-family: 'Inter Variable';
-      src: url('/fonts/inter-variable.woff2') format('woff2');
+      font-family: "Inter Variable";
+      src: url("/fonts/inter-variable.woff2") format("woff2");
       font-display: swap;
       /* Nouvelles propriétés 2024 pour CLS */
       size-adjust: 100%;
@@ -120,7 +123,7 @@ import logo from '../assets/logo.svg';
 </head>
 
 <!-- ✅ Header avec dimensions explicites -->
-<header class="h-16 flex items-center justify-between px-4">
+<header class="flex h-16 items-center justify-between px-4">
   <!-- Contenu header avec tailles fixes -->
 </header>
 ```
@@ -138,11 +141,18 @@ import logo from '../assets/logo.svg';
     <!-- Mobile menu avec drawer DaisyUI -->
     <div class="dropdown lg:hidden">
       <div tabindex="0" role="button" class="btn btn-ghost">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </div>
-      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+      <ul
+        tabindex="0"
+        class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+      >
         <!-- Navigation items -->
       </ul>
     </div>
@@ -160,13 +170,13 @@ import logo from '../assets/logo.svg';
   let ticking = false;
 
   function updateHeader() {
-    const header = document.querySelector('header');
+    const header = document.querySelector("header");
     const scrolled = window.scrollY > 50;
 
     // ✅ Utiliser transform pour éviter layout/paint
-    header.style.transform = scrolled ? 'translateY(0)' : '';
-    header.classList.toggle('backdrop-blur-md', scrolled);
-    header.classList.toggle('bg-opacity-90', scrolled);
+    header.style.transform = scrolled ? "translateY(0)" : "";
+    header.classList.toggle("backdrop-blur-md", scrolled);
+    header.classList.toggle("bg-opacity-90", scrolled);
 
     ticking = false;
   }
@@ -178,7 +188,7 @@ import logo from '../assets/logo.svg';
     }
   }
 
-  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
 </script>
 ```
 
@@ -350,7 +360,5 @@ export default {
 
 ---
 
-**Date de création** : $(date)
-**Estimé avec optimisations** : 12-16 heures de développement
-**Priorité** : **Haute** (Performance critique)
-**Objectif** : **Lighthouse 100/100** garanti
+**Date de création** : $(date) **Estimé avec optimisations** : 12-16 heures de développement
+**Priorité** : **Haute** (Performance critique) **Objectif** : **Lighthouse 100/100** garanti

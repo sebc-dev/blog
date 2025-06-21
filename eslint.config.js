@@ -151,7 +151,7 @@ export default [
       "no-debugger": "error",
       "prefer-const": "error",
       "no-var": "error",
-      "eqeqeq": "error",
+      eqeqeq: "error",
       "no-unused-expressions": "error",
       "no-duplicate-imports": "error",
     },

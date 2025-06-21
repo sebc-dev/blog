@@ -1,6 +1,7 @@
 # Plan de Tests Unitaires - Blog Astro Template
 
-Ce document liste tous les tests unitaires à créer pour garantir la qualité et la robustesse du projet Astro Blog Template.
+Ce document liste tous les tests unitaires à créer pour garantir la qualité et la robustesse du
+projet Astro Blog Template.
 
 ## 📋 Vue d'ensemble
 
@@ -299,7 +300,7 @@ export default defineConfig(
         "astro:assets": resolve(__dirname, "./tests/mocks/astro-assets.ts"),
       },
     },
-  }),
+  })
 );
 ```
 

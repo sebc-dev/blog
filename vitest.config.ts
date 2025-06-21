@@ -36,5 +36,5 @@ export default defineConfig(
         "astro:assets": resolve(__dirname, "./tests/mocks/astro-assets.ts"),
       },
     },
-  }),
+  })
 );

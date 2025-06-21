@@ -2,7 +2,9 @@
 
 ## ✅ **Tests Créés avec Succès**
 
-Une suite complète de tests unitaires avec **Vitest** a été créée pour valider automatiquement que votre build Astro respecte **TOUS** les critères documentés dans `/memory/docs/` pour atteindre un score Lighthouse parfait.
+Une suite complète de tests unitaires avec **Vitest** a été créée pour valider automatiquement que
+votre build Astro respecte **TOUS** les critères documentés dans `/memory/docs/` pour atteindre un
+score Lighthouse parfait.
 
 ---
 
@@ -206,7 +208,8 @@ pnpm validate:lighthouse
 
 ---
 
-**🎯 Résultat Final** : Vous disposez maintenant d'un système de validation automatique qui garantit l'atteinte d'un score Lighthouse 100/100 basé sur les meilleures pratiques documentées.
+**🎯 Résultat Final** : Vous disposez maintenant d'un système de validation automatique qui garantit
+l'atteinte d'un score Lighthouse 100/100 basé sur les meilleures pratiques documentées.
 
 **📅 Créé le** : $(date)  
 **🔧 Technologies** : Vitest + Node.js + HTML Parser  

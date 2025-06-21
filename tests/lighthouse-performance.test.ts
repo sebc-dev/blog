@@ -211,7 +211,7 @@ Requirements:
   describe("🎯 Overall Performance Summary", () => {
     it("should achieve Lighthouse 100/100 on all metrics", () => {
       const allCriteriaMet = Object.values(criteria).every(
-        (criterion) => criterion === true,
+        criterion => criterion === true
       );
 
       expect(allCriteriaMet).toBe(true);
@@ -263,14 +263,12 @@ Votre build respecte TOUS les critères documentés dans /memory/docs/
       // Ce test fournit des métriques détaillées même en cas de succès
       const insights = {
         totalCriteria: Object.keys(criteria).length,
-        passedCriteria: Object.values(criteria).filter((c) => c === true)
-          .length,
-        failedCriteria: Object.values(criteria).filter((c) => c === false)
-          .length,
+        passedCriteria: Object.values(criteria).filter(c => c === true).length,
+        failedCriteria: Object.values(criteria).filter(c => c === false).length,
         successRate: Math.round(
-          (Object.values(criteria).filter((c) => c === true).length /
+          (Object.values(criteria).filter(c => c === true).length /
             Object.keys(criteria).length) *
-            100,
+            100
         ),
       };
 

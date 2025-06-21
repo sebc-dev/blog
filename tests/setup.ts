@@ -7,7 +7,7 @@ import { existsSync, rmSync } from "node:fs";
 beforeAll(async () => {
   // Ne faire le build que pour les tests de performance
   const isPerformanceTest = process.argv.some(
-    (arg) => arg.includes("performance") || arg.includes("lighthouse"),
+    arg => arg.includes("performance") || arg.includes("lighthouse")
   );
 
   if (isPerformanceTest) {

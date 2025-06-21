@@ -89,7 +89,7 @@ const defaultMockData: MockCollectionConfig = {
 // Enhanced getCollection function with filtering support
 export async function getCollection(
   collection: string,
-  filter?: (entry: any) => boolean,
+  filter?: (entry: any) => boolean
 ) {
   // Use custom mock data if available, otherwise fall back to defaults
   const collectionData =
@@ -111,13 +111,13 @@ export async function getCollectionWithOptions(
     sort?: (a: any, b: any) => number;
     limit?: number;
     lang?: string;
-  } = {},
+  } = {}
 ) {
   let data = await getCollection(collection, options.filter);
 
   // Language filtering
   if (options.lang) {
-    data = data.filter((entry) => {
+    data = data.filter(entry => {
       // Plus flexible : vérifie si l'entrée a une propriété lang ou utilise la logique de chemin
       const entryLang =
         entry.data?.lang ||

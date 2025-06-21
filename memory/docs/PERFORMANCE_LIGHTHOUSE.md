@@ -2,7 +2,8 @@
 
 ## 🎯 Vue d'ensemble
 
-Cette suite de tests valide automatiquement que votre build Astro respecte **TOUS** les critères documentés dans `/memory/docs/` pour atteindre un score Lighthouse parfait (100/100).
+Cette suite de tests valide automatiquement que votre build Astro respecte **TOUS** les critères
+documentés dans `/memory/docs/` pour atteindre un score Lighthouse parfait (100/100).
 
 ## 🚀 Utilisation
 
@@ -128,7 +129,9 @@ Chaque critère échoué affiche des détails spécifiques sur les optimisations
 ❌ LCP: Missing font preload in ./dist/index.html
 ```
 
-**Solution** : Ajouter `<link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin>` dans BaseHead.astro
+**Solution** : Ajouter
+`<link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin>` dans
+BaseHead.astro
 
 #### CLS Non Optimisé
 
@@ -214,5 +217,5 @@ jobs:
 
 ---
 
-**Maintenu par** : Tests automatisés Vitest
-**Dernière mise à jour** : Basé sur les critères Lighthouse 2024/2025
+**Maintenu par** : Tests automatisés Vitest **Dernière mise à jour** : Basé sur les critères
+Lighthouse 2024/2025
