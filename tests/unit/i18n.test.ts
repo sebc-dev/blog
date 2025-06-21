@@ -93,7 +93,7 @@ describe('getLangFromUrl', () => {
     const url2 = new URL('https://example.com//fr/');
     
     expect(getLangFromUrl(url1)).toBe('fr');
-    expect(getLangFromUrl(url2)).toBe('en'); // //fr/ ne correspond pas au pattern attendu
+    expect(getLangFromUrl(url2)).toBe('en'); // //fr/ donne une chaîne vide comme lang
   });
 });
 
