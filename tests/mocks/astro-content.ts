@@ -150,10 +150,11 @@ export async function render(entry: any) {
   const mockContent = `
     <h1 id="introduction">Introduction</h1>
     <p>This is a mock rendered content for ${entry?.data?.title || 'Untitled'}.</p>
+    ${entry?.data?.description ? `<p><em>${entry.data.description}</em></p>` : ''}
     <h2 id="getting-started">Getting Started</h2>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    <p>${entry?.body || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}</p>
     <h2 id="conclusion">Conclusion</h2>
-    <p>This concludes our mock content.</p>
+    <p>This concludes our mock content for "${entry?.data?.title || 'this post'}".</p>
   `;
 
   return {
