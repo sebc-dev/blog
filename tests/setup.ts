@@ -2,6 +2,7 @@ import "@testing-library/jest-dom";
 import { beforeAll, afterAll } from "vitest";
 import { execSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
+import path from "node:path";
 
 // Configuration globale pour les tests
 beforeAll(async () => {
@@ -12,8 +13,9 @@ beforeAll(async () => {
 
   if (isPerformanceTest) {
     // Nettoyer le dossier dist s'il existe
-    if (existsSync("./dist")) {
-      rmSync("./dist", { recursive: true, force: true });
+    const distPath = path.resolve(__dirname, "../dist");
+    if (existsSync(distPath)) {
+      rmSync(distPath, { recursive: true, force: true });
     }
 
     // Construire le projet pour les tests

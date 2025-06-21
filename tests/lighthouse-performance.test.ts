@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { existsSync } from "node:fs";
+import path from "node:path";
 import {
   LighthouseCriteriaValidator,
   type PerformanceCriteria,
@@ -18,8 +19,11 @@ describe("🚀 Lighthouse 100/100 Performance Tests", () => {
   let criteria: PerformanceCriteria;
 
   beforeAll(async () => {
+    // Create absolute path for dist directory
+    const distPath = path.resolve(__dirname, "../dist");
+    
     // Vérifier que le build existe
-    expect(existsSync("./dist")).toBe(true);
+    expect(existsSync(distPath)).toBe(true);
 
     // Initialiser le validateur
     validator = new LighthouseCriteriaValidator("./dist");
@@ -210,11 +214,13 @@ Requirements:
 
   describe("🎯 Overall Performance Summary", () => {
     it("should achieve Lighthouse 100/100 on all metrics", () => {
+      expect(Object.values(criteria)).toStrictEqual(
+        new Array(Object.keys(criteria).length).fill(true)
+      );
+
       const allCriteriaMet = Object.values(criteria).every(
         criterion => criterion === true
       );
-
-      expect(allCriteriaMet).toBe(true);
 
       if (!allCriteriaMet) {
         console.log(`
