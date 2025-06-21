@@ -12,8 +12,23 @@ const t = useTranslations(lang);
 <!doctype html>
 <html lang={lang}>
 	<head>
-		<BaseHead title={t('site.title')} description={t('site.description')} />
-	</head>
+--- a/src/pages/fr/index.astro
++++ b/src/pages/fr/index.astro
+@@ lines 14-18
+  <head>
+-   <BaseHead title={t('site.title')} description={t('site.description')} />
++   <BaseHead title={t('site.title')} description={t('site.description')} />
++   <link
++     rel="alternate"
++     href={`https://votredomaine.com/fr${Astro.url.pathname}`}
++     hreflang="fr"
++   />
++   <link
++     rel="alternate"
++     href={`https://votredomaine.com${Astro.url.pathname.replace(/^\/fr/, '')}`}
++     hreflang="en"
++   />
+  </head>
 	<body>
 		<Header />
 		<main>
