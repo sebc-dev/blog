@@ -21,7 +21,7 @@ describe("🚀 Lighthouse 100/100 Performance Tests", () => {
   beforeAll(async () => {
     // Create absolute path for dist directory
     const distPath = path.resolve(__dirname, "../dist");
-    
+
     // Vérifier que le build existe
     expect(existsSync(distPath)).toBe(true);
 
