@@ -1,17 +1,19 @@
 ---
-title: 'Premier article'
-description: 'Bienvenue sur notre blog en français !'
-pubDate: 'Jan 01 2023'
-heroImage: '../../../assets/blog-placeholder-1.jpg'
+title: "Premier article"
+description: "Bienvenue sur notre blog en français !"
+pubDate: "Jan 01 2023"
+heroImage: "../../../assets/blog-placeholder-1.jpg"
 ---
 
 ## Bienvenue sur notre blog !
 
-Ceci est notre premier article de blog en français. Nous sommes ravis de vous présenter notre nouveau site web multilingue créé avec Astro.
+Ceci est notre premier article de blog en français. Nous sommes ravis de vous présenter notre
+nouveau site web multilingue créé avec Astro.
 
 ## Pourquoi Astro ?
 
-Astro est un framework moderne qui nous permet de créer des sites web ultra-rapides. Voici quelques-unes de ses principales caractéristiques :
+Astro est un framework moderne qui nous permet de créer des sites web ultra-rapides. Voici
+quelques-unes de ses principales caractéristiques :
 
 - **Performance** : Génère du HTML statique par défaut
 - **Flexibilité** : Supporte React, Vue, Svelte et plus
@@ -29,6 +31,7 @@ Ce site démontre comment implémenter l'internationalisation (i18n) avec Astro 
 
 ## Conclusion
 
-Nous espérons que ce site vous donnera des idées pour vos propres projets multilingues. N'hésitez pas à explorer les autres articles et à découvrir les possibilités d'Astro !
+Nous espérons que ce site vous donnera des idées pour vos propres projets multilingues. N'hésitez
+pas à explorer les autres articles et à découvrir les possibilités d'Astro !
 
-Merci de votre visite et à bientôt sur notre blog ! 
+Merci de votre visite et à bientôt sur notre blog !

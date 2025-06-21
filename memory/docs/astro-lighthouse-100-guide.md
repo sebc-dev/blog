@@ -1,6 +1,7 @@
 # Guide Complet : Atteindre Lighthouse 100/100 avec Astro + TailwindCSS + DaisyUI
 
 ## 🎯 Objectif Principal
+
 Obtenir un score Lighthouse parfait (100/100) sur tous les critères avec votre stack Astro 5.x + TailwindCSS + DaisyUI + i18n.
 
 ---
@@ -8,6 +9,7 @@ Obtenir un score Lighthouse parfait (100/100) sur tous les critères avec votre 
 ## 📊 Recherches et Analyse Effectuées
 
 ### **Sources analysées :**
+
 - ✅ Documentation officielle Astro (Context7)
 - ✅ Guides de performance Google Web.dev
 - ✅ Études de cas Lighthouse 99-100 réels
@@ -15,6 +17,7 @@ Obtenir un score Lighthouse parfait (100/100) sur tous les critères avec votre 
 - ✅ Spécificités Astro 5.x + TailwindCSS
 
 ### **Constats clés des recherches :**
+
 1. **73% des pages mobiles** ont une image comme élément LCP
 2. **35% des images LCP** ne sont pas découvrables dans le HTML initial
 3. Seulement **15% des pages** utilisent `fetchpriority`
@@ -28,6 +31,7 @@ Obtenir un score Lighthouse parfait (100/100) sur tous les critères avec votre 
 ### **🖼️ Largest Contentful Paint (LCP) < 2.5s**
 
 #### **A. Optimisation des Images avec Astro Assets**
+
 ```astro
 ---
 import { Image } from 'astro:assets';
@@ -35,9 +39,9 @@ import heroImage from '../assets/hero.jpg';
 ---
 
 <!-- ✅ Image LCP optimisée avec toutes les techniques -->
-<Image 
-  src={heroImage} 
-  alt="Description précise" 
+<Image
+  src={heroImage}
+  alt="Description précise"
   priority
   fetchpriority="high"
   loading="eager"
@@ -50,27 +54,28 @@ import heroImage from '../assets/hero.jpg';
 ```
 
 #### **B. Configuration Astro.config.mjs pour Performance Maximale**
+
 ```js
-import { defineConfig } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  site: 'https://votre-domaine.com',
+  site: "https://votre-domaine.com",
   compressHTML: true,
   build: {
-    inlineStylesheets: 'auto', // Inline CSS critique
-    format: 'file' // URLs propres
+    inlineStylesheets: "auto", // Inline CSS critique
+    format: "file", // URLs propres
   },
   image: {
     service: {
-      entrypoint: 'astro/assets/services/sharp',
+      entrypoint: "astro/assets/services/sharp",
       config: {
         limitInputPixels: false,
         jpeg: { quality: 80, progressive: false }, // Éviter progressive pour LCP
         webp: { quality: 85 },
-        avif: { quality: 80 }
-      }
-    }
+        avif: { quality: 80 },
+      },
+    },
   },
   vite: {
     plugins: [tailwindcss()],
@@ -79,15 +84,16 @@ export default defineConfig({
       cssCodeSplit: false, // Un seul fichier CSS
       rollupOptions: {
         output: {
-          manualChunks: undefined // Éviter le chunking
-        }
-      }
-    }
-  }
+          manualChunks: undefined, // Éviter le chunking
+        },
+      },
+    },
+  },
 });
 ```
 
 #### **C. Preload Critique avec Speculation Rules API**
+
 ```astro
 ---
 // Dans BaseHead.astro
@@ -95,13 +101,13 @@ export default defineConfig({
 <head>
   <!-- Preload fonts critiques -->
   <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  
+
   <!-- Preload LCP image -->
   <link rel="preload" as="image" href="/hero.webp" fetchpriority="high">
-  
+
   <!-- DNS prefetch optimisé -->
   <link rel="dns-prefetch" href="//fonts.googleapis.com">
-  
+
   <!-- Speculation Rules pour navigation instantanée -->
   <script type="speculationrules">
   {
@@ -115,6 +121,7 @@ export default defineConfig({
 ```
 
 #### **D. Technique Fetchpriority avancée**
+
 ```astro
 <!-- Image héro avec priorité maximale -->
 <Image src={hero} fetchpriority="high" priority alt="Hero" />
@@ -126,10 +133,11 @@ export default defineConfig({
 ### **📐 Cumulative Layout Shift (CLS) < 0.1**
 
 #### **A. Font Face avec Size-Adjust (Nouveau 2024)**
+
 ```css
 @font-face {
-  font-family: 'InterVariable';
-  src: url('/fonts/inter-variable.woff2') format('woff2');
+  font-family: "InterVariable";
+  src: url("/fonts/inter-variable.woff2") format("woff2");
   font-display: swap;
   /* Nouvelles propriétés 2024 pour réduire CLS */
   size-adjust: 100%;
@@ -140,16 +148,17 @@ export default defineConfig({
 ```
 
 #### **B. Dimensions Explicites + Aspect-Ratio**
+
 ```astro
 ---
 import { Image } from 'astro:assets';
 ---
 
 <!-- ✅ Dimensions explicites pour éviter layout shifts -->
-<Image 
-  src={image} 
-  width={800} 
-  height={600} 
+<Image
+  src={image}
+  width={800}
+  height={600}
   alt="Description"
   style="aspect-ratio: 800/600;"
 />
@@ -161,6 +170,7 @@ import { Image } from 'astro:assets';
 ```
 
 #### **C. Animations Optimisées pour CLS**
+
 ```css
 /* ✅ Utiliser transform au lieu de propriétés layout */
 .smooth-animation {
@@ -183,6 +193,7 @@ import { Image } from 'astro:assets';
 ### **⚡ Interaction to Next Paint (INP) < 200ms**
 
 #### **A. Scheduler.yield() pour Long Tasks**
+
 ```js
 // ✅ Utiliser scheduler.yield() (Chrome 129+)
 async function processLargeData(items) {
@@ -196,11 +207,12 @@ async function processLargeData(items) {
 
 // ✅ Document fragments pour DOM
 const fragment = document.createDocumentFragment();
-elements.forEach(el => fragment.appendChild(el));
+elements.forEach((el) => fragment.appendChild(el));
 container.appendChild(fragment); // Une seule opération DOM
 ```
 
 #### **B. Optimisation DaisyUI + TailwindCSS**
+
 ```astro
 <!-- ✅ Utiliser les composants DaisyUI natifs -->
 <div class="dropdown">
@@ -221,6 +233,7 @@ document.addEventListener('click', (e) => {
 ```
 
 #### **C. Réduction DOM Size**
+
 ```astro
 ---
 // ✅ Structure DOM optimisée (< 1500 éléments)
@@ -239,6 +252,7 @@ document.addEventListener('click', (e) => {
 ## 🛠 **Optimisations Astro Spécifiques**
 
 ### **1. BaseHead.astro Optimisé**
+
 ```astro
 ---
 export interface Props {
@@ -256,27 +270,27 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <!-- Charset et viewport en PREMIER -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  
+
   <!-- Preload fonts AVANT tout CSS -->
   <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  
+
   <!-- Meta critique -->
   <title>{title}</title>
   <meta name="description" content={description}>
   <link rel="canonical" href={canonicalURL}>
-  
+
   <!-- DNS prefetch optimisé -->
   <link rel="dns-prefetch" href="//fonts.googleapis.com">
-  
+
   <!-- Theme colors pour dark mode -->
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
-  
+
   <!-- Favicon optimisé -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  
+
   <!-- JSON-LD structuré -->
   <script type="application/ld+json">
     {JSON.stringify({
@@ -292,29 +306,33 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ```
 
 ### **2. Collections Optimisées**
+
 ```js
 // src/content.config.ts
-import { defineCollection, z } from 'astro:content';
+import { defineCollection, z } from "astro:content";
 
 const blog = defineCollection({
-  type: 'content',
+  type: "content",
   schema: z.object({
     title: z.string(),
     description: z.string(),
     publishDate: z.date(),
-    image: z.object({
-      src: z.string(),
-      alt: z.string(),
-      width: z.number(),
-      height: z.number()
-    }).optional()
-  })
+    image: z
+      .object({
+        src: z.string(),
+        alt: z.string(),
+        width: z.number(),
+        height: z.number(),
+      })
+      .optional(),
+  }),
 });
 
 export const collections = { blog };
 ```
 
 ### **3. Pages Statiques Optimisées**
+
 ```astro
 ---
 // src/pages/blog/[...slug].astro
@@ -322,7 +340,7 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
-  
+
   return posts.map(post => ({
     params: { slug: post.slug },
     props: { post }
@@ -343,34 +361,36 @@ const { Content } = await post.render();
 ## 🎨 **Optimisations TailwindCSS + DaisyUI**
 
 ### **1. Configuration Tailwind Optimisée**
+
 ```js
 // tailwind.config.mjs
 export default {
   content: [
-    './src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}',
+    "./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}",
     // Exclusion des tests pour réduire la taille
-    '!./src/**/*.{test,spec}.{js,ts}'
+    "!./src/**/*.{test,spec}.{js,ts}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter Variable', 'system-ui', 'sans-serif']
-      }
-    }
+        sans: ["Inter Variable", "system-ui", "sans-serif"],
+      },
+    },
   },
-  plugins: [require('daisyui')],
+  plugins: [require("daisyui")],
   daisyui: {
-    themes: ['light', 'dark'], // Limiter aux thèmes utilisés
+    themes: ["light", "dark"], // Limiter aux thèmes utilisés
     logs: false, // Performance
-    prefix: '', 
+    prefix: "",
     base: true,
     styled: true,
-    utils: true
-  }
+    utils: true,
+  },
 };
 ```
 
 ### **2. CSS Global Optimisé**
+
 ```css
 /* src/styles/global.css */
 @import "tailwindcss";
@@ -378,14 +398,14 @@ export default {
 /* Critical CSS inline */
 @layer base {
   :root {
-    --font-sans: 'Inter Variable', system-ui, sans-serif;
+    --font-sans: "Inter Variable", system-ui, sans-serif;
   }
-  
+
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply antialiased;
   }
@@ -393,7 +413,9 @@ export default {
 
 /* Optimisation animations pour performance */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -412,6 +434,7 @@ export default {
 ## 🌍 **Optimisations i18n Avancées**
 
 ### **1. Lazy Loading des Traductions**
+
 ```js
 // src/i18n/utils.ts
 const translationCache = new Map();
@@ -433,12 +456,13 @@ export function useTranslations(lang: string) {
 ```
 
 ### **2. Structure URL SEO-Optimisée**
+
 ```astro
 ---
 // src/pages/[...slug].astro
 export async function getStaticPaths() {
   const pages = await getCollection('pages');
-  
+
   return pages.flatMap(page => [
     // Page par défaut (français)
     { params: { slug: page.slug }, props: { page, lang: 'fr' } },
@@ -454,51 +478,59 @@ export async function getStaticPaths() {
 ## ⚡ **Stratégies Avancées 2024/2025**
 
 ### **1. Early Hints (HTTP 103)**
+
 ```js
 // Configuration serveur pour Early Hints
-Response.headers.set('Link', '</fonts/inter-variable.woff2>; rel=preload; as=font; crossorigin');
+Response.headers.set(
+  "Link",
+  "</fonts/inter-variable.woff2>; rel=preload; as=font; crossorigin",
+);
 ```
 
 ### **2. Service Worker Optimisé**
+
 ```js
 // public/sw.js
-const CACHE_NAME = 'astro-blog-v1';
+const CACHE_NAME = "astro-blog-v1";
 const STATIC_CACHE = [
-  '/',
-  '/offline.html',
-  '/_astro/main.css',
-  '/fonts/inter-variable.woff2'
+  "/",
+  "/offline.html",
+  "/_astro/main.css",
+  "/fonts/inter-variable.woff2",
 ];
 
-self.addEventListener('install', event => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
+    caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_CACHE);
-    })
+    }),
   );
 });
 
 // Stratégie Cache First pour assets
-self.addEventListener('fetch', event => {
-  if (event.request.destination === 'image' || 
-      event.request.destination === 'font' ||
-      event.request.destination === 'style') {
+self.addEventListener("fetch", (event) => {
+  if (
+    event.request.destination === "image" ||
+    event.request.destination === "font" ||
+    event.request.destination === "style"
+  ) {
     event.respondWith(
-      caches.match(event.request).then(response => {
+      caches.match(event.request).then((response) => {
         return response || fetch(event.request);
-      })
+      }),
     );
   }
 });
 ```
 
 ### **3. Headers de Cache Optimaux**
+
 ```js
 // public/_headers (Netlify/Vercel)
 /*
   # Cache statique agressif
   Cache-Control: public, max-age=31536000, immutable
-  
+
   # Security headers
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
@@ -518,6 +550,7 @@ self.addEventListener('fetch', event => {
 ## 📊 **Monitoring et Tests**
 
 ### **1. Scripts d'Automatisation**
+
 ```json
 {
   "scripts": {
@@ -536,6 +569,7 @@ self.addEventListener('fetch', event => {
 ```
 
 ### **2. Web Vitals en Temps Réel**
+
 ```astro
 <!-- src/components/WebVitalsReporter.astro -->
 <script>
@@ -552,7 +586,7 @@ self.addEventListener('fetch', event => {
           });
         }
       }
-      
+
       onCLS(sendToAnalytics);
       onINP(sendToAnalytics);
       onLCP(sendToAnalytics);
@@ -568,6 +602,7 @@ self.addEventListener('fetch', event => {
 ## ✅ **Checklist Lighthouse 100/100**
 
 ### **🚀 Performance (100/100)**
+
 - [ ] LCP < 2.5s avec `priority` et `fetchpriority="high"`
 - [ ] INP < 200ms (DOM < 1500 éléments, JS minimal)
 - [ ] CLS < 0.1 (dimensions explicites, size-adjust fonts)
@@ -582,6 +617,7 @@ self.addEventListener('fetch', event => {
 - [ ] Speculation Rules API implémentée
 
 ### **♿ Accessibility (100/100)**
+
 - [ ] Attributs `alt` descriptifs sur toutes les images
 - [ ] Contraste ≥ 4.5:1 (texte normal) / ≥ 3:1 (texte large)
 - [ ] Navigation clavier complète avec `tabindex`
@@ -591,6 +627,7 @@ self.addEventListener('fetch', event => {
 - [ ] Pas de `color` seul pour transmettre l'information
 
 ### **🛡️ Best Practices (100/100)**
+
 - [ ] HTTPS activé et forcé (HSTS)
 - [ ] Console sans erreurs JavaScript
 - [ ] Images avec `width` et `height` explicites
@@ -599,6 +636,7 @@ self.addEventListener('fetch', event => {
 - [ ] Permissions API utilisées correctement
 
 ### **🔍 SEO (100/100)**
+
 - [ ] Meta `description` unique (150-160 caractères)
 - [ ] `<title>` unique par page (50-60 caractères)
 - [ ] URL canonique définie (`rel="canonical"`)
@@ -613,6 +651,7 @@ self.addEventListener('fetch', event => {
 ## 🔧 **Outils et Ressources**
 
 ### **Tests et Monitoring**
+
 - **Lighthouse CI** : Tests automatisés
 - **Unlighthouse** : Audit complet du site
 - **PageSpeed Insights** : Tests Google officiels
@@ -620,13 +659,15 @@ self.addEventListener('fetch', event => {
 - **Core Web Vitals Extension** : Monitoring temps réel
 
 ### **Développement**
+
 - **Astro Dev Toolbar** : Debug intégré
 - **Chrome DevTools** : Performance, Coverage, Lighthouse
 - **Vite Bundle Analyzer** : Analyse des bundles
 
 ### **Hébergement Optimisé**
+
 - **Netlify** : Edge functions, cache intelligent
-- **Vercel** : Image optimization, edge runtime  
+- **Vercel** : Image optimization, edge runtime
 - **Cloudflare Pages** : CDN global, optimisations auto
 
 ---
@@ -634,6 +675,7 @@ self.addEventListener('fetch', event => {
 ## 🎯 **Plan d'Action Prioritaire**
 
 ### **Phase 1 : Quick Wins (Impact Maximum)**
+
 1. ✅ **Configurer `priority` sur l'image LCP**
 2. ✅ **Activer `inlineStylesheets: 'auto'`**
 3. ✅ **Ajouter `fetchpriority="high"` aux ressources critiques**
@@ -641,6 +683,7 @@ self.addEventListener('fetch', event => {
 5. ✅ **Configurer les headers de cache**
 
 ### **Phase 2 : Optimisations Avancées**
+
 1. ✅ **Implémenter Speculation Rules API**
 2. ✅ **Configurer Early Hints (HTTP 103)**
 3. ✅ **Ajouter `content-visibility` aux sections**
@@ -648,6 +691,7 @@ self.addEventListener('fetch', event => {
 5. ✅ **Web Vitals monitoring temps réel**
 
 ### **Phase 3 : Peaufinage**
+
 1. ✅ **Audit complet avec Lighthouse CI**
 2. ✅ **Tests multi-appareils**
 3. ✅ **Optimisation continue basée sur RUM**
@@ -659,7 +703,7 @@ self.addEventListener('fetch', event => {
 Avec cette approche méthodique basée sur les dernières recherches et bonnes pratiques :
 
 - **LCP** : ≤ 1.5s (objectif < 2.5s)
-- **INP** : ≤ 150ms (objectif < 200ms) 
+- **INP** : ≤ 150ms (objectif < 200ms)
 - **CLS** : ≤ 0.05 (objectif < 0.1)
 - **Score Lighthouse** : 100/100 sur tous les critères
 
@@ -669,4 +713,4 @@ Avec cette approche méthodique basée sur les dernières recherches et bonnes p
 
 **Dernière mise à jour** : Janvier 2025  
 **Sources** : Documentation Astro 5.x, Google Web.dev, études de cas Lighthouse 99-100  
-**Stack testée** : Astro 5.2+, TailwindCSS 4.x, DaisyUI 5.x, i18n 
+**Stack testée** : Astro 5.2+, TailwindCSS 4.x, DaisyUI 5.x, i18n

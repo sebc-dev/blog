@@ -17,54 +17,52 @@ export function Image(props: {
   [key: string]: any;
 }) {
   const { src, alt, width, height, ...otherProps } = props;
-  
+
   // Retourne une structure qui ressemble à un composant Astro rendu
   // Les composants Astro sont transformés en HTML, donc on simule cette structure
   return {
     $$metadata: {
-      type: 'astro:component',
-      componentName: 'Image',
-      hydrated: false
+      type: "astro:component",
+      componentName: "Image",
+      hydrated: false,
     },
-    type: 'img',
+    type: "img",
     props: {
-      src: typeof src === 'string' ? src : src.src,
+      src: typeof src === "string" ? src : src.src,
       alt,
       width,
       height,
-      ...otherProps
+      ...otherProps,
     },
     // Simule le rendu HTML final du composant Astro
     render: () => {
-      const imgSrc = typeof src === 'string' ? src : src.src;
-      const escapeHtml = (unsafe: string) => unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-      
+      const imgSrc = typeof src === "string" ? src : src.src;
+      const escapeHtml = (unsafe: string) =>
+        unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+
       return `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}"${
-        width ? ` width="${escapeHtml(String(width))}"` : ''
+        width ? ` width="${escapeHtml(String(width))}"` : ""
       }${
-        height ? ` height="${escapeHtml(String(height))}"` : ''
-      }${
-        Object.entries(otherProps)
-          .map(
-            ([key, value]) =>
-              ` ${escapeHtml(key)}="${escapeHtml(String(value))}"`
-          )
-          .join('')
-      } />`;
+        height ? ` height="${escapeHtml(String(height))}"` : ""
+      }${Object.entries(otherProps)
+        .map(
+          ([key, value]) => ` ${escapeHtml(key)}="${escapeHtml(String(value))}"`
+        )
+        .join("")} />`;
     },
     // Méthode pour obtenir les attributs finaux (utile pour les tests)
     getAttributes: () => ({
-      src: typeof src === 'string' ? src : src.src,
+      src: typeof src === "string" ? src : src.src,
       alt,
       width,
       height,
-      ...otherProps
-    })
+      ...otherProps,
+    }),
   };
 }
 
@@ -75,27 +73,27 @@ export function image() {
       parse: (input: any) => input,
       safeParse: (input: any) => ({ success: true, data: input }),
       _def: {
-        typeName: 'ZodOptional',
+        typeName: "ZodOptional",
         innerType: {
-          typeName: 'ZodObject',
+          typeName: "ZodObject",
           shape: {
-            src: { typeName: 'ZodString' },
-            width: { typeName: 'ZodNumber' },
-            height: { typeName: 'ZodNumber' },
-            format: { typeName: 'ZodString' }
-          }
-        }
-      }
-    })
+            src: { typeName: "ZodString" },
+            width: { typeName: "ZodNumber" },
+            height: { typeName: "ZodNumber" },
+            format: { typeName: "ZodString" },
+          },
+        },
+      },
+    }),
   };
 }
 
 // Mock de getImage
 export async function getImage(options: any) {
   return {
-    src: options.src || '/mock-image.jpg',
+    src: options.src || "/mock-image.jpg",
     width: options.width || 800,
     height: options.height || 600,
-    format: options.format || 'jpg'
+    format: options.format || "jpg",
   };
-} 
+}

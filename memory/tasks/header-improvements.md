@@ -1,11 +1,15 @@
 # Améliorations du composant Header.astro - Plan Optimisé Performance
 
 ## 🎯 Vue d'ensemble
-Refonte complète du composant `src/components/Header.astro` pour améliorer l'expérience utilisateur, la modernité du design ET atteindre un score Lighthouse 100/100 en utilisant **DaisyUI + TailwindCSS** avec optimisations performance avancées.
+
+Refonte complète du composant `src/components/Header.astro` pour améliorer l'expérience utilisateur,
+la modernité du design ET atteindre un score Lighthouse 100/100 en utilisant **DaisyUI +
+TailwindCSS** avec optimisations performance avancées.
 
 ## 📊 Contexte Performance Critique
 
 ### **Constats des recherches Lighthouse 100/100 :**
+
 - **73% des pages mobiles** ont une image comme élément LCP
 - **35% des images LCP** ne sont pas découvrables dans le HTML initial
 - Seulement **15% des pages** utilisent `fetchpriority`
@@ -13,6 +17,7 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
 - **47% des sites** ne passent pas les Core Web Vitals
 
 ### **Impact Header sur Performance :**
+
 - **Navigation** peut affecter l'INP (< 200ms requis)
 - **Fonts** dans le header impactent directement le CLS (< 0.1 requis)
 - **JavaScript** pour responsivité/thèmes doit être optimisé
@@ -23,6 +28,7 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
 ## 🚀 Objectifs principaux avec optimisations performance
 
 ### 1. Responsivité améliorée avec TailwindCSS (Performance-First)
+
 - **État actuel** : Seuls les liens sociaux sont cachés sur mobile (< 720px)
 - **Améliorations requises** :
   - Menu hamburger sur mobile/tablette avec **DaisyUI drawer natif** (0 JS custom)
@@ -33,6 +39,7 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
   - Réorganisation responsive avec utilities TailwindCSS
 
 ### 2. Switch de langage DaisyUI optimisé pour INP < 200ms
+
 - **État actuel** : Composant custom `LanguagePicker.astro` avec styles manuels
 - **Migration Performance-Optimisée** :
   - Remplacer par **dropdown DaisyUI natif** (CSS-only, 0 JS)
@@ -42,6 +49,7 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
   - Maintenir fonctionnalité i18n avec optimisations cache
 
 ### 3. Header transparent au scroll (Optimisé Core Web Vitals)
+
 - **Fonctionnalité** : Header transparent/semi-transparent lors du scroll
 - **Implémentation Performance** :
   - Script JavaScript **throttlé** avec `requestAnimationFrame`
@@ -51,6 +59,7 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
   - **Intersection Observer** pour optimiser les événements scroll
 
 ### 4. Switch de thème Light/Dark (0 Layout Shift)
+
 - **Nouveau composant** : Toggle DaisyUI + localStorage persistence
 - **Optimisations Performance** :
   - **Theme-controller DaisyUI** avec CSS-only
@@ -65,17 +74,18 @@ Refonte complète du composant `src/components/Header.astro` pour améliorer l'e
 ## ⚡ Optimisations Core Web Vitals Spécifiques Header
 
 ### **LCP (Largest Contentful Paint) < 2.5s**
+
 ```astro
 ---
 // Si logo/image dans header
-import { Image } from 'astro:assets';
-import logo from '../assets/logo.svg';
+import { Image } from "astro:assets";
+import logo from "../assets/logo.svg";
 ---
 
 <!-- ✅ Logo optimisé si élément LCP -->
-<Image 
-  src={logo} 
-  alt="Site Logo" 
+<Image
+  src={logo}
+  alt="Site Logo"
   priority
   fetchpriority="high"
   loading="eager"
@@ -87,19 +97,21 @@ import logo from '../assets/logo.svg';
 ```
 
 ### **CLS (Cumulative Layout Shift) < 0.1**
+
 ```astro
 ---
 // Font preload critique dans BaseHead.astro
 ---
+
 <head>
   <!-- ✅ Preload fonts header AVANT CSS -->
-  <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  
+  <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin />
+
   <!-- ✅ Font-display: swap pour éviter FOIT/FOUT -->
   <style>
     @font-face {
-      font-family: 'Inter Variable';
-      src: url('/fonts/inter-variable.woff2') format('woff2');
+      font-family: "Inter Variable";
+      src: url("/fonts/inter-variable.woff2") format("woff2");
       font-display: swap;
       /* Nouvelles propriétés 2024 pour CLS */
       size-adjust: 100%;
@@ -111,12 +123,13 @@ import logo from '../assets/logo.svg';
 </head>
 
 <!-- ✅ Header avec dimensions explicites -->
-<header class="h-16 flex items-center justify-between px-4">
+<header class="flex h-16 items-center justify-between px-4">
   <!-- Contenu header avec tailles fixes -->
 </header>
 ```
 
 ### **INP (Interaction to Next Paint) < 200ms**
+
 ```astro
 ---
 // Header.astro optimisé pour INP
@@ -128,16 +141,23 @@ import logo from '../assets/logo.svg';
     <!-- Mobile menu avec drawer DaisyUI -->
     <div class="dropdown lg:hidden">
       <div tabindex="0" role="button" class="btn btn-ghost">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </div>
-      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+      <ul
+        tabindex="0"
+        class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+      >
         <!-- Navigation items -->
       </ul>
     </div>
   </div>
-  
+
   <!-- ✅ Theme toggle DaisyUI natif -->
   <label class="swap swap-rotate">
     <input type="checkbox" class="theme-controller" value="dark" />
@@ -148,27 +168,27 @@ import logo from '../assets/logo.svg';
 <!-- ✅ Script optimisé pour scroll avec throttling -->
 <script>
   let ticking = false;
-  
+
   function updateHeader() {
-    const header = document.querySelector('header');
+    const header = document.querySelector("header");
     const scrolled = window.scrollY > 50;
-    
+
     // ✅ Utiliser transform pour éviter layout/paint
-    header.style.transform = scrolled ? 'translateY(0)' : '';
-    header.classList.toggle('backdrop-blur-md', scrolled);
-    header.classList.toggle('bg-opacity-90', scrolled);
-    
+    header.style.transform = scrolled ? "translateY(0)" : "";
+    header.classList.toggle("backdrop-blur-md", scrolled);
+    header.classList.toggle("bg-opacity-90", scrolled);
+
     ticking = false;
   }
-  
+
   function onScroll() {
     if (!ticking) {
       requestAnimationFrame(updateHeader);
       ticking = true;
     }
   }
-  
-  window.addEventListener('scroll', onScroll, { passive: true });
+
+  window.addEventListener("scroll", onScroll, { passive: true });
 </script>
 ```
 
@@ -177,6 +197,7 @@ import logo from '../assets/logo.svg';
 ## 🛠 Plan d'implémentation avec jalons performance
 
 ### Phase 1 : Fondations Performance (Semaine 1)
+
 - [ ] **Audit performance baseline** (Lighthouse initial)
 - [ ] **Font preload** optimisé dans BaseHead
 - [ ] **Structure HTML** avec dimensions explicites
@@ -184,6 +205,7 @@ import logo from '../assets/logo.svg';
 - [ ] **Metrics Core Web Vitals** : LCP baseline, CLS initial
 
 ### Phase 2 : Responsivité DaisyUI (Semaine 2)
+
 - [ ] **Menu hamburger DaisyUI** natif (0 JS custom)
 - [ ] **Breakpoints TailwindCSS** optimisés
 - [ ] **Content-visibility** pour sections off-screen
@@ -191,6 +213,7 @@ import logo from '../assets/logo.svg';
 - [ ] **Lighthouse mobile** : score responsivité
 
 ### Phase 3 : Switch langage optimisé (Semaine 2-3)
+
 - [ ] **Dropdown DaisyUI** avec lazy loading
 - [ ] **Cache traductions** avec Map()
 - [ ] **URL structure** SEO-optimisée
@@ -198,6 +221,7 @@ import logo from '../assets/logo.svg';
 - [ ] **Metrics i18n** : impact sur LCP/CLS
 
 ### Phase 4 : Transparence scroll (Semaine 3)
+
 - [ ] **Script throttlé** avec requestAnimationFrame
 - [ ] **Transform-only** animations (0 layout/paint)
 - [ ] **Will-change** optimisé
@@ -205,6 +229,7 @@ import logo from '../assets/logo.svg';
 - [ ] **Tests scroll** : 60fps maintenu
 
 ### Phase 5 : Switch thème avancé (Semaine 4)
+
 - [ ] **Theme-controller DaisyUI** avec CSS-only
 - [ ] **Color-scheme** meta pour FOUC
 - [ ] **LocalStorage** avec fallback
@@ -212,6 +237,7 @@ import logo from '../assets/logo.svg';
 - [ ] **Tests CLS** : 0 layout shift garanti
 
 ### Phase 6 : Optimisations finales (Semaine 4)
+
 - [ ] **Service Worker** pour cache header assets
 - [ ] **Preload critical** resources
 - [ ] **Bundle size** analysis et optimisation
@@ -223,17 +249,20 @@ import logo from '../assets/logo.svg';
 ## 📊 Métriques de validation performance
 
 ### **Core Web Vitals Targets**
+
 - **LCP** : ≤ 1.5s (header optimisé)
 - **INP** : ≤ 150ms (interactions fluides)
 - **CLS** : ≤ 0.05 (0 layout shift)
 
 ### **Lighthouse Scores Target**
+
 - **Performance** : 100/100
 - **Accessibility** : 100/100
 - **Best Practices** : 100/100
 - **SEO** : 100/100
 
 ### **Métriques Spécifiques Header**
+
 - **Time to Interactive** : ≤ 2s
 - **Menu toggle** : ≤ 50ms
 - **Theme switch** : ≤ 100ms
@@ -245,48 +274,51 @@ import logo from '../assets/logo.svg';
 ## 🔧 Dépendances techniques optimisées
 
 ### **Stack technique principale**
+
 - ✅ **Astro 5.x** avec configuration performance maximale
 - ✅ **DaisyUI (v5.0.43)** - Composants CSS-only
 - ✅ **TailwindCSS (v4.1.10)** - Configuration purge optimisée
 - ✅ **Astro i18n utilities** avec cache optimisé
 
 ### **Configuration Astro Performance**
+
 ```js
 // astro.config.mjs optimisé
 export default defineConfig({
   compressHTML: true,
   build: {
-    inlineStylesheets: 'auto', // CSS critique inline
-    format: 'file'
+    inlineStylesheets: "auto", // CSS critique inline
+    format: "file",
   },
   vite: {
     build: {
       assetsInlineLimit: 1024,
       cssCodeSplit: false,
       rollupOptions: {
-        output: { manualChunks: undefined }
-      }
-    }
-  }
+        output: { manualChunks: undefined },
+      },
+    },
+  },
 });
 ```
 
 ### **TailwindCSS Configuration Optimisée**
+
 ```js
 // tailwind.config.mjs
 export default {
   content: [
-    './src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}',
-    '!./src/**/*.{test,spec}.{js,ts}' // Exclure tests
+    "./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}",
+    "!./src/**/*.{test,spec}.{js,ts}", // Exclure tests
   ],
-  plugins: [require('daisyui')],
+  plugins: [require("daisyui")],
   daisyui: {
-    themes: ['light', 'dark'], // Limiter aux thèmes utilisés
+    themes: ["light", "dark"], // Limiter aux thèmes utilisés
     logs: false, // Performance
     base: true,
     styled: true,
-    utils: true
-  }
+    utils: true,
+  },
 };
 ```
 
@@ -295,6 +327,7 @@ export default {
 ## ✅ Checklist validation finale
 
 ### **Performance (100/100)**
+
 - [ ] LCP < 1.5s avec logo/fonts optimisés
 - [ ] INP < 150ms avec DaisyUI natif
 - [ ] CLS < 0.05 avec dimensions explicites
@@ -302,6 +335,7 @@ export default {
 - [ ] 0 JavaScript bloquant
 
 ### **Accessibilité (100/100)**
+
 - [ ] Navigation clavier complète
 - [ ] ARIA labels appropriés
 - [ ] Contraste couleurs validé
@@ -309,6 +343,7 @@ export default {
 - [ ] Focus indicators visibles
 
 ### **Best Practices (100/100)**
+
 - [ ] HTTPS enforced
 - [ ] Console errors = 0
 - [ ] Deprecated APIs = 0
@@ -316,6 +351,7 @@ export default {
 - [ ] Images avec alt texts
 
 ### **SEO (100/100)**
+
 - [ ] Meta descriptions présentes
 - [ ] Structure URL optimisée
 - [ ] Hreflang pour i18n
@@ -324,7 +360,5 @@ export default {
 
 ---
 
-**Date de création** : $(date)
-**Estimé avec optimisations** : 12-16 heures de développement
-**Priorité** : **Haute** (Performance critique)
-**Objectif** : **Lighthouse 100/100** garanti 
+**Date de création** : $(date) **Estimé avec optimisations** : 12-16 heures de développement
+**Priorité** : **Haute** (Performance critique) **Objectif** : **Lighthouse 100/100** garanti
