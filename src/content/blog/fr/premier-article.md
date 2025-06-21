@@ -1,8 +1,8 @@
 ---
-title: 'Premier article'
-description: 'Bienvenue sur notre blog en français !'
-pubDate: 'Jan 01 2023'
-heroImage: '../../../assets/blog-placeholder-1.jpg'
+title: "Premier article"
+description: "Bienvenue sur notre blog en français !"
+pubDate: "Jan 01 2023"
+heroImage: "../../../assets/blog-placeholder-1.jpg"
 ---
 
 ## Bienvenue sur notre blog !
@@ -31,4 +31,4 @@ Ce site démontre comment implémenter l'internationalisation (i18n) avec Astro 
 
 Nous espérons que ce site vous donnera des idées pour vos propres projets multilingues. N'hésitez pas à explorer les autres articles et à découvrir les possibilités d'Astro !
 
-Merci de votre visite et à bientôt sur notre blog ! 
+Merci de votre visite et à bientôt sur notre blog !

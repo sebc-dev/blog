@@ -27,13 +27,16 @@ npm run test:watch
 ## 📊 Critères Validés
 
 ### Core Web Vitals
+
 - **LCP (Largest Contentful Paint)** < 2.5s
+
   - ✅ Preload des fonts critiques
   - ✅ `fetchpriority="high"` pour images critiques
   - ✅ CSS critique inline
   - ✅ Ressources render-blocking minimales
 
 - **CLS (Cumulative Layout Shift)** < 0.1
+
   - ✅ Dimensions explicites pour images
   - ✅ `font-display: swap`
   - ✅ `size-adjust` (technique 2024)
@@ -46,12 +49,14 @@ npm run test:watch
   - ✅ DOM < 1500 éléments
 
 ### Performance Assets
+
 - **Images** : Formats modernes (WebP, AVIF), lazy loading
 - **Fonts** : Preload, crossorigin, font-display
 - **CSS** : Bundling, taille < 100KB, TailwindCSS purgé
 - **JavaScript** : Minimal, < 50KB par fichier
 
 ### Qualité
+
 - **Accessibilité** : lang, alt, structure headings, ARIA
 - **SEO** : Meta descriptions, canonical, Open Graph, JSON-LD
 - **Best Practices** : Viewport, charset, HTTPS
@@ -59,20 +64,23 @@ npm run test:watch
 ## 🔧 Configuration
 
 ### Vitest Configuration
+
 ```typescript
 // vitest.config.ts
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
+    environment: "jsdom",
+    setupFiles: ["./tests/setup.ts"],
     testTimeout: 30000, // Build peut prendre du temps
-  }
+  },
 });
 ```
 
 ### Setup Automatique
+
 Le fichier `tests/setup.ts` :
+
 - Nettoie le dossier `dist/`
 - Exécute `npm run build` automatiquement
 - Configure l'environnement de test
@@ -80,6 +88,7 @@ Le fichier `tests/setup.ts` :
 ## 📋 Interprétation des Résultats
 
 ### ✅ Succès
+
 ```
 🎉 LIGHTHOUSE 100/100 ACHIEVED!
 ===============================
@@ -93,6 +102,7 @@ Toutes les optimisations sont en place:
 ```
 
 ### ❌ Échec
+
 ```
 🎯 LIGHTHOUSE 100/100 SUMMARY
 =============================
@@ -113,26 +123,33 @@ Chaque critère échoué affiche des détails spécifiques sur les optimisations
 ### Erreurs Communes
 
 #### LCP Non Optimisé
+
 ```
 ❌ LCP: Missing font preload in ./dist/index.html
 ```
+
 **Solution** : Ajouter `<link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin>` dans BaseHead.astro
 
 #### CLS Non Optimisé
+
 ```
 ❌ CLS: Image missing dimensions in ./dist/index.html
 ```
+
 **Solution** : Ajouter `width` et `height` à toutes les images ou utiliser `aspect-ratio` CSS
 
 #### INP Non Optimisé
+
 ```
 ❌ INP: Script without requestAnimationFrame optimization
 ```
+
 **Solution** : Utiliser `requestAnimationFrame` pour les handlers de scroll
 
 ### Debug Avancé
 
 Pour des informations détaillées :
+
 ```bash
 # Exécuter avec verbose
 npm run test -- --reporter=verbose
@@ -144,6 +161,7 @@ npm run test -- --coverage
 ## 🎯 Intégration CI/CD
 
 ### GitHub Actions
+
 ```yaml
 name: Performance Tests
 on: [push, pull_request]
@@ -155,13 +173,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
       - run: npm ci
       - run: npm run build
       - run: npm run test
 ```
 
 ### Scripts Package.json
+
 ```json
 {
   "scripts": {
@@ -174,17 +193,20 @@ jobs:
 ## 📖 Référence Complète
 
 ### Basé sur les Documents
+
 - `/memory/docs/astro-lighthouse-100-analysis.md`
 - `/memory/docs/astro-lighthouse-100-guide.md`
 - `/memory/docs/astro-performance-optimization-guide.md`
 
 ### Métriques Cibles
+
 - **Performance** : 100/100
 - **Accessibility** : 100/100
 - **Best Practices** : 100/100
 - **SEO** : 100/100
 
 ### Technologies Validées
+
 - **Astro 5.x** avec configuration optimale
 - **TailwindCSS** avec purge
 - **DaisyUI** composants natifs
@@ -193,4 +215,4 @@ jobs:
 ---
 
 **Maintenu par** : Tests automatisés Vitest
-**Dernière mise à jour** : Basé sur les critères Lighthouse 2024/2025 
+**Dernière mise à jour** : Basé sur les critères Lighthouse 2024/2025

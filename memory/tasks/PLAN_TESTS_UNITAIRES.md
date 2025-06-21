@@ -24,14 +24,18 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 🔧 Utilitaires et Configuration
 
 ### 1. `src/consts.ts`
+
 **Fichier**: `tests/unit/consts.test.ts` - ❌ **EXCLU** (par demande utilisateur)
+
 - [x] ~~Vérifier que `SITE_TITLE` est défini et non vide~~
 - [x] ~~Vérifier que `SITE_DESCRIPTION` est défini et non vide~~
 - [x] ~~Vérifier que les constantes sont des chaînes de caractères~~
 - [x] ~~Tester l'immutabilité des constantes~~
 
 ### 2. `src/types.d.ts`
+
 **Fichier**: `tests/unit/types.test.ts`
+
 - [ ] Valider l'interface `BlogFrontmatter`
 - [ ] Tester les types des propriétés (title, description, pubDate, etc.)
 - [ ] Vérifier les propriétés optionnelles (updatedDate, heroImage, tags)
@@ -39,7 +43,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Valider les déclarations de modules d'images
 
 ### 3. `src/content.config.ts`
+
 **Fichier**: `tests/unit/content-config.test.ts` - ✅ **COMPLÉTÉ** (5 tests)
+
 - [x] Vérifier la configuration de la collection blog
 - [x] Tester que les collections sont correctement exportées
 - [x] Vérifier la structure des collections
@@ -51,10 +57,12 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 🌐 Internationalisation
 
 ### 4. `src/i18n/index.ts`
+
 **Fichier**: `tests/unit/i18n.test.ts` - ✅ **COMPLÉTÉ** (22 tests)
 
 #### Fonctions utilitaires
-- [x] `getLangFromUrl()`: 
+
+- [x] `getLangFromUrl()`:
   - [x] Retourne 'en' pour URL sans langue
   - [x] Retourne 'fr' pour URL avec /fr/
   - [x] Retourne defaultLang pour langue invalide
@@ -74,6 +82,7 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
   - [x] Gestion des cas limites
 
 #### Configuration
+
 - [x] Vérifier que `languages` contient 'en' et 'fr'
 - [x] Vérifier que `defaultLang` est 'en'
 - [x] Vérifier cohérence des traductions (toutes les clés présentes dans toutes les langues)
@@ -84,7 +93,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 🧩 Composants Astro
 
 ### 5. `src/components/BaseHead.astro`
+
 **Fichier**: `tests/unit/components/BaseHead.test.ts`
+
 - [ ] Props obligatoires (title, description) sont rendues
 - [ ] Image par défaut utilisée si image non fournie
 - [ ] Meta tags générés correctement
@@ -96,7 +107,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Generator meta tag présent
 
 ### 6. `src/components/Header.astro`
+
 **Fichier**: `tests/unit/components/Header.test.ts`
+
 - [ ] Titre du site affiché correctement
 - [ ] Navigation multilingue fonctionne
 - [ ] Liens internes localisés selon la langue
@@ -107,7 +120,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Structure HTML valide
 
 ### 7. `src/components/Footer.astro`
+
 **Fichier**: `tests/unit/components/Footer.test.ts`
+
 - [ ] Année courante affichée dynamiquement
 - [ ] Copyright message affiché
 - [ ] Liens sociaux rendus correctement
@@ -116,7 +131,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Structure HTML valide
 
 ### 8. `src/components/HeaderLink.astro`
+
 **Fichier**: `tests/unit/components/HeaderLink.test.ts`
+
 - [ ] Props href transmise correctement
 - [ ] Classe CSS personnalisée appliquée
 - [ ] État actif détecté correctement (pathname matching)
@@ -126,7 +143,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Accessibilité du lien
 
 ### 9. `src/components/LanguagePicker.astro`
+
 **Fichier**: `tests/unit/components/LanguagePicker.test.ts`
+
 - [ ] Toutes les langues disponibles affichées
 - [ ] Langue active marquée visuellement
 - [ ] URLs localisées générées correctement
@@ -136,7 +155,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Structure HTML valide
 
 ### 10. `src/components/FormattedDate.astro`
+
 **Fichier**: `tests/unit/components/FormattedDate.test.ts`
+
 - [ ] Date formatée correctement (locale en-us)
 - [ ] Attribut datetime ISO généré
 - [ ] Gestion des différents formats de date
@@ -148,7 +169,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 📄 Layouts
 
 ### 11. `src/layouts/Layout.astro`
+
 **Fichier**: `tests/unit/layouts/Layout.test.ts`
+
 - [ ] Props title et description transmises à BaseHead
 - [ ] Langue détectée depuis URL
 - [ ] Structure HTML5 valide
@@ -157,7 +180,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Attribut lang du HTML correct
 
 ### 12. `src/layouts/BlogPost.astro`
+
 **Fichier**: `tests/unit/layouts/BlogPost.test.ts`
+
 - [ ] Métadonnées du post affichées (title, dates)
 - [ ] Image hero affichée si fournie
 - [ ] Date de publication formatée
@@ -171,13 +196,15 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 🧪 Tests et Utilitaires
 
 ### 13. `tests/utils/lighthouse-criteria.ts`
+
 **Fichier**: `tests/unit/utils/lighthouse-criteria.test.ts`
 
 #### Classe LighthouseCriteriaValidator
+
 - [ ] Constructor initialise distPath correctement
 - [ ] `validateAllCriteria()` retourne objet PerformanceCriteria complet
 - [ ] `validateLCP()`: vérifie optimisations LCP
-- [ ] `validateCLS()`: vérifie optimisations CLS  
+- [ ] `validateCLS()`: vérifie optimisations CLS
 - [ ] `validateINP()`: vérifie optimisations interactions
 - [ ] `validateAssets()`: vérifie taille et optimisation assets
 - [ ] `validateImages()`: vérifie formats et tailles images
@@ -189,6 +216,7 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] `validateBestPractices()`: vérifie sécurité et bonnes pratiques
 
 #### Méthodes utilitaires
+
 - [ ] `getHTMLFiles()`: retourne tous les fichiers .html
 - [ ] `getCSSFiles()`: retourne tous les fichiers .css
 - [ ] `getJSFiles()`: retourne tous les fichiers .js
@@ -196,7 +224,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Gestion des erreurs de fichiers manquants
 
 ### 14. `tests/lighthouse-performance.test.ts`
+
 **Fichier**: Tests déjà existants à compléter
+
 - [ ] Tests d'intégration avec build réel
 - [ ] Validation scores Lighthouse > 90
 - [ ] Tests Core Web Vitals
@@ -204,7 +234,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 - [ ] Tests SEO automatisés
 
 ### 15. `tests/setup.ts`
+
 **Fichier**: `tests/unit/setup.test.ts`
+
 - [ ] Matchers personnalisés fonctionnent
 - [ ] `toBeOptimizedForLighthouse()` valide
 - [ ] `toHaveValidCoreWebVitals()` valide
@@ -216,7 +248,9 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 🚀 Tests d'Intégration et E2E
 
 ### Pages (tests d'intégration)
+
 **Fichier**: `tests/integration/pages.test.ts`
+
 - [ ] Page d'accueil se charge correctement
 - [ ] Page blog liste les articles
 - [ ] Page about se charge
@@ -231,62 +265,62 @@ Ce document liste tous les tests unitaires à créer pour garantir la qualité e
 ## 🛠 Configuration des Tests
 
 ### Configuration Vitest - ✅ **MISE EN PLACE**
+
 **Fichier**: `vitest.config.ts` - ✅ **CONFIGURÉ**
+
 ```typescript
-import { defineConfig } from 'vitest/config';
-import { getViteConfig } from 'astro/config';
+import { defineConfig } from "vitest/config";
+import { getViteConfig } from "astro/config";
 
 export default defineConfig(
   getViteConfig({
     test: {
       globals: true,
-      environment: 'jsdom',
-      setupFiles: ['./tests/setup.ts'],
+      environment: "jsdom",
+      setupFiles: ["./tests/setup.ts"],
       coverage: {
-        reporter: ['text', 'json', 'html'],
-        exclude: [
-          'node_modules/',
-          'dist/',
-          'tests/',
-          '**/*.d.ts',
-        ],
+        reporter: ["text", "json", "html"],
+        exclude: ["node_modules/", "dist/", "tests/", "**/*.d.ts"],
         thresholds: {
           global: {
             branches: 90,
             functions: 90,
             lines: 90,
-            statements: 90
-          }
-        }
-      }
+            statements: 90,
+          },
+        },
+      },
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
-        '@tests': resolve(__dirname, './tests'),
-        'astro:content': resolve(__dirname, './tests/mocks/astro-content.ts'),
-        'astro:assets': resolve(__dirname, './tests/mocks/astro-assets.ts')
-      }
-    }
-  })
+        "@": resolve(__dirname, "./src"),
+        "@tests": resolve(__dirname, "./tests"),
+        "astro:content": resolve(__dirname, "./tests/mocks/astro-content.ts"),
+        "astro:assets": resolve(__dirname, "./tests/mocks/astro-assets.ts"),
+      },
+    },
+  }),
 );
 ```
 
 ### Mocks Astro - ✅ **CRÉÉS**
 
 #### `tests/mocks/astro-content.ts` - ✅ **CONFIGURÉ**
+
 - Mock de `defineCollection`, `getCollection`, `render`
 - Mock de `glob` loader
 - Support des types `CollectionEntry<T>`
 - Export de `z` pour les schémas Zod
 
-#### `tests/mocks/astro-assets.ts` - ✅ **CONFIGURÉ**  
+#### `tests/mocks/astro-assets.ts` - ✅ **CONFIGURÉ**
+
 - Mock du composant `Image`
 - Mock de l'interface `ImageMetadata`
 - Mock de `getImage` pour les transformations d'images
 - Support des fonctions `image()` pour les schémas
 
 ### Dépendances de test - ✅ **INSTALLÉES**
+
 ```json
 {
   "devDependencies": {
@@ -302,7 +336,9 @@ export default defineConfig(
 ```
 
 ### Setup Global - ✅ **CONFIGURÉ**
+
 **Fichier**: `tests/setup.ts` - ✅ **OPTIMISÉ**
+
 - Build conditionnel (uniquement pour tests de performance)
 - Matchers personnalisés pour Lighthouse
 - Nettoyage automatique après tests
@@ -312,26 +348,31 @@ export default defineConfig(
 ## 📊 Priorités de Développement
 
 ### Phase 1 - Fondations (Critique) - ✅ **COMPLÉTÉE**
+
 1. ~~`src/consts.ts`~~ - ❌ **EXCLU** (par demande utilisateur)
 2. `src/i18n/index.ts` - ✅ **COMPLÉTÉ** (22 tests)
 3. `src/content.config.ts` - ✅ **COMPLÉTÉ** (5 tests)
 
 ### Phase 2 - Composants de Base - 🔄 **EN COURS**
+
 4. `src/components/FormattedDate.astro` - ⏳ Simple
 5. `src/components/HeaderLink.astro` - ⏳ Navigation
 6. `src/components/LanguagePicker.astro` - ⏳ i18n
 
 ### Phase 3 - Composants Complexes
+
 7. `src/components/BaseHead.astro` - SEO critique
 8. `src/components/Header.astro` - Navigation principale
 9. `src/components/Footer.astro` - Structure
 
 ### Phase 4 - Layouts et Pages
+
 10. `src/layouts/Layout.astro` - Layout principal
 11. `src/layouts/BlogPost.astro` - Articles
 12. Tests d'intégration pages
 
 ### Phase 5 - Performance et Qualité
+
 13. `tests/utils/lighthouse-criteria.ts` - Performance
 14. Tests E2E complets
 15. Optimisation coverage
@@ -352,6 +393,7 @@ export default defineConfig(
 ## 🎖️ Accomplissements Techniques
 
 ### ✅ Phase 1 Réussie (27 tests)
+
 - **Infrastructure de test** complètement configurée pour Astro
 - **Mocks avancés** pour `astro:content` et `astro:assets`
 - **Tests i18n complets** avec gestion des cas limites
@@ -359,6 +401,7 @@ export default defineConfig(
 - **Setup conditionnel** pour éviter les builds inutiles
 
 ### 🔧 Outils Mis en Place
+
 - **Alias de résolution** pour les imports Astro
 - **Types TypeScript** pour les mocks
 - **Coverage reporting** avec seuils de 90%
@@ -367,11 +410,13 @@ export default defineConfig(
 ## 🚀 Prochaines Étapes
 
 ### Immédiat (Phase 2)
+
 1. **FormattedDate.astro** - Composant simple pour valider l'approche
-2. **HeaderLink.astro** - Test des props et logique conditionnelle  
+2. **HeaderLink.astro** - Test des props et logique conditionnelle
 3. **LanguagePicker.astro** - Intégration avec i18n
 
 ### Défis Techniques Anticipés
+
 - **Rendu des composants Astro** dans l'environnement de test
 - **Simulation des props Astro** (Astro.props, Astro.url)
 - **Test des slots** et du contenu dynamique
@@ -379,6 +424,6 @@ export default defineConfig(
 
 ---
 
-*Ce plan sera mis à jour au fur et à mesure de l'implémentation des tests.*
+_Ce plan sera mis à jour au fur et à mesure de l'implémentation des tests._
 
-**Dernière mise à jour**: Phase 1 complétée - 27 tests passent ✅ 
+**Dernière mise à jour**: Phase 1 complétée - 27 tests passent ✅
