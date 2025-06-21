@@ -37,68 +37,71 @@ importers:
         version: 4.1.10
     devDependencies:
       '@testing-library/dom':
-        specifier: ^10.4.0
+        specifier: ~10.4.0
         version: 10.4.0
       '@testing-library/jest-dom':
-        specifier: ^6.6.3
+        specifier: ~6.6.3
         version: 6.6.3
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: ~21.1.7
         version: 21.1.7
       '@types/node':
-        specifier: ^24.0.3
+        specifier: ~24.0.3
         version: 24.0.3
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.34.1
+        specifier: ~8.34.1
         version: 8.34.1(@typescript-eslint/parser@8.34.1(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3)
       '@typescript-eslint/parser':
-        specifier: ^8.34.1
+        specifier: ~8.34.1
         version: 8.34.1(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3)
       '@vitest/coverage-v8':
-        specifier: ^3.2.4
+        specifier: ~3.2.4
         version: 3.2.4(vitest@3.2.4)
       '@vitest/ui':
-        specifier: ^3.2.4
+        specifier: ~3.2.4
         version: 3.2.4(vitest@3.2.4)
       cypress:
-        specifier: ^14.5.0
+        specifier: ~14.5.0
         version: 14.5.0
       eslint:
-        specifier: ^9.29.0
+        specifier: ~9.29.0
         version: 9.29.0(jiti@2.4.2)
       eslint-config-prettier:
-        specifier: ^10.1.5
+        specifier: ~10.1.5
         version: 10.1.5(eslint@9.29.0(jiti@2.4.2))
       eslint-plugin-astro:
-        specifier: ^1.3.1
+        specifier: ~1.3.1
         version: 1.3.1(eslint@9.29.0(jiti@2.4.2))
       eslint-plugin-jsx-a11y:
-        specifier: ^6.10.2
+        specifier: ~6.10.2
         version: 6.10.2(eslint@9.29.0(jiti@2.4.2))
       jsdom:
-        specifier: ^26.1.0
+        specifier: ~26.1.0
         version: 26.1.0
       node-html-parser:
-        specifier: ^7.0.1
+        specifier: ~7.0.1
         version: 7.0.1
       prettier:
-        specifier: ^3.5.3
+        specifier: ~3.5.3
         version: 3.5.3
       prettier-plugin-astro:
-        specifier: ^0.14.1
+        specifier: ~0.14.1
         version: 0.14.1
       prettier-plugin-tailwindcss:
-        specifier: ^0.6.13
+        specifier: ~0.6.13
         version: 0.6.13(prettier-plugin-astro@0.14.1)(prettier@3.5.3)
       shiki:
-        specifier: ^3.7.0
+        specifier: ~3.7.0
         version: 3.7.0
       typescript:
-        specifier: ^5.8.3
+        specifier: ~5.8.3
         version: 5.8.3
       vitest:
-        specifier: ^3.2.4
+        specifier: ~3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.3)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(yaml@2.8.0)
+      zod:
+        specifier: ^3.25.67
+        version: 3.25.67
 
 packages:
 

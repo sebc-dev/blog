@@ -53,6 +53,7 @@
     "prettier-plugin-tailwindcss": "~0.6.13",
     "shiki": "~3.7.0",
     "typescript": "~5.8.3",
-    "vitest": "~3.2.4"
+    "vitest": "~3.2.4",
+    "zod": "~3.25.67"
   }
 }
