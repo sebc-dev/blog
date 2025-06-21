@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { getViteConfig } from 'astro/config';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 
 export default defineConfig(
   getViteConfig({
@@ -12,7 +12,7 @@ export default defineConfig(
       exclude: ['node_modules', 'dist', '.astro'],
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        reporter: ['text', 'json', 'html', 'lcov'],
         exclude: [
           'node_modules/',
           'dist/',

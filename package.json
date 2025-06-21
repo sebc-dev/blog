@@ -15,6 +15,7 @@
     "format": "prettier --write .",
     "test": "vitest",
     "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
     "test:performance": "pnpm build && vitest tests/lighthouse-performance.test.ts",
     "test:lighthouse": "pnpm build && vitest tests/lighthouse-performance.test.ts --reporter=verbose",
     "test:ci": "pnpm build && vitest --reporter=json --outputFile=test-results.json",
