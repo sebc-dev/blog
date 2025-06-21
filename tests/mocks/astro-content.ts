@@ -117,10 +117,15 @@ export async function getCollectionWithOptions(
   // Language filtering
   if (options.lang) {
     data = data.filter(entry => {
+      // Plus flexible : vérifie si l'entrée a une propriété lang ou utilise la logique de chemin
+      const entryLang = entry.data?.lang ||
+        (entry.id.includes('/') ? entry.id.split('/')[0] : 'en');
+      
       if (options.lang === 'fr') {
-        return entry.id.startsWith('fr/') || entry.slug.startsWith('fr/');
+        return entryLang === 'fr' || entry.id.startsWith('fr/') || entry.slug.startsWith('fr/');
       } else {
-        return !entry.id.startsWith('fr/') && !entry.slug.startsWith('fr/');
+        return entryLang === options.lang ||
+          (!entry.id.startsWith('fr/') && !entry.slug.startsWith('fr/') && options.lang === 'en');
       }
     });
   }
