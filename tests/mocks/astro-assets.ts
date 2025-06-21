@@ -37,7 +37,25 @@ export function Image(props: {
     // Simule le rendu HTML final du composant Astro
     render: () => {
       const imgSrc = typeof src === 'string' ? src : src.src;
-      return `<img src="${imgSrc}" alt="${alt}"${width ? ` width="${width}"` : ''}${height ? ` height="${height}"` : ''}${Object.entries(otherProps).map(([key, value]) => ` ${key}="${value}"`).join('')} />`;
+      const escapeHtml = (unsafe: string) => unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+      
+      return `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}"${
+        width ? ` width="${escapeHtml(String(width))}"` : ''
+      }${
+        height ? ` height="${escapeHtml(String(height))}"` : ''
+      }${
+        Object.entries(otherProps)
+          .map(
+            ([key, value]) =>
+              ` ${escapeHtml(key)}="${escapeHtml(String(value))}"`
+          )
+          .join('')
+      } />`;
     },
     // Méthode pour obtenir les attributs finaux (utile pour les tests)
     getAttributes: () => ({
