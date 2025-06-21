@@ -244,7 +244,19 @@ describe('removeLocaleFromUrl', () => {
   });
 });
 
-  it('should validate TranslationObject type structure', () => {
+  describe('TypeScript Types', () => {
+    it('should validate TranslationObject type structure', () => {
+      // Vérifier que ui.fr satisfait le type TranslationObject
+      const frTranslations: TranslationObject = ui.fr;
+      expect(frTranslations).toBeDefined();
+      
+      // Vérifier que toutes les clés requises sont présentes et de type string
+      Object.keys(ui.en).forEach(key => {
+        expect(frTranslations[key as TranslationKey]).toBeDefined();
+        expect(typeof frTranslations[key as TranslationKey]).toBe('string');
+      });
+    });
+  });
     // Vérifier que ui.fr satisfait le type TranslationObject
     const frTranslations: TranslationObject = ui.fr;
     expect(frTranslations).toBeDefined();
