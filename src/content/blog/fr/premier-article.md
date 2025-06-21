@@ -5,7 +5,7 @@ pubDate: 'Jan 01 2023'
 heroImage: '../../../assets/blog-placeholder-1.jpg'
 ---
 
-# Bienvenue sur notre blog !
+## Bienvenue sur notre blog !
 
 Ceci est notre premier article de blog en français. Nous sommes ravis de vous présenter notre nouveau site web multilingue créé avec Astro.
 

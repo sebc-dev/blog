@@ -5,7 +5,9 @@ import Footer from '../../../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../../components/FormattedDate.astro';
+import { Image } from 'astro:assets';
 import { getLangFromUrl, useTranslations } from '../../../i18n';
+import blogPlaceholder from '../../../assets/blog-placeholder-1.jpg';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -32,18 +34,16 @@ const posts = (await getCollection('blog'))
 						posts.map((post) => (
 							<li>
 								<a href={`/fr/blog/${post.id.replace('fr/', '')}/`}>
----
- // ... autres imports
-
- function getHeroImageSrc(heroImage: any): string {
-   if (typeof heroImage === 'string') return heroImage;
-   return heroImage?.src || '/blog-placeholder-1.jpg';
- }
-
- // ... reste du code
----
-
-									<img width={720} height={360} src={getHeroImageSrc(post.data.heroImage)} alt="" />
+									<Image
+										width={720}
+										height={360}
+										src={post.data.heroImage || blogPlaceholder}
+										alt={`Image héro pour l'article de blog: ${post.data.title}`}
+										fetchpriority="high"
+										loading="eager"
+										format="webp"
+										quality="high"
+									/>
 									<h4 class="title">{post.data.title}</h4>
 									<p class="date">
 										<FormattedDate date={post.data.pubDate} />

@@ -1,0 +1,244 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@plugin "daisyui" {
+  themes:
+    [ "light-theme",
+    "dark-theme"];
+}
+
+/* Déclarations des polices JetBrains Mono */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-LightItalic.woff2") format("woff2");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-MediumItalic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Déclarations des polices Inter */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark-theme";
+  default: true; /* set as default */
+  prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
+  color-scheme: dark; /* color of browser-provided UI */
+
+  /* Base colors - gris plus clairs avec une pointe de vert canard désaturé */
+  --color-base-100: oklch(
+    28% 0.008 190
+  ); /* background - gris sombre mais respirant */
+  --color-base-200: oklch(35% 0.01 190); /* card - gris moyen */
+  --color-base-300: oklch(42% 0.012 190); /* muted/border - gris bien visible */
+  --color-base-content: oklch(
+    92% 0.005 190
+  ); /* foreground text - très clair et neutre */
+
+  /* Primary color - bleu cyan vibrant mais équilibré */
+  --color-primary: oklch(68% 0.22 205);
+  --color-primary-content: oklch(98% 0.003 205);
+
+  /* Secondary color - vert canard plus affirmé */
+  --color-secondary: oklch(72% 0.2 175);
+  --color-secondary-content: oklch(98% 0.003 175);
+
+  /* Accent color - violet désaturé (froid, pas de marron) */
+  --color-accent: oklch(72% 0.12 280);
+  --color-accent-content: oklch(95% 0.005 280);
+
+  /* Neutral colors */
+  --color-neutral: oklch(45% 0.01 190);
+  --color-neutral-content: oklch(85% 0.005 190);
+
+  /* Info color - bleu cyan désaturé */
+  --color-info: oklch(70% 0.12 210);
+  --color-info-content: oklch(95% 0.005 210);
+
+  /* Success color - vert canard */
+  --color-success: oklch(65% 0.15 165);
+  --color-success-content: oklch(95% 0.005 165);
+
+  /* Warning color - jaune verdâtre désaturé (évite l'orange/marron) */
+  --color-warning: oklch(75% 0.12 110);
+  --color-warning-content: oklch(20% 0.02 110);
+
+  /* Error color - rouge froid désaturé */
+  --color-error: oklch(58% 0.15 10);
+  --color-error-content: oklch(95% 0.005 10);
+
+  /* border radius */
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.25rem;
+
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* border size */
+  --border: 1px;
+
+  /* effects */
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "light-theme";
+  default: false; /* not set as default */
+  preferslight: true; /* set as default light mode (prefers-color-scheme:light) */
+  color-scheme: light; /* color of browser-provided UI */
+
+  /* Base colors - blancs/gris très clairs avec pointe de vert canard désaturé */
+  --color-base-100: oklch(
+    98% 0.005 190
+  ); /* background - blanc très légèrement teinté */
+  --color-base-200: oklch(94% 0.008 190); /* card - gris très clair */
+  --color-base-300: oklch(
+    88% 0.012 190
+  ); /* muted/border - gris clair visible */
+  --color-base-content: oklch(
+    18% 0.015 190
+  ); /* foreground text - gris très sombre */
+
+  /* Primary color - bleu cyan plus sombre pour contraste sur clair */
+  --color-primary: oklch(52% 0.25 205);
+  --color-primary-content: oklch(98% 0.003 205);
+
+  /* Secondary color - vert canard plus sombre mais vibrant */
+  --color-secondary: oklch(55% 0.22 175);
+  --color-secondary-content: oklch(98% 0.003 175);
+
+  /* Accent color - violet plus sombre */
+  --color-accent: oklch(58% 0.18 280);
+  --color-accent-content: oklch(98% 0.003 280);
+
+  /* Neutral colors */
+  --color-neutral: oklch(85% 0.008 190);
+  --color-neutral-content: oklch(22% 0.015 190);
+
+  /* Info color - bleu cyan sombre */
+  --color-info: oklch(48% 0.2 210);
+  --color-info-content: oklch(98% 0.003 210);
+
+  /* Success color - vert canard sombre */
+  --color-success: oklch(45% 0.22 165);
+  --color-success-content: oklch(98% 0.003 165);
+
+  /* Warning color - jaune olive pour rester dans les tons froids */
+  --color-warning: oklch(55% 0.18 110);
+  --color-warning-content: oklch(98% 0.003 110);
+
+  /* Error color - rouge froid sombre */
+  --color-error: oklch(48% 0.22 10);
+  --color-error-content: oklch(98% 0.003 10);
+
+  /* border radius */
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.25rem;
+
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* border size */
+  --border: 1px;
+
+  /* effects */
+  --depth: 1;
+  --noise: 0;
+}
+
+html {
+  padding: 64px 0 0 0;
+  margin: 0;
+  scroll-behavior: smooth;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+/* Classe utilitaire pour JetBrains Mono */
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
