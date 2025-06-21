@@ -2,7 +2,7 @@
 import { z } from 'zod';
 
 // Mock de la fonction defineCollection
-export function defineCollection<T extends Record<string, any>>(config: {
+export function defineCollection<_T extends Record<string, any>>(config: {
   loader?: any;
   schema?: any;
 }) {

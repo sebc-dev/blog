@@ -35,12 +35,10 @@ afterAll(() => {
 
 // Matchers personnalisés pour les tests de performance
 declare global {
-  namespace Vi {
-    interface JestAssertion<T = any> {
-      toBeOptimizedForLighthouse(): T;
-      toHaveValidCoreWebVitals(): T;
-      toBeAccessible(): T;
-      toHaveSEOOptimizations(): T;
-    }
+  interface ViJestAssertion<T = any> {
+    toBeOptimizedForLighthouse(): T;
+    toHaveValidCoreWebVitals(): T;
+    toBeAccessible(): T;
+    toHaveSEOOptimizations(): T;
   }
 } 

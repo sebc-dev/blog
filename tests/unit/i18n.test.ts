@@ -117,8 +117,8 @@ describe('useTranslations', () => {
   });
 
   it('should fallback to default language when key is missing', () => {
-    // Save the original ui object
-    const originalUi = ui;
+    // Save the original ui object (commented out as not used)
+    // const originalUi = ui;
     
     // Create a modified version where a key is missing from French but exists in English
     const testUi = {
@@ -255,15 +255,5 @@ describe('removeLocaleFromUrl', () => {
         expect(frTranslations[key as TranslationKey]).toBeDefined();
         expect(typeof frTranslations[key as TranslationKey]).toBe('string');
       });
-    });
-  });
-    // Vérifier que ui.fr satisfait le type TranslationObject
-    const frTranslations: TranslationObject = ui.fr;
-    expect(frTranslations).toBeDefined();
-    
-    // Vérifier que toutes les clés requises sont présentes et de type string
-    Object.keys(ui.en).forEach(key => {
-      expect(frTranslations[key as TranslationKey]).toBeDefined();
-      expect(typeof frTranslations[key as TranslationKey]).toBe('string');
     });
   });

@@ -214,7 +214,7 @@ export class LighthouseCriteriaValidator {
         console.warn('❌ Assets: _astro is not a directory');
         return false;
       }
-    } catch (error) {
+    } catch {
       console.warn('❌ Assets: _astro directory not found');
       return false;
     }    const files = readdirSync(assetsDir);
