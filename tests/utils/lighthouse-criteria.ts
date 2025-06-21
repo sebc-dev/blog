@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync, statSync } from "fs";
-import { join, extname } from "path";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, extname } from "node:path";
 import { parse } from "node-html-parser";
 
 /**
