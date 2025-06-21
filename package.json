@@ -15,6 +15,7 @@
     "format": "prettier --write .",
     "test": "vitest",
     "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
     "test:performance": "pnpm build && vitest tests/lighthouse-performance.test.ts",
     "test:lighthouse": "pnpm build && vitest tests/lighthouse-performance.test.ts --reporter=verbose",
     "test:ci": "pnpm build && vitest --reporter=json --outputFile=test-results.json",
@@ -53,6 +54,7 @@
     "prettier-plugin-tailwindcss": "~0.6.13",
     "shiki": "~3.7.0",
     "typescript": "~5.8.3",
-    "vitest": "~3.2.4"
+    "vitest": "~3.2.4",
+    "zod": "~3.25.67"
   }
 }

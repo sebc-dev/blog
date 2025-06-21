@@ -386,7 +386,6 @@ export class LighthouseCriteriaValidator {
       }
 
       // ✅ Vérifier structure heading
-      const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
       const h1Count = doc.querySelectorAll('h1').length;
       
       if (h1Count !== 1) {
