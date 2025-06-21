@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { beforeAll, afterAll } from "vitest";
-import { execSync } from "child_process";
-import { existsSync, rmSync } from "fs";
+import { execSync } from "node:child_process";
+import { existsSync, rmSync } from "node:fs";
 
 // Configuration globale pour les tests
 beforeAll(async () => {

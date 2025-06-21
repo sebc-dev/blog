@@ -31,7 +31,7 @@ export interface PerformanceCriteria {
 }
 
 export class LighthouseCriteriaValidator {
-  private distPath: string;
+  private readonly distPath: string;
 
   constructor(distPath: string = "./dist") {
     this.distPath = distPath;

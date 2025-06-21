@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { existsSync } from "fs";
+import { existsSync } from "node:fs";
 import {
   LighthouseCriteriaValidator,
   type PerformanceCriteria,

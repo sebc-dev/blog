@@ -11,7 +11,7 @@
     "check:watch": "astro check --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .js,.ts,.astro",
-    "lint:check": "eslint . --ext .js,.ts,.astro",
+    "lint:check": "eslint . --ext .js,.ts,.astro --cache",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
