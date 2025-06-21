@@ -1,8 +1,57 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"],
+  "include": [
+    ".astro/types.d.ts",
+    "**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
   "compilerOptions": {
-    "strictNullChecks": true
+    // Type Checking
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    
+    // Modules
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    
+    // Language and Environment
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": "astro",
+    
+    // Interop Constraints
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Skip Lib Check
+    "skipLibCheck": true,
+    
+    // Path mapping
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "~/assets/*": ["./src/assets/*"],
+      "~/components/*": ["./src/components/*"],
+      "~/layouts/*": ["./src/layouts/*"],
+      "~/pages/*": ["./src/pages/*"],
+      "~/styles/*": ["./src/styles/*"],
+      "~/content/*": ["./src/content/*"]
+    }
   }
 }

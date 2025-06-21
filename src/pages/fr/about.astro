@@ -1,10 +1,10 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
 import { Image } from 'astro:assets';
-import { getLangFromUrl, useTranslations } from '../i18n';
-import aboutImage from '../assets/blog-placeholder-about.jpg';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import aboutImage from '../../assets/blog-placeholder-about.jpg';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -24,7 +24,7 @@ const t = useTranslations(lang);
 						src={aboutImage}
 						width={1020}
 						height={510}
-						alt="About us - Team working on modern web development"
+						alt="À propos de nous - Équipe travaillant sur le développement web moderne"
 						priority
 						fetchpriority="high"
 						loading="eager"
@@ -38,24 +38,24 @@ const t = useTranslations(lang);
 						<hr />
 					</div>
 					<p>
-						Welcome to our website! We are a passionate team of developers 
-						who create modern and performant web experiences with Astro.
+						Bienvenue sur notre site web ! Nous sommes une équipe passionnée de développeurs 
+						qui créons des expériences web modernes et performantes avec Astro.
 					</p>
 
 					<p>
-						Astro is a modern framework that allows us to create ultra-fast websites 
-						using the latest web technologies. We focus on performance, 
-						accessibility, and excellent user experience.
+						Astro est un framework moderne qui nous permet de créer des sites web ultra-rapides 
+						en utilisant les dernières technologies web. Nous nous concentrons sur la performance, 
+						l'accessibilité et une excellente expérience utilisateur.
 					</p>
 
 					<p>
-						This site uses internationalization to provide a multilingual experience, 
-						demonstrating how Astro can be used to create global websites.
+						Ce site utilise l'internationalisation pour offrir une expérience multilingue, 
+						démontrant comment Astro peut être utilisé pour créer des sites web globaux.
 					</p>
 
 					<p>
-						Feel free to explore our blog to discover our latest articles 
-						and tutorials on modern web development.
+						N'hésitez pas à explorer notre blog pour découvrir nos derniers articles 
+						et tutoriels sur le développement web moderne.
 					</p>
 				</div>
 			</article>
@@ -107,4 +107,4 @@ const t = useTranslations(lang);
 	.last-updated-on {
 		font-style: italic;
 	}
-</style>
+</style> 
