@@ -54,10 +54,20 @@ export function Image(props: {
 export function image() {
   return {
     optional: () => ({
-      src: 'string',
-      width: 'number',
-      height: 'number',
-      format: 'string'
+      parse: (input: any) => input,
+      safeParse: (input: any) => ({ success: true, data: input }),
+      _def: {
+        typeName: 'ZodOptional',
+        innerType: {
+          typeName: 'ZodObject',
+          shape: {
+            src: { typeName: 'ZodString' },
+            width: { typeName: 'ZodNumber' },
+            height: { typeName: 'ZodNumber' },
+            format: { typeName: 'ZodString' }
+          }
+        }
+      }
     })
   };
 }
