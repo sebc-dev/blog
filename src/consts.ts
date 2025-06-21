@@ -3,3 +3,6 @@
 
 export const SITE_TITLE = "Astro Blog";
 export const SITE_DESCRIPTION = "Welcome to my website!";
+
+// Internationalization constants
+export const FRENCH_PREFIX = 'fr/';
