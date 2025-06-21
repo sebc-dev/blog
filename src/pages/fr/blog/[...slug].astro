@@ -5,7 +5,17 @@ import { render } from 'astro:content';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
-	const frenchPosts = posts.filter((post) => post.id.startsWith('fr/'));
+const FRENCH_PREFIX = 'fr/';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	const frenchPosts = posts.filter((post) => post.id.startsWith(FRENCH_PREFIX));
+
+	return frenchPosts.map((post) => ({
+		params: { slug: post.id.replace(FRENCH_PREFIX, '') },
+		props: post,
+	}));
+}
 	
 	return frenchPosts.map((post) => ({
 		params: { slug: post.id.replace('fr/', '') },
